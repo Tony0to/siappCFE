@@ -1,0 +1,1 @@
+ C:\\Users\\ANGELFLOD\\Documents\\GitHub\\siappCFE\\.dart_tool\\flutter_build\\cbf621f563e366f148b65842002692aa\\native_assets.yaml: 

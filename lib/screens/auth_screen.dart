@@ -24,7 +24,7 @@ class AuthScreen extends StatelessWidget {
               children: [
                 // Logo de la aplicación
                 Image.asset(
-                  'assets/logo.png',
+                  'assets/siaapp.png',
                   height: 150,
                   fit: BoxFit.contain,
                 ),
