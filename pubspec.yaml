@@ -1,0 +1,26 @@
+name: siapp
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'  # Eliminé el caret (^) para mejor práctica
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.10.1
+  firebase_auth: ^5.4.1
+  cloud_firestore: ^5.6.2
+  cupertino_icons: ^1.0.8  # Movido a mismo nivel que otras dependencias
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/  # Movido aquí dentro del bloque flutter

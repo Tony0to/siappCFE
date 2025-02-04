@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">23727340627</string>
+    <string name="google_api_key" translatable="false">AIzaSyAeoKTL7BXxl1J0B2yOuJWTFLrO4GT09b8</string>
+    <string name="google_app_id" translatable="false">1:23727340627:android:33442832315a4306949aa6</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAeoKTL7BXxl1J0B2yOuJWTFLrO4GT09b8</string>
+    <string name="google_storage_bucket" translatable="false">tecapp-d6dd0.firebasestorage.app</string>
+    <string name="project_id" translatable="false">tecapp-d6dd0</string>
+</resources>
