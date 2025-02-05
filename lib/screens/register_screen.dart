@@ -21,55 +21,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isLoading = false;
 
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
+Future<void> _register() async {
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-    try {
-      // Crear usuario en Firebase Auth
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+  try {
+    // Crear usuario en Firebase Auth
+    final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
 
-      // Guardar datos adicionales en Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set({
-        'name': _nameController.text.trim(),
-        'ncontrol': _ncontrolController.text.trim(),
-        'email': _emailController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+    // Usar el número de control como ID del documento
+    final ncontrol = _ncontrolController.text.trim();
 
-      // Navegar a la pantalla de inicio después del registro exitoso
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Error al registrar usuario';
-      switch (e.code) {
-        case 'email-already-in-use':
-          errorMessage = 'El correo ya está en uso';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Correo electrónico inválido';
-          break;
-        case 'weak-password':
-          errorMessage = 'La contraseña es demasiado débil';
-          break;
-      }
-      _showError(errorMessage);
-    } catch (e) {
-      _showError('Ocurrió un error inesperado: ${e.toString()}');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    // Guardar datos adicionales en Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(ncontrol) // El ID del documento será el número de control
+        .set({
+      'name': _nameController.text.trim(),
+      'ncontrol': ncontrol,
+      'email': _emailController.text.trim(),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    // Navegar a la pantalla de inicio después del registro exitoso
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  } on FirebaseAuthException catch (e) {
+    String errorMessage = 'Error al registrar usuario';
+    switch (e.code) {
+      case 'email-already-in-use':
+        errorMessage = 'El correo ya está en uso';
+        break;
+      case 'invalid-email':
+        errorMessage = 'Correo electrónico inválido';
+        break;
+      case 'weak-password':
+        errorMessage = 'La contraseña es demasiado débil';
+        break;
     }
+    _showError(errorMessage);
+  } catch (e) {
+    _showError('Ocurrió un error inesperado: ${e.toString()}');
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
+
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -1,33 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_screen.dart'; // Asegúrate de importar tu pantalla de login
-import 'ModulesScreen.dart'; // Asegúrate de importar tu pantalla de login
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'auth_screen.dart'; // Pantalla de autenticación
+import 'ModulesScreen.dart'; // Pantalla de módulos
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  /// Función para crear o actualizar el progreso del usuario en Firestore.
+  Future<void> createOrUpdateProgress() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception("Usuario no autenticado");
+    }
+
+    // Obtener el 'ncontrol' del usuario autenticado
+    final String? userEmail = user.email; // Usamos el correo para buscar el documento
+    if (userEmail == null || userEmail.isEmpty) {
+      throw Exception("El correo del usuario no está disponible.");
+    }
+
+    // Buscar el documento del usuario en la colección 'users' usando el correo
+    final QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .get();
+
+    // Verificar si se encontró el documento
+    if (userQuery.docs.isEmpty) {
+      throw Exception("El documento del usuario no existe en Firestore.");
+    }
+
+    // Obtener el primer documento (asumimos que el correo es único)
+    final DocumentSnapshot userDoc = userQuery.docs.first;
+    final data = userDoc.data() as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception("Los datos del usuario son nulos.");
+    }
+
+    // Obtener el campo 'ncontrol'
+    final String ncontrol = data['ncontrol']?.toString() ?? '';
+    if (ncontrol.isEmpty) {
+      throw Exception("El número de control (ncontrol) no está configurado.");
+    }
+
+    // Referencia al documento en la colección 'progress' con el 'ncontrol' como ID
+    final DocumentReference progressRef =
+        FirebaseFirestore.instance.collection('progress').doc(ncontrol);
+
+    // Crear o actualizar el documento en 'progress'
+    await progressRef.set({
+      'mcompleto': [], // Lista de módulos completados
+      'ultimo_acceso': FieldValue.serverTimestamp(), // Fecha de último acceso
+    }, SetOptions(merge: true));
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Obtener el usuario actual
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inicio'),
         actions: [
+          // Botón para cerrar sesión
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               try {
                 await FirebaseAuth.instance.signOut();
-                // Navegar a la pantalla de login después de cerrar sesión
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => AuthScreen()),
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
                   (Route<dynamic> route) => false,
                 );
               } catch (e) {
-                // Manejar cualquier error que ocurra durante el cierre de sesión
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Error al cerrar sesión')),
                 );
@@ -43,7 +95,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Mensaje de bienvenida personalizado
+              // Mensaje de bienvenida
               Text(
                 '¡Bienvenido ${user?.email ?? 'Usuario'}!',
                 style: const TextStyle(
@@ -55,8 +107,8 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Información adicional del usuario
-              if (user != null) ...[
+              // Foto de perfil del usuario
+              if (user != null)
                 CircleAvatar(
                   radius: 50,
                   backgroundImage: user.photoURL != null
@@ -66,29 +118,27 @@ class HomeScreen extends StatelessWidget {
                       ? const Icon(Icons.person, size: 50)
                       : null,
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  'Has iniciado sesión como:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                Text(
-                  user.email ?? 'Correo no disponible',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 30),
-              ],
+              const SizedBox(height: 20),
 
-              // Botón para ver módulos
+              // Botón para ver los módulos
               ElevatedButton(
-                onPressed: () {
-                  // Navegar a pantalla de módulos
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ModulesScreen()));
+                onPressed: () async {
+                  try {
+                    await createOrUpdateProgress();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ModulesScreen(),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
