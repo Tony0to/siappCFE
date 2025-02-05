@@ -4,7 +4,17 @@
             "outputFile": "com.example.siapp-mergeDebugResources-33:/values-da/values-da.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\ANGELFLOD\\.gradle\\caches\\transforms-3\\5c354eff26465da94d2c995ebbc7f3dc\\transformed\\jetified-play-services-base-18.0.1\\res\\values-da\\values.xml",
+                    "source": "C:\\Users\\nenuk\\.gradle\\caches\\transforms-3\\e436391d4eabda697fceffbdd6837f99\\transformed\\jetified-credentials-1.2.0-rc01\\res\\values-da\\values-da.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,170",
+                        "endColumns": "114,118",
+                        "endOffsets": "165,284"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\nenuk\\.gradle\\caches\\transforms-3\\5c354eff26465da94d2c995ebbc7f3dc\\transformed\\jetified-play-services-base-18.0.1\\res\\values-da\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
                         "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -21,34 +31,24 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ANGELFLOD\\.gradle\\caches\\transforms-3\\e436391d4eabda697fceffbdd6837f99\\transformed\\jetified-credentials-1.2.0-rc01\\res\\values-da\\values-da.xml",
+                    "source": "C:\\Users\\nenuk\\.gradle\\caches\\transforms-3\\ea5a6b8d05c88ff4bf6e759ddab4a001\\transformed\\browser-1.4.0\\res\\values-da\\values-da.xml",
                     "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,170",
-                        "endColumns": "114,118",
-                        "endOffsets": "165,284"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\ANGELFLOD\\.gradle\\caches\\transforms-3\\3e4fa42964ec6369b3a52ce840a46646\\transformed\\core-1.13.1\\res\\values-da\\values-da.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,151,253,350,448,555,664,782",
-                        "endColumns": "95,101,96,97,106,108,117,100",
-                        "endOffsets": "146,248,345,443,550,659,777,878"
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,167,266,373",
+                        "endColumns": "111,98,106,96",
+                        "endOffsets": "162,261,368,465"
                     },
                     "to": {
-                        "startLines": "4,5,6,7,8,9,10,33",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "289,385,487,584,682,789,898,3633",
-                        "endColumns": "95,101,96,97,106,108,117,100",
-                        "endOffsets": "380,482,579,677,784,893,1011,3729"
+                        "startLines": "29,30,31,32",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "3218,3330,3429,3536",
+                        "endColumns": "111,98,106,96",
+                        "endOffsets": "3325,3424,3531,3628"
                     }
                 },
                 {
-                    "source": "C:\\Users\\ANGELFLOD\\.gradle\\caches\\transforms-3\\814b5e239732735f2c6fd9e01cbdb5de\\transformed\\jetified-play-services-basement-18.4.0\\res\\values-da\\values.xml",
+                    "source": "C:\\Users\\nenuk\\.gradle\\caches\\transforms-3\\814b5e239732735f2c6fd9e01cbdb5de\\transformed\\jetified-play-services-basement-18.4.0\\res\\values-da\\values.xml",
                     "from": {
                         "startLines": "4",
                         "startColumns": "0",
@@ -65,20 +65,20 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\ANGELFLOD\\.gradle\\caches\\transforms-3\\ea5a6b8d05c88ff4bf6e759ddab4a001\\transformed\\browser-1.4.0\\res\\values-da\\values-da.xml",
+                    "source": "C:\\Users\\nenuk\\.gradle\\caches\\transforms-3\\3e4fa42964ec6369b3a52ce840a46646\\transformed\\core-1.13.1\\res\\values-da\\values-da.xml",
                     "from": {
-                        "startLines": "2,3,4,5",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,167,266,373",
-                        "endColumns": "111,98,106,96",
-                        "endOffsets": "162,261,368,465"
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,151,253,350,448,555,664,782",
+                        "endColumns": "95,101,96,97,106,108,117,100",
+                        "endOffsets": "146,248,345,443,550,659,777,878"
                     },
                     "to": {
-                        "startLines": "29,30,31,32",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "3218,3330,3429,3536",
-                        "endColumns": "111,98,106,96",
-                        "endOffsets": "3325,3424,3531,3628"
+                        "startLines": "4,5,6,7,8,9,10,33",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "289,385,487,584,682,789,898,3633",
+                        "endColumns": "95,101,96,97,106,108,117,100",
+                        "endOffsets": "380,482,579,677,784,893,1011,3729"
                     }
                 }
             ]

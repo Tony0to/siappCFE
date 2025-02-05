@@ -4,7 +4,7 @@
             "outputFile": "com.example.siapp-mergeDebugResources-33:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\ANGELFLOD\\Documents\\GitHub\\siappCFE\\android\\app\\src\\main\\res\\values-night\\styles.xml",
+                    "source": "C:\\Users\\nenuk\\dev\\projects\\siapp\\android\\app\\src\\main\\res\\values-night\\styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",
