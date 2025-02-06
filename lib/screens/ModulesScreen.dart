@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'module1.dart'; // Importar pantalla del módulo 1
 import 'module2.dart'; // Importar pantalla del módulo 2
 import 'module3.dart'; // Importar pantalla del módulo 3
@@ -34,6 +36,7 @@ class _ModulesScreenState extends State<ModulesScreen> {
       'activities': 5,
       'introText':
           'Bienvenido al módulo de introducción a la programación. Aquí aprenderás los conceptos básicos de la programación y cómo aplicarlos en diferentes lenguajes.',
+      'id': 'module1', // Agregamos un ID para cada módulo
     },
     {
       'image': 'assets/siaapp.png',
@@ -41,6 +44,7 @@ class _ModulesScreenState extends State<ModulesScreen> {
       'activities': 3,
       'introText':
           'En este módulo aprenderás sobre algoritmos, su importancia y cómo diseñarlos eficientemente.',
+      'id': 'module2',
     },
     {
       'image': 'assets/siaapp.png',
@@ -48,8 +52,69 @@ class _ModulesScreenState extends State<ModulesScreen> {
       'activities': 4,
       'introText':
           'Este módulo te introducirá al lenguaje de programación Java, sus características y cómo empezar a desarrollar aplicaciones con él.',
+      'id': 'module3',
     },
   ];
+
+  Future<void> addModuleDetails(String moduleId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("No hay usuario autenticado");
+      return;
+    }
+
+    // Obtener el correo del usuario autenticado
+    final String? userEmail = user.email; // Usamos el correo para buscar el documento
+    if (userEmail == null || userEmail.isEmpty) {
+      print("El correo del usuario no está disponible.");
+      return;
+    }
+
+    // Buscar el documento del usuario en la colección 'users' usando el correo
+    final QuerySnapshot userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .get();
+
+    // Verificar si se encontró el documento
+    if (userQuery.docs.isEmpty) {
+      print("El documento del usuario no existe en Firestore.");
+      return;
+    }
+
+    // Obtener el primer documento (asumimos que el correo es único)
+    final DocumentSnapshot userDoc = userQuery.docs.first;
+    final data = userDoc.data() as Map<String, dynamic>?;
+
+    if (data == null) {
+      print("Los datos del usuario son nulos.");
+      return;
+    }
+
+    // Obtener el campo 'ncontrol'
+    final String ncontrol = data['ncontrol']?.toString() ?? '';
+    if (ncontrol.isEmpty) {
+      print("El número de control (ncontrol) no está configurado.");
+      return;
+    }
+
+    // Referencia al documento en la colección 'progress' con el 'ncontrol' como ID
+    final DocumentReference progressRef =
+        FirebaseFirestore.instance.collection('progress').doc(ncontrol);
+
+    // Crear o actualizar el subdocumento 'module_details' en 'progress'
+    await progressRef.collection('module_details').doc(moduleId).set({
+      'porcentaje': 0,
+      'quiz_completed': false,
+      'topics_completed': [],
+    }, SetOptions(merge: true));
+
+    print("Subdocumento module_details actualizado correctamente");
+    // Mostrar mensaje de éxito
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Detalles del módulo actualizados correctamente")),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +141,14 @@ class _ModulesScreenState extends State<ModulesScreen> {
               itemBuilder: (BuildContext context, int index) {
                 return _ModuleCard(
                   module: modules[index],
+                  onTap: () async {
+                    await addModuleDetails(modules[index]['title']);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ModuleScreen(module: modules[index])),
+                    );
+                  },
                 );
               },
             ),
@@ -142,100 +215,80 @@ class _CircularLogo extends StatelessWidget {
   }
 }
 
-class _ModuleCard extends StatefulWidget {
+class _ModuleCard extends StatelessWidget {
   final Map<String, dynamic> module;
+  final VoidCallback onTap; // Callback para manejar el tap
 
-  _ModuleCard({required this.module});
-
-  @override
-  __ModuleCardState createState() => __ModuleCardState();
-}
-
-class __ModuleCardState extends State<_ModuleCard> {
-  bool _isHovered = false;
+  _ModuleCard({required this.module, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ModuleScreen(module: widget.module)),
-          );
-        },
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          transform: Matrix4.identity()..scale(_isHovered ? 1.1 : 1.0),
-          child: Card(
-            elevation: _isHovered ? 12 : 8,
-            shape: RoundedRectangleBorder(
+    return GestureDetector(
+      onTap: onTap, // Llama al callback cuando se toca el card
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Stack(
+          children: [
+            // Imagen más grande hacia abajo
+            ClipRRect(
               borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                module['image'],
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 300,
+              ),
             ),
-            child: Stack(
-              children: [
-                // Imagen más grande hacia abajo
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    widget.module['image'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 300,
-                  ),
+            // Sombreado completo sobre la imagen
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.6),
+                    Colors.transparent,
+                  ],
                 ),
-                // Sombreado completo sobre la imagen
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.6),
-                        Colors.transparent,
+              ),
+            ),
+            // Contenido de texto
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    module['title'],
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 5,
+                        ),
                       ],
                     ),
                   ),
-                ),
-                // Contenido de texto
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        widget.module['title'],
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 5,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        '${widget.module['activities']} actividades',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
+                  SizedBox(height: 8),
+                  Text(
+                    '${module['activities']} actividades',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
