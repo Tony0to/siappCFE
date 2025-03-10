@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:siapp/screens/progress_screen.dart';
 import 'module1.dart'; // Importar pantalla del módulo 1
 import 'module2.dart'; // Importar pantalla del módulo 2
 import 'module3.dart'; // Importar pantalla del módulo 3
@@ -156,30 +157,31 @@ class _ModulesScreenState extends State<ModulesScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AccountScreen()),
-            );
-          }
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Cuenta',
-          ),
-        ],
-      ),
+  type: BottomNavigationBarType.fixed,
+  currentIndex: _currentIndex,
+  onTap: (int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProgressScreen()), // Aquí cambia la pantalla
+      );
+    }
+  },
+  items: [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.account_circle),
+      label: 'Cuenta',
+    ),
+  ],
+),
+
     );
   }
 }
@@ -368,20 +370,6 @@ class ModuleScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class AccountScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Cuenta '),
-      ),
-      body: Center(
-        child: Text('Pantalla de Cuenta'),
       ),
     );
   }
