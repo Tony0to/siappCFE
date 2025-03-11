@@ -37,7 +37,7 @@ class _ModulesScreenState extends State<ModulesScreen> {
       'activities': 5,
       'introText':
           'Bienvenido al módulo de introducción a la programación. Aquí aprenderás los conceptos básicos de la programación y cómo aplicarlos en diferentes lenguajes.',
-      'id': 'module1', // Agregamos un ID para cada módulo
+      'id': 'module1',
     },
     {
       'image': 'assets/siaapp.png',
@@ -64,26 +64,22 @@ class _ModulesScreenState extends State<ModulesScreen> {
       return;
     }
 
-    // Obtener el correo del usuario autenticado
-    final String? userEmail = user.email; // Usamos el correo para buscar el documento
+    final String? userEmail = user.email;
     if (userEmail == null || userEmail.isEmpty) {
       print("El correo del usuario no está disponible.");
       return;
     }
 
-    // Buscar el documento del usuario en la colección 'users' usando el correo
     final QuerySnapshot userQuery = await FirebaseFirestore.instance
         .collection('users')
         .where('email', isEqualTo: userEmail)
         .get();
 
-    // Verificar si se encontró el documento
     if (userQuery.docs.isEmpty) {
       print("El documento del usuario no existe en Firestore.");
       return;
     }
 
-    // Obtener el primer documento (asumimos que el correo es único)
     final DocumentSnapshot userDoc = userQuery.docs.first;
     final data = userDoc.data() as Map<String, dynamic>?;
 
@@ -92,18 +88,15 @@ class _ModulesScreenState extends State<ModulesScreen> {
       return;
     }
 
-    // Obtener el campo 'ncontrol'
     final String ncontrol = data['ncontrol']?.toString() ?? '';
     if (ncontrol.isEmpty) {
       print("El número de control (ncontrol) no está configurado.");
       return;
     }
 
-    // Referencia al documento en la colección 'progress' con el 'ncontrol' como ID
     final DocumentReference progressRef =
         FirebaseFirestore.instance.collection('progress').doc(ncontrol);
 
-    // Crear o actualizar el subdocumento 'module_details' en 'progress'
     await progressRef.collection('module_details').doc(moduleId).set({
       'porcentaje': 0,
       'quiz_completed': false,
@@ -111,7 +104,6 @@ class _ModulesScreenState extends State<ModulesScreen> {
     }, SetOptions(merge: true));
 
     print("Subdocumento module_details actualizado correctamente");
-    // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Detalles del módulo actualizados correctamente")),
     );
@@ -120,98 +112,49 @@ class _ModulesScreenState extends State<ModulesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Circular Logo
-            _CircularLogo(),
-
-            // Grid of Modules
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16.0),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 2 : 1,
-                childAspectRatio:
-                    MediaQuery.of(context).size.width > 600 ? 1.5 : 2,
-              ),
-              itemCount: modules.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _ModuleCard(
-                  module: modules[index],
-                  onTap: () async {
-                    await addModuleDetails(modules[index]['title']);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ModuleScreen(module: modules[index])),
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+      appBar: AppBar(title: Text("Escoge un tema")),
+      body: ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: modules.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _ModuleCard(
+            module: modules[index],
+            onTap: () async {
+              await addModuleDetails(modules[index]['id']); // Guardar detalles en Firestore
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ModuleScreen(module: modules[index]),
+                ),
+              );
+            },
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
-  type: BottomNavigationBarType.fixed,
-  currentIndex: _currentIndex,
-  onTap: (int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProgressScreen()), // Aquí cambia la pantalla
-      );
-    }
-  },
-  items: [
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.account_circle),
-      label: 'Cuenta',
-    ),
-  ],
-),
-
-    );
-  }
-}
-
-class _CircularLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(top: 40, bottom: 20),
-      child: Center(
-        child: AnimatedContainer(
-          duration: Duration(seconds: 1),
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.blue.shade100,
-            image: DecorationImage(
-              image: AssetImage('assets/siaapp.png'),
-              fit: BoxFit.cover,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue.withOpacity(0.5),
-                blurRadius: 10,
-                spreadRadius: 2,
-              ),
-            ],
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        onTap: (int index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProgressScreen()),
+            );
+          }
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Cuenta',
+          ),
+        ],
       ),
     );
   }
@@ -219,75 +162,57 @@ class _CircularLogo extends StatelessWidget {
 
 class _ModuleCard extends StatelessWidget {
   final Map<String, dynamic> module;
-  final VoidCallback onTap; // Callback para manejar el tap
+  final VoidCallback onTap;
 
   _ModuleCard({required this.module, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap, // Llama al callback cuando se toca el card
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Stack(
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      elevation: 4,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Imagen más grande hacia abajo
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                module['image'],
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 300,
-              ),
-            ),
-            // Sombreado completo sobre la imagen
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.6),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-            // Contenido de texto
-            Padding(
-              padding: const EdgeInsets.all(24.0),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     module['title'],
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black,
-                          blurRadius: 5,
-                        ),
-                      ],
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Comienza',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
                     ),
                   ),
                   SizedBox(height: 8),
-                  Text(
-                    '${module['activities']} actividades',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+                  ElevatedButton(
+                    onPressed: onTap,
+                    child: Text('Start'),
                   ),
                 ],
+              ),
+            ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                module['image'],
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
               ),
             ),
           ],
@@ -311,14 +236,12 @@ class ModuleScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Imagen relacionada al tema
             Image.asset(
               module['image'],
               fit: BoxFit.cover,
               width: double.infinity,
               height: 200,
             ),
-            // Texto introductorio
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
@@ -329,12 +252,10 @@ class ModuleScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Botón "Comenzar a estudiar"
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: () {
-                  // Navegar a la pantalla correspondiente según el módulo
                   switch (module['title']) {
                     case 'Introducción a la programación':
                       Navigator.push(
@@ -361,7 +282,6 @@ class ModuleScreen extends StatelessWidget {
                       );
                       break;
                     default:
-                      // Manejar el caso por defecto si es necesario
                       break;
                   }
                 },
