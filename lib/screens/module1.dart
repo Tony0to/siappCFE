@@ -63,11 +63,34 @@ class Module1Screen extends StatelessWidget {
   Module1Screen({required this.module});
 
   Future<void> completeActivity(BuildContext context, int activityIndex) async {
-    // Simulación de evaluación de actividad teórica y reflexión.
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Debes iniciar sesión primero.")),
+      );
+      return;
+    }
+
+    final userQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: user.email)
+        .get();
+
+    if (userQuery.docs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Usuario no encontrado en la base de datos.")),
+      );
+      return;
+    }
+
+    final String ncontrol = userQuery.docs.first.data()['ncontrol'].toString();
+
+    // Mostrar preguntas
     var theoryQuestion = module1Activities[activityIndex]["theory"];
     var reflectionQuestion = module1Activities[activityIndex]["reflection"];
 
-    String? theoryAnswer = await showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(theoryQuestion["question"]),
@@ -84,7 +107,7 @@ class Module1Screen extends StatelessWidget {
       ),
     );
 
-    String? reflectionAnswer = await showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Reflexión"),
@@ -98,23 +121,20 @@ class Module1Screen extends StatelessWidget {
       ),
     );
 
-    // Guardar progreso en Firestore
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(userId)
-          .collection('module_details')
-          .doc(module['id'])
-          .update({
-        'topics_completed':
-            FieldValue.arrayUnion([module1Activities[activityIndex]["subtopic"]]),
-      });
+    // Guardar progreso usando ncontrol correctamente
+    await FirebaseFirestore.instance
+        .collection('progress')
+        .doc(ncontrol)
+        .collection('module_details')
+        .doc(module['id'])
+        .set({
+      'topics_completed': FieldValue.arrayUnion(
+          [module1Activities[activityIndex]["subtopic"]]),
+    }, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Actividad completada y progreso guardado")),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Actividad completada y progreso guardado")),
+    );
   }
 
   @override
