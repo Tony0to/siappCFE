@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:siapp/screens/login_screen.dart';
 import 'package:siapp/screens/progress_screen.dart';
-import 'module1.dart'; // Importar pantalla del módulo 1
-import 'module2.dart'; // Importar pantalla del módulo 2
-import 'module3.dart'; // Importar pantalla del módulo 3
+import 'module1.dart';
+import 'module2.dart';
+import 'module3.dart';
 
 void main() {
   runApp(MyApp());
@@ -30,14 +31,19 @@ class ModulesScreen extends StatefulWidget {
 
 class _ModulesScreenState extends State<ModulesScreen> {
   int _currentIndex = 0;
+
   final List<Map<String, dynamic>> modules = [
     {
       'image': 'assets/siaapp.png',
       'title': 'Introducción a la programación',
       'activities': 5,
       'introText':
-          'Bienvenido al módulo de introducción a la programación. Aquí aprenderás los conceptos básicos de la programación y cómo aplicarlos en diferentes lenguajes.',
+          'Aprenderás conceptos clave antes de escribir código, pensamiento lógico, y diagramas de flujo.',
       'id': 'module1',
+      'subtopics': [
+        'Conceptos clave antes de escribir código',
+        'Pensamiento lógico y resolución de problemas',
+      ],
     },
     {
       'image': 'assets/siaapp.png',
@@ -57,16 +63,21 @@ class _ModulesScreenState extends State<ModulesScreen> {
     },
   ];
 
-  Future<void> addModuleDetails(String moduleId) async {
+  Future<void> addModuleDetails(BuildContext context, String moduleId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      print("No hay usuario autenticado");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
       return;
     }
 
     final String? userEmail = user.email;
     if (userEmail == null || userEmail.isEmpty) {
-      print("El correo del usuario no está disponible.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("El correo del usuario no está disponible.")),
+      );
       return;
     }
 
@@ -76,7 +87,9 @@ class _ModulesScreenState extends State<ModulesScreen> {
         .get();
 
     if (userQuery.docs.isEmpty) {
-      print("El documento del usuario no existe en Firestore.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("El documento del usuario no existe en Firestore.")),
+      );
       return;
     }
 
@@ -84,29 +97,37 @@ class _ModulesScreenState extends State<ModulesScreen> {
     final data = userDoc.data() as Map<String, dynamic>?;
 
     if (data == null) {
-      print("Los datos del usuario son nulos.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Los datos del usuario son nulos.")),
+      );
       return;
     }
 
     final String ncontrol = data['ncontrol']?.toString() ?? '';
     if (ncontrol.isEmpty) {
-      print("El número de control (ncontrol) no está configurado.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("El número de control no está configurado.")),
+      );
       return;
     }
 
     final DocumentReference progressRef =
         FirebaseFirestore.instance.collection('progress').doc(ncontrol);
 
-    await progressRef.collection('module_details').doc(moduleId).set({
-      'porcentaje': 0,
-      'quiz_completed': false,
-      'topics_completed': [],
-    }, SetOptions(merge: true));
+    final DocumentSnapshot progressSnapshot =
+        await progressRef.collection('module_details').doc(moduleId).get();
 
-    print("Subdocumento module_details actualizado correctamente");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Detalles del módulo actualizados correctamente")),
-    );
+    if (!progressSnapshot.exists) {
+      await progressRef.collection('module_details').doc(moduleId).set({
+        'porcentaje': 0,
+        'quiz_completed': false,
+        'topics_completed': [],
+      }, SetOptions(merge: true));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Detalles del módulo actualizados correctamente")),
+      );
+    }
   }
 
   @override
@@ -120,7 +141,7 @@ class _ModulesScreenState extends State<ModulesScreen> {
           return _ModuleCard(
             module: modules[index],
             onTap: () async {
-              await addModuleDetails(modules[index]['id']); // Guardar detalles en Firestore
+              await addModuleDetails(context, modules[index]['id']);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -146,14 +167,8 @@ class _ModulesScreenState extends State<ModulesScreen> {
           }
         },
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Cuenta',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Cuenta'),
         ],
       ),
     );

@@ -1,134 +1,138 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Preguntas externas según el documento
+final List<Map<String, dynamic>> module1Activities = [
+  {
+    "subtopic": "Conceptos clave antes de escribir código",
+    "theory": {
+      "question": "¿Qué diferencia hay entre software y hardware?",
+      "options": [
+        "El software es el conjunto de piezas físicas, y el hardware es el conjunto de programas.",
+        "El software se refiere a programas y aplicaciones, el hardware a componentes físicos.",
+        "Software y hardware son lo mismo.",
+        "Ninguna de las anteriores."
+      ],
+      "correctAnswer": 1,
+    },
+    "reflection":
+        "¿Cómo puede el entendimiento de software y hardware mejorar tu capacidad para desarrollar aplicaciones eficientes?",
+    "practice": {
+      "question": "Clasifica los siguientes elementos en Software o Hardware.",
+      "elements": [
+        "Teclado",
+        "Monitor",
+        "Procesador",
+        "Windows",
+        "Antivirus",
+        "Sistema operativo"
+      ],
+      "answers": {
+        "Hardware": ["Teclado", "Monitor", "Procesador"],
+        "Software": ["Windows", "Antivirus", "Sistema operativo"]
+      }
+    }
+  },
+  {
+    "subtopic": "Pensamiento lógico y resolución de problemas",
+    "theory": {
+      "question":
+          "¿Cuál opción describe mejor la diferencia entre lenguajes de bajo y alto nivel?",
+      "options": [
+        "Bajo nivel más fácil para humanos, alto nivel solo para computadoras.",
+        "Bajo nivel más cercano al hardware, alto nivel más comprensible para programadores.",
+        "Alto nivel no requiere compilación, bajo nivel siempre necesita traductor.",
+        "No hay diferencias."
+      ],
+      "correctAnswer": 1,
+    },
+    "reflection":
+        "¿Cómo elegirías entre un lenguaje de bajo o alto nivel según el proyecto?",
+    "practice": {
+      "question":
+          "Observa fragmentos en lenguajes bajo y alto nivel. ¿Cuál es más fácil y por qué?",
+      "details": "Explica considerando abstracción y facilidad de comprensión."
+    }
+  }
+];
 
 class Module1Screen extends StatelessWidget {
   final Map<String, dynamic> module;
 
   Module1Screen({required this.module});
 
-  // Función para simular un juego (cuestionario)
-  void _startQuiz(BuildContext context) async {
-    // Preguntas y respuestas
-    List<Map<String, dynamic>> questions = [
-      {
-        "question": "¿Cuál es la capital de Francia?",
-        "options": ["Londres", "París", "Madrid", "Berlín"],
-        "correctAnswer": 1,
-      },
-      {
-        "question": "¿Cuál es el planeta más cercano al Sol?",
-        "options": ["Tierra", "Marte", "Venus", "Mercurio"],
-        "correctAnswer": 3,
-      },
-      {
-        "question": "¿Quién escribió 'Cien años de soledad'?",
-        "options": [
-          "Gabriel García Márquez",
-          "Pablo Neruda",
-          "Mario Vargas Llosa",
-          "Julio Cortázar"
-        ],
-        "correctAnswer": 0,
-      },
-    ];
+  Future<void> completeActivity(BuildContext context, int activityIndex) async {
+    // Simulación de evaluación de actividad teórica y reflexión.
+    var theoryQuestion = module1Activities[activityIndex]["theory"];
+    var reflectionQuestion = module1Activities[activityIndex]["reflection"];
 
-    int score = 0;
-
-    // Mostrar preguntas y calcular la calificación
-    for (var i = 0; i < questions.length; i++) {
-      String? answer = await showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(questions[i]["question"]),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                questions[i]["options"].length,
-                (index) => ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, index.toString());
-                  },
-                  child: Text(questions[i]["options"][index]),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-
-      if (answer != null &&
-          int.parse(answer) == questions[i]["correctAnswer"]) {
-        score++;
-      }
-    }
-
-    // Calcular porcentaje
-    double percentage = (score / questions.length) * 100;
-
-    // Mostrar resultado
-    showDialog(
+    String? theoryAnswer = await showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Resultado"),
-          content:
-              Text("Tu calificación es: ${percentage.toStringAsFixed(2)}%"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("OK"),
+      builder: (context) => AlertDialog(
+        title: Text(theoryQuestion["question"]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(
+            theoryQuestion["options"].length,
+            (index) => ElevatedButton(
+              onPressed: () => Navigator.pop(context, index.toString()),
+              child: Text(theoryQuestion["options"][index]),
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ),
     );
 
-    // Guardar en Firestore si la calificación es mayor a 70
-    if (percentage > 70) {
+    String? reflectionAnswer = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Reflexión"),
+        content: Text(reflectionQuestion),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, "Respondido"),
+            child: Text("Continuar"),
+          ),
+        ],
+      ),
+    );
+
+    // Guardar progreso en Firestore
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
       await FirebaseFirestore.instance
           .collection('progress')
-          .doc('idprogress')
+          .doc(userId)
           .collection('module_details')
-          .doc('QAMZWz2TE0WHgfyt5Elo')
+          .doc(module['id'])
           .update({
-        'temascompletos': FieldValue.arrayUnion(["tema2"]),
+        'topics_completed':
+            FieldValue.arrayUnion([module1Activities[activityIndex]["subtopic"]]),
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Actividad completada y progreso guardado")),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Módulo 1: ${module['title']}'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Contenido del móduloooooo: ${module['title']}',
-              style: TextStyle(fontSize: 20),
+      appBar: AppBar(title: Text('Módulo 1: ${module['title']}')),
+      body: ListView.builder(
+        itemCount: module1Activities.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(module1Activities[index]["subtopic"]),
+            subtitle: Text("Realiza la actividad"),
+            trailing: ElevatedButton(
+              onPressed: () => completeActivity(context, index),
+              child: Text("Iniciar"),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _startQuiz(context); // Iniciar el juego
-              },
-              child: Text('Jugar'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Regresar al módulo anterior
-              },
-              child: Text('Volver'),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
