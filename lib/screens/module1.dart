@@ -1,158 +1,287 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
+import 'package:siapp/screens/module1screens/contenido_screen_ui.dart'; // Importamos el nuevo archivo UI
 
-// Preguntas externas según el documento
-final List<Map<String, dynamic>> module1Activities = [
-  {
-    "subtopic": "Conceptos clave antes de escribir código",
-    "theory": {
-      "question": "¿Qué diferencia hay entre software y hardware?",
-      "options": [
-        "El software es el conjunto de piezas físicas, y el hardware es el conjunto de programas.",
-        "El software se refiere a programas y aplicaciones, el hardware a componentes físicos.",
-        "Software y hardware son lo mismo.",
-        "Ninguna de las anteriores."
-      ],
-      "correctAnswer": 1,
-    },
-    "reflection":
-        "¿Cómo puede el entendimiento de software y hardware mejorar tu capacidad para desarrollar aplicaciones eficientes?",
-    "practice": {
-      "question": "Clasifica los siguientes elementos en Software o Hardware.",
-      "elements": [
-        "Teclado",
-        "Monitor",
-        "Procesador",
-        "Windows",
-        "Antivirus",
-        "Sistema operativo"
-      ],
-      "answers": {
-        "Hardware": ["Teclado", "Monitor", "Procesador"],
-        "Software": ["Windows", "Antivirus", "Sistema operativo"]
-      }
-    }
-  },
-  {
-    "subtopic": "Pensamiento lógico y resolución de problemas",
-    "theory": {
-      "question":
-          "¿Cuál opción describe mejor la diferencia entre lenguajes de bajo y alto nivel?",
-      "options": [
-        "Bajo nivel más fácil para humanos, alto nivel solo para computadoras.",
-        "Bajo nivel más cercano al hardware, alto nivel más comprensible para programadores.",
-        "Alto nivel no requiere compilación, bajo nivel siempre necesita traductor.",
-        "No hay diferencias."
-      ],
-      "correctAnswer": 1,
-    },
-    "reflection":
-        "¿Cómo elegirías entre un lenguaje de bajo o alto nivel según el proyecto?",
-    "practice": {
-      "question":
-          "Observa fragmentos en lenguajes bajo y alto nivel. ¿Cuál es más fácil y por qué?",
-      "details": "Explica considerando abstracción y facilidad de comprensión."
+class Module1Content {
+  static Map<String, dynamic>? _content;
+  static bool _isLoaded = false;
+
+  static Future<void> initialize() async {
+    if (_isLoaded) return;
+
+    try {
+      final String jsonString = await rootBundle.loadString('assets/data/module1.json');
+      _content = json.decode(jsonString);
+      _isLoaded = true;
+    } catch (e) {
+      throw Exception('Error al cargar el contenido del módulo: $e');
     }
   }
-];
 
-class Module1Screen extends StatelessWidget {
+  static Map<String, dynamic> get content {
+    if (_content == null) {
+      throw Exception('Contenido del módulo no cargado. Llama a Module1Content.initialize() primero');
+    }
+    return _content!;
+  }
+}
+
+class Module1IntroScreen extends StatefulWidget {
   final Map<String, dynamic> module;
 
-  Module1Screen({required this.module});
+  const Module1IntroScreen({Key? key, required this.module}) : super(key: key);
 
-  Future<void> completeActivity(BuildContext context, int activityIndex) async {
-    final User? user = FirebaseAuth.instance.currentUser;
+  @override
+  State<Module1IntroScreen> createState() => _Module1IntroScreenState();
+}
 
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Debes iniciar sesión primero.")),
-      );
-      return;
-    }
+class _Module1IntroScreenState extends State<Module1IntroScreen> {
+  late Future<void> _loadContentFuture;
 
-    final userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: user.email)
-        .get();
-
-    if (userQuery.docs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Usuario no encontrado en la base de datos.")),
-      );
-      return;
-    }
-
-    final String ncontrol = userQuery.docs.first.data()['ncontrol'].toString();
-
-    // Mostrar preguntas
-    var theoryQuestion = module1Activities[activityIndex]["theory"];
-    var reflectionQuestion = module1Activities[activityIndex]["reflection"];
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(theoryQuestion["question"]),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-            theoryQuestion["options"].length,
-            (index) => ElevatedButton(
-              onPressed: () => Navigator.pop(context, index.toString()),
-              child: Text(theoryQuestion["options"][index]),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Reflexión"),
-        content: Text(reflectionQuestion),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, "Respondido"),
-            child: Text("Continuar"),
-          ),
-        ],
-      ),
-    );
-
-    // Guardar progreso usando ncontrol correctamente
-    await FirebaseFirestore.instance
-        .collection('progress')
-        .doc(ncontrol)
-        .collection('module_details')
-        .doc(module['id'])
-        .set({
-      'topics_completed': FieldValue.arrayUnion(
-          [module1Activities[activityIndex]["subtopic"]]),
-    }, SetOptions(merge: true));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Actividad completada y progreso guardado")),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _loadContentFuture = Module1Content.initialize();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Módulo 1: ${module['title']}')),
-      body: ListView.builder(
-        itemCount: module1Activities.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(module1Activities[index]["subtopic"]),
-            subtitle: Text("Realiza la actividad"),
-            trailing: ElevatedButton(
-              onPressed: () => completeActivity(context, index),
-              child: Text("Iniciar"),
+    return FutureBuilder(
+      future: _loadContentFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Text(
+                'Error: ${snapshot.error.toString()}',
+                style: const TextStyle(fontSize: 16, color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
             ),
           );
-        },
+        }
+
+        final moduleContent = Module1Content.content;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(moduleContent['module_title'] ?? 'Módulo 1'),
+            backgroundColor: Colors.deepPurple,
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  height: 200,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(
+                          'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        moduleContent['welcome']?['title'] ?? 'Bienvenido',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Text(
+                        moduleContent['welcome']?['description'] ?? 'Descripción no disponible',
+                        style: const TextStyle(fontSize: 16, height: 1.5),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        moduleContent['syllabus']?['title'] ?? 'Temario',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple[800],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Card(
+                        color: Colors.deepPurple[50],
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (final section in List<Map<String, dynamic>>.from(
+                                  moduleContent['syllabus']?['sections'] ?? []))
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        section['title'] ?? 'Sección sin título',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepPurple,
+                                        ),
+                                      ),
+                                      ...List<String>.from(section['items'] ?? [])
+                                          .map((item) => Text('• $item'))
+                                          .toList(),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        moduleContent['learning_points']?['title'] ?? 'Puntos de Aprendizaje',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple[800],
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      for (var point in moduleContent['learning_points']?['points'] ?? [])
+                        _buildLearningPoint(
+                          icon: _getIcon(point['icon'] ?? ''),
+                          title: point['title'] ?? 'Sin título',
+                          description: point['description'] ?? 'Sin descripción',
+                        ),
+                      const SizedBox(height: 30),
+                      Card(
+                        color: Colors.deepPurple[50],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Column(
+                            children: [
+                              Icon(
+                                _getIcon(moduleContent['motivation']?['icon'] ?? ''),
+                                size: 40,
+                                color: Colors.deepPurple,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                moduleContent['motivation']?['text'] ?? '¡Sigue adelante!',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ContenidoScreen(moduleData: moduleContent), // Usamos el nuevo ContenidoScreen desde contenido_screen_ui.dart
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            moduleContent['button_text'] ?? 'Comenzar',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getIcon(String iconName) {
+    switch (iconName) {
+      case 'computer':
+        return Icons.computer;
+      case 'psychology':
+        return Icons.psychology;
+      case 'account_tree':
+        return Icons.account_tree;
+      case 'lightbulb_outline':
+        return Icons.lightbulb_outline;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  Widget _buildLearningPoint({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 30, color: Colors.deepPurple),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey[700],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

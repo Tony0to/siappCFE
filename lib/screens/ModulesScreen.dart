@@ -37,33 +37,23 @@ class _ModulesScreenState extends State<ModulesScreen> {
       'image': 'assets/siaapp.png',
       'title': 'Introducción a la programación',
       'activities': 5,
-      'introText':
-          'Aprenderás conceptos clave antes de escribir código, pensamiento lógico, y diagramas de flujo.',
       'id': 'module1',
-      'subtopics': [
-        'Conceptos clave antes de escribir código',
-        'Pensamiento lógico y resolución de problemas',
-      ],
     },
     {
       'image': 'assets/siaapp.png',
       'title': 'Algoritmos',
       'activities': 3,
-      'introText':
-          'En este módulo aprenderás sobre algoritmos, su importancia y cómo diseñarlos eficientemente.',
       'id': 'module2',
     },
     {
       'image': 'assets/siaapp.png',
       'title': 'Introducción a Java',
       'activities': 4,
-      'introText':
-          'Este módulo te introducirá al lenguaje de programación Java, sus características y cómo empezar a desarrollar aplicaciones con él.',
       'id': 'module3',
     },
   ];
 
-  Future<void> addModuleDetails(BuildContext context, String moduleId) async {
+  Future<void> addModuleDetailsAndNavigate(BuildContext context, Map<String, dynamic> module) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       Navigator.pushReplacement(
@@ -115,18 +105,36 @@ class _ModulesScreenState extends State<ModulesScreen> {
         FirebaseFirestore.instance.collection('progress').doc(ncontrol);
 
     final DocumentSnapshot progressSnapshot =
-        await progressRef.collection('module_details').doc(moduleId).get();
+        await progressRef.collection('module_details').doc(module['id']).get();
 
     if (!progressSnapshot.exists) {
-      await progressRef.collection('module_details').doc(moduleId).set({
+      await progressRef.collection('module_details').doc(module['id']).set({
         'porcentaje': 0,
         'quiz_completed': false,
         'topics_completed': [],
       }, SetOptions(merge: true));
+    }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Detalles del módulo actualizados correctamente")),
-      );
+    // Redireccionar directamente al módulo correspondiente
+    switch (module['id']) {
+      case 'module1':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Module1IntroScreen(module: module)),
+        );
+        break;
+      case 'module2':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Module2Screen(module: module)),
+        );
+        break;
+      case 'module3':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Module3Screen(module: module)),
+        );
+        break;
     }
   }
 
@@ -140,15 +148,7 @@ class _ModulesScreenState extends State<ModulesScreen> {
         itemBuilder: (BuildContext context, int index) {
           return _ModuleCard(
             module: modules[index],
-            onTap: () async {
-              await addModuleDetails(context, modules[index]['id']);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ModuleScreen(module: modules[index]),
-                ),
-              );
-            },
+            onTap: () => addModuleDetailsAndNavigate(context, modules[index]),
           );
         },
       ),
@@ -228,79 +228,6 @@ class _ModuleCard extends StatelessWidget {
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ModuleScreen extends StatelessWidget {
-  final Map<String, dynamic> module;
-
-  ModuleScreen({required this.module});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(module['title']),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Image.asset(
-              module['image'],
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 200,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                module['introText'],
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  switch (module['title']) {
-                    case 'Introducción a la programación':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Module1Screen(module: module),
-                        ),
-                      );
-                      break;
-                    case 'Algoritmos':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Module2Screen(module: module),
-                        ),
-                      );
-                      break;
-                    case 'Introducción a Java':
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Module3Screen(module: module),
-                        ),
-                      );
-                      break;
-                    default:
-                      break;
-                  }
-                },
-                child: Text('Comenzar a estudiar'),
               ),
             ),
           ],

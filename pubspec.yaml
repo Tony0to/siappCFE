@@ -23,4 +23,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/  # Movido aquí dentro del bloque flutter
+    - assets/
+    - assets/data/module1.json  # Movido aquí dentro del bloque flutter
