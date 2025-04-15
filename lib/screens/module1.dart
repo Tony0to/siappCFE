@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'package:siapp/screens/module1screens/contenido_screen_ui.dart'; // Importamos el nuevo archivo UI
+import 'package:siapp/screens/module1screens/contenido_screen.dart'; // Actualizamos la importación
+import 'package:siapp/screens/module1screens/actividades.dart';
 
 class Module1Content {
   static Map<String, dynamic>? _content;
@@ -200,7 +201,7 @@ class _Module1IntroScreenState extends State<Module1IntroScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ContenidoScreen(moduleData: moduleContent), // Usamos el nuevo ContenidoScreen desde contenido_screen_ui.dart
+                                builder: (context) => ContenidoScreen(moduleData: moduleContent), // Actualizamos a ContenidoScreen
                               ),
                             );
                           },
@@ -214,6 +215,33 @@ class _Module1IntroScreenState extends State<Module1IntroScreen> {
                           child: Text(
                             moduleContent['button_text'] ?? 'Comenzar',
                             style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ActividadesScreen(moduleData: moduleContent),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: const Text(
+                            'Actividades Complementarias',
+                            style: TextStyle(
                               fontSize: 18,
                               color: Colors.white,
                             ),
