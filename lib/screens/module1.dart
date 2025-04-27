@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'package:siapp/screens/module1screens/contenido_screen.dart'; // Actualizamos la importación
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:siapp/screens/module1screens/contenido_screen.dart';
 import 'package:siapp/screens/module1screens/actividades.dart';
+import 'package:siapp/screens/ModulesScreen.dart';
 
 class Module1Content {
   static Map<String, dynamic>? _content;
@@ -39,13 +39,48 @@ class Module1IntroScreen extends StatefulWidget {
   State<Module1IntroScreen> createState() => _Module1IntroScreenState();
 }
 
-class _Module1IntroScreenState extends State<Module1IntroScreen> {
+class _Module1IntroScreenState extends State<Module1IntroScreen>
+    with SingleTickerProviderStateMixin {
   late Future<void> _loadContentFuture;
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
+  // Colores
+  static const Color darkBlue = Color(0xFF00171F);
+  static const Color navyBlue = Color(0xFF003459);
+  static const Color mediumBlue = Color(0xFF007EA7);
+  static const Color brightCyan = Color(0xFF00A8E8);
+  static const Color lightCyan = Color(0xFF4FC3F7); // Nuevo color para el temario
+  static const Color white = Color(0xFFFFFFFF);
+
+  // URL de la imagen
+  final String moduleImageUrl =
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
 
   @override
   void initState() {
     super.initState();
     _loadContentFuture = Module1Content.initialize();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,17 +89,23 @@ class _Module1IntroScreenState extends State<Module1IntroScreen> {
       future: _loadContentFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: darkBlue,
+            body: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(brightCyan),
+              ),
+            ),
           );
         }
 
         if (snapshot.hasError) {
           return Scaffold(
+            backgroundColor: darkBlue,
             body: Center(
               child: Text(
                 'Error: ${snapshot.error.toString()}',
-                style: const TextStyle(fontSize: 16, color: Colors.red),
+                style: TextStyle(fontSize: 16, color: brightCyan),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -74,188 +115,469 @@ class _Module1IntroScreenState extends State<Module1IntroScreen> {
         final moduleContent = Module1Content.content;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(moduleContent['module_title'] ?? 'Módulo 1'),
-            backgroundColor: Colors.deepPurple,
+          floatingActionButton: _buildFloatingActionButton(),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  navyBlue,
+                  navyBlue.withOpacity(0.9),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: _buildContent(moduleContent),
           ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  height: 200,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(
-                          'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'),
-                      fit: BoxFit.cover,
+        );
+      },
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton(
+      mini: true,
+      backgroundColor: navyBlue.withOpacity(0.8),
+      onPressed: () {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ModulesScreen()),
+          (route) => route.isFirst || route.settings.name == '/modules',
+        );
+      },
+      child: const Icon(Icons.arrow_back, color: white),
+    );
+  }
+
+  Widget _buildContent(Map<String, dynamic> moduleContent) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Container(
+            padding: const EdgeInsets.only(top: 70, bottom: 20),
+            child: Text(
+              moduleContent['module_title'] ?? 'Módulo 1',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: white,
+              ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return _buildHeroImage(moduleContent);
+            },
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              Text(
+                moduleContent['welcome']?['description'] ??
+                    'Aprende los conceptos fundamentales de programación y da tus primeros pasos en el desarrollo de software',
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1.6,
+                  color: white.withOpacity(0.9),
+                ),
+              ),
+              const SizedBox(height: 30),
+              _buildSyllabusSection(moduleContent),
+              const SizedBox(height: 30),
+              _buildLearningPointsSection(moduleContent),
+              const SizedBox(height: 30),
+              _buildMotivationCard(moduleContent),
+              const SizedBox(height: 40),
+              _buildActionButtons(moduleContent),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroImage(Map<String, dynamic> moduleContent) {
+    return RepaintBoundary(
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Container(
+          height: 220,
+          child: CachedNetworkImage(
+            imageUrl: moduleImageUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: darkBlue.withOpacity(0.5),
+              child: Center(child: CircularProgressIndicator(color: brightCyan)),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: darkBlue,
+              child: Icon(Icons.error, color: brightCyan),
+            ),
+            imageBuilder: (context, imageProvider) => Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      darkBlue.withOpacity(0.8),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    moduleContent['welcome']?['title'] ?? 'Introducción a la Programación',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: white,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10,
+                          color: darkBlue,
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        moduleContent['welcome']?['title'] ?? 'Bienvenido',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      Text(
-                        moduleContent['welcome']?['description'] ?? 'Descripción no disponible',
-                        style: const TextStyle(fontSize: 16, height: 1.5),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        moduleContent['syllabus']?['title'] ?? 'Temario',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple[800],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Card(
-                        color: Colors.deepPurple[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              for (final section in List<Map<String, dynamic>>.from(
-                                  moduleContent['syllabus']?['sections'] ?? []))
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        section['title'] ?? 'Sección sin título',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.deepPurple,
-                                        ),
-                                      ),
-                                      ...List<String>.from(section['items'] ?? [])
-                                          .map((item) => Text('• $item'))
-                                          .toList(),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        moduleContent['learning_points']?['title'] ?? 'Puntos de Aprendizaje',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple[800],
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      for (var point in moduleContent['learning_points']?['points'] ?? [])
-                        _buildLearningPoint(
-                          icon: _getIcon(point['icon'] ?? ''),
-                          title: point['title'] ?? 'Sin título',
-                          description: point['description'] ?? 'Sin descripción',
-                        ),
-                      const SizedBox(height: 30),
-                      Card(
-                        color: Colors.deepPurple[50],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            children: [
-                              Icon(
-                                _getIcon(moduleContent['motivation']?['icon'] ?? ''),
-                                size: 40,
-                                color: Colors.deepPurple,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                moduleContent['motivation']?['text'] ?? '¡Sigue adelante!',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ContenidoScreen(moduleData: moduleContent), // Actualizamos a ContenidoScreen
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Text(
-                            moduleContent['button_text'] ?? 'Comenzar',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ActividadesScreen(moduleData: moduleContent),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: const Text(
-                            'Actividades Complementarias',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSyllabusSection(Map<String, dynamic> moduleContent) {
+    final sections = List<Map<String, dynamic>>.from(
+        moduleContent['syllabus']?['sections'] ?? []);
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      color: lightCyan.withOpacity(0.4), // Nuevo color para el fondo del temario
+      shadowColor: brightCyan.withOpacity(0.3),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.list_alt,
+                  color: brightCyan,
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  moduleContent['syllabus']?['title'] ?? 'Temario',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: white,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 15),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: sections.length,
+              itemBuilder: (context, index) {
+                return _buildSyllabusItem(sections[index]);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSyllabusItem(Map<String, dynamic> section) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            section['title'] ?? 'Sección sin título',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: white,
+            ),
           ),
-        );
-      },
+          const SizedBox(height: 8),
+          ...List<String>.from(section['items'] ?? [])
+              .map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6, left: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: brightCyan,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            item,
+                            style: TextStyle(
+                              fontSize: 15,
+                              height: 1.4,
+                              color: white.withOpacity(0.8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ))
+              .toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLearningPointsSection(Map<String, dynamic> moduleContent) {
+    final points = List<Map<String, dynamic>>.from(
+        moduleContent['learning_points']?['points'] ?? []);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Lo que aprenderás',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: white,
+          ),
+        ),
+        const SizedBox(height: 15),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: points.length,
+          itemBuilder: (context, index) {
+            final point = points[index];
+            return _buildLearningPoint(
+              icon: _getIcon(point['icon'] ?? ''),
+              title: point['title'] ?? 'Sin título',
+              description: point['description'] ?? 'Sin descripción',
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMotivationCard(Map<String, dynamic> moduleContent) {
+    return Card(
+      elevation: 6,
+      color: mediumBlue.withOpacity(0.4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Icon(
+              _getIcon(moduleContent['motivation']?['icon'] ?? 'emoji_objects'),
+              size: 50,
+              color: brightCyan,
+            ),
+            const SizedBox(height: 15),
+            Text(
+              moduleContent['motivation']?['text'] ??
+                  '¡Comienza tu viaje en programación con bases sólidas!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+                color: white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(Map<String, dynamic> moduleContent) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              gradient: LinearGradient(
+                colors: [
+                  brightCyan,
+                  mediumBlue,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ContenidoScreen(moduleData: moduleContent),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.play_arrow, color: white, size: 24),
+                  const SizedBox(width: 10),
+                  Text(
+                    moduleContent['button_text'] ?? 'Comenzar Módulo',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: brightCyan.withOpacity(0.5),
+                width: 2,
+              ),
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ActividadesScreen(moduleData: moduleContent),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: navyBlue.withOpacity(0.3),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment, color: white.withOpacity(0.9), size: 24),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Actividades Prácticas',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLearningPoint({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Card(
+        elevation: 3,
+        color: navyBlue.withOpacity(0.3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: brightCyan.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 24, color: brightCyan),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: white,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: white.withOpacity(0.8),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -269,48 +591,14 @@ class _Module1IntroScreenState extends State<Module1IntroScreen> {
         return Icons.account_tree;
       case 'lightbulb_outline':
         return Icons.lightbulb_outline;
+      case 'emoji_objects':
+        return Icons.emoji_objects;
+      case 'list_alt':
+        return Icons.list_alt;
+      case 'assignment':
+        return Icons.assignment;
       default:
         return Icons.help_outline;
     }
-  }
-
-  Widget _buildLearningPoint({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 30, color: Colors.deepPurple),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[700],
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

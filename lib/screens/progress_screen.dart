@@ -1,166 +1,736 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/animation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:siapp/screens/ModulesScreen.dart';
+import 'ModulesScreen.dart';
 
 class ProgressScreen extends StatefulWidget {
+  const ProgressScreen({Key? key}) : super(key: key);
+
   @override
   _ProgressScreenState createState() => _ProgressScreenState();
 }
 
-class _ProgressScreenState extends State<ProgressScreen> {
+class _ProgressScreenState extends State<ProgressScreen> 
+    with TickerProviderStateMixin {
   double progress = 0.0;
   int completedModules = 0;
-  int totalModules = 3;
+  int totalModules = 4;
+  int _currentIndex = 1;
+  String? _errorMessage;
+  bool _isLoading = true;
+  
+  late final AnimationController _mainController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  );
+  
+  late final AnimationController _cardsController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 800),
+  );
+
+  late Animation<double> _progressAnimation;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _cardsScaleAnimation;
+  late Animation<double> _cardsOpacityAnimation;
 
   final List<Map<String, dynamic>> modules = [
     {
-      'title': 'Introducción a la programación',
+      'title': 'Módulo 1: Introducción a la Programación',
       'id': 'module1',
+      'image': 'https://cecytebcs.edu.mx/wp-content/uploads/2022/02/programacion.jpeg',
+      'summary': 'Conceptos básicos de programación',
     },
     {
-      'title': 'Algoritmos',
+      'title': 'Módulo 2: Lógica de programación',
       'id': 'module2',
+      'image': 'https://adrianvegaonline.wordpress.com/wp-content/uploads/2020/06/3964906.jpg',
+      'summary': 'Fundamentos de lógica para programar',
     },
     {
-      'title': 'Introducción a Java',
+      'title': 'Módulo 3: Algoritmos',
       'id': 'module3',
+      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
+      'summary': 'Diseño y análisis de algoritmos',
+    },
+    {
+      'title': 'Módulo 4: Paradigmas',
+      'id': 'module4',
+      'image': 'https://matiasgandolfo.com/wp-content/uploads/2019/12/Paradigma-Blog.jpeg',
+      'summary': 'Diferentes enfoques de programación',
     },
   ];
+
+  Map<String, double> moduleScores = {};
+  Map<String, bool> moduleQuizCompleted = {};
+  Map<String, double> modulePercentages = {};
 
   @override
   void initState() {
     super.initState();
+    
+    _colorAnimation = ColorTween(
+      begin: Colors.blueAccent[400],
+      end: Colors.lightBlue[700],
+    ).animate(_mainController);
+    
+    _progressAnimation = Tween<double>(begin: 0, end: 0).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: Curves.easeOut,
+      ),
+    );
+    
+    _cardsScaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.05), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.05, end: 1.0), weight: 50),
+    ]).animate(
+      CurvedAnimation(
+        parent: _cardsController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    
+    _cardsOpacityAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _cardsController,
+        curve: Curves.easeIn,
+      ),
+    );
+    
     cargarProgreso();
+    
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _cardsController.forward();
+    });
   }
 
   Future<void> cargarProgreso() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      print("No hay usuario autenticado");
-      return;
-    }
-
-    // Obtener el correo del usuario autenticado
-    final String? userEmail = user.email;
-    if (userEmail == null || userEmail.isEmpty) {
-      print("El correo del usuario no está disponible.");
-      return;
-    }
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
-      // Buscar el documento del usuario en la colección 'users' usando el correo
-      final QuerySnapshot userQuery = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: userEmail)
-          .get();
-
-      if (userQuery.docs.isEmpty) {
-        print("El documento del usuario no existe en Firestore.");
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          _errorMessage = 'Usuario no autenticado. Por favor, inicia sesión.';
+          _isLoading = false;
+        });
+        debugPrint('No user logged in');
         return;
       }
 
-      // Obtener el documento del usuario
-      final DocumentSnapshot userDoc = userQuery.docs.first;
-      final data = userDoc.data() as Map<String, dynamic>?;
-      if (data == null) {
-        print("Los datos del usuario son nulos.");
-        return;
-      }
+      final String userId = user.uid;
+      debugPrint('Fetching progress for userId: $userId');
 
-      final String ncontrol = data['ncontrol']?.toString() ?? '';
-      if (ncontrol.isEmpty) {
-        print("El número de control (ncontrol) no está configurado.");
-        return;
-      }
-
-      // Referencia al documento en la colección 'progress'
-      final DocumentSnapshot progressDoc = await FirebaseFirestore.instance
+      final moduleDetails = await FirebaseFirestore.instance
           .collection('progress')
-          .doc(ncontrol)
+          .doc(userId)
+          .collection('modules')
           .get();
 
-      if (!progressDoc.exists) {
-        print("No hay progreso registrado para el usuario.");
+      if (moduleDetails.docs.isEmpty) {
+        setState(() {
+          _errorMessage = 'No se encontraron datos de progreso para este usuario.';
+          _isLoading = false;
+        });
+        debugPrint('No progress data found for userId: $userId');
         return;
       }
-
-      final progressData = progressDoc.data() as Map<String, dynamic>?;
 
       int modulosCompletados = 0;
-      if (progressData != null && progressData.containsKey('mcompleto')) {
-        final moduleDetails = await FirebaseFirestore.instance
-            .collection('progress')
-            .doc(ncontrol)
-            .collection('module_details')
-            .get();
+      Map<String, double> tempScores = {};
+      Map<String, bool> tempQuizCompleted = {};
+      Map<String, double> tempPercentages = {};
 
-        for (var module in moduleDetails.docs) {
-          if (module['porcentaje'] == 100) {
-            modulosCompletados++;
-          }
+      for (var module in moduleDetails.docs) {
+        // Safely access fields with fallback values
+        final data = module.data();
+        debugPrint('Module ${module.id} data: $data');
+
+        final porcentaje = (data.containsKey('porcentaje') && data['porcentaje'] != null)
+            ? (data['porcentaje'] as num).toDouble()
+            : 0.0;
+        final quizCompleted = (data.containsKey('quiz_completed') && data['quiz_completed'] != null)
+            ? data['quiz_completed'] as bool
+            : false;
+        final grade = (data.containsKey('calf') && data['calf'] != null)
+            ? (data['calf'] as num).toDouble()
+            : 0.0;
+
+        tempScores[module.id] = grade;
+        tempQuizCompleted[module.id] = quizCompleted;
+        tempPercentages[module.id] = porcentaje;
+        
+        debugPrint('Module ${module.id}: porcentaje=$porcentaje, quiz_completed=$quizCompleted, grade=$grade');
+
+        if (porcentaje == 100 && quizCompleted) {
+          modulosCompletados++;
         }
-
-        setState(() {
-          completedModules = modulosCompletados;
-          progress = (completedModules / totalModules) * 100;
-        });
       }
+
+      setState(() {
+        completedModules = modulosCompletados;
+        progress = (completedModules / totalModules) * 100;
+        moduleScores = tempScores;
+        moduleQuizCompleted = tempQuizCompleted;
+        modulePercentages = tempPercentages;
+        _isLoading = false;
+        debugPrint('Updated state: completedModules=$completedModules, progress=$progress');
+        debugPrint('moduleScores=$moduleScores');
+        debugPrint('moduleQuizCompleted=$moduleQuizCompleted');
+        debugPrint('modulePercentages=$modulePercentages');
+      });
+      
+      _progressAnimation = Tween<double>(
+        begin: 0,
+        end: progress / 100,
+      ).animate(
+        CurvedAnimation(
+          parent: _mainController,
+          curve: Curves.easeOut,
+        ),
+      );
+      
+      _mainController.forward();
     } catch (e) {
-      print("Error al cargar el progreso: $e");
+      setState(() {
+        _errorMessage = 'Error al cargar el progreso: $e';
+        _isLoading = false;
+      });
+      debugPrint("Error al cargar el progreso: $e");
     }
+  }
+
+  Widget _buildModuleCard(Map<String, dynamic> module, bool isCompleted) {
+    final moduleId = module['id'];
+    final score = moduleScores[moduleId] ?? 0.0;
+    final quizCompleted = moduleQuizCompleted[moduleId] ?? false;
+    final percentage = modulePercentages[moduleId] ?? 0.0;
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(15),
+        onTap: () {
+          final tapController = AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 200),
+          );
+          
+          tapController.addListener(() => setState(() {}));
+          tapController.forward().then((_) => tapController.reverse());
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Row(
+            children: [
+              Hero(
+                tag: 'progress-image-${module['id']}',
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: CachedNetworkImageProvider(module['image']),
+                      fit: BoxFit.cover,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      module['title'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      module['summary'],
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Calificación: ${score.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: Colors.blue[700],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Quiz: ${quizCompleted ? 'Completado' : 'No completado'}',
+                      style: TextStyle(
+                        color: quizCompleted ? Colors.green : Colors.red,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                child: Container(
+                  key: ValueKey<bool>(isCompleted),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isCompleted 
+                        ? Colors.green.withOpacity(0.2)
+                        : Colors.grey.withOpacity(0.2),
+                  ),
+                  child: Icon(
+                    isCompleted ? Icons.check_circle : Icons.circle_outlined,
+                    color: isCompleted ? Colors.green : Colors.grey,
+                    size: 28,
+                  ),
+                ),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Calificaciones y progreso'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Progreso',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '${progress.toStringAsFixed(0)}%',
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: progress / 100,
-              minHeight: 10,
-              backgroundColor: Colors.grey[300],
-              color: Colors.blue,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Módulos completados: $completedModules / $totalModules',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: modules.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(modules[index]['title']),
-                    trailing: Icon(
-                      Icons.check_circle,
-                      color: index < completedModules ? Colors.green : Colors.grey,
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Cargando progreso...',
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _errorMessage!,
+                style: TextStyle(fontSize: 16, color: Colors.red[700]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: cargarProgreso,
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_mainController, _cardsController]),
+      builder: (context, child) {
+        return Scaffold(
+          extendBody: true,
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 220,
+                floating: false,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.parallax,
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          _colorAnimation.value!,
+                          _colorAnimation.value!.withOpacity(0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                  );
-                },
+                    child: SafeArea(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _mainController,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: 1 + (_mainController.value * 0.05),
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withOpacity(0.2),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.4),
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        spreadRadius: 3,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      'assets/siaap.png',
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => const Icon(
+                                        Icons.bar_chart,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 15),
+                          FadeTransition(
+                            opacity: _cardsOpacityAnimation,
+                            child: const Text(
+                              'Tu Progreso',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black26,
+                                    blurRadius: 4,
+                                    offset: Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      ScaleTransition(
+                        scale: _cardsScaleAnimation,
+                        child: FadeTransition(
+                          opacity: _cardsOpacityAnimation,
+                          child: Card(
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            shadowColor: Colors.blue.withOpacity(0.3),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'Progreso General',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 160,
+                                        height: 160,
+                                        child: AnimatedBuilder(
+                                          animation: _progressAnimation,
+                                          builder: (context, child) {
+                                            return CircularProgressIndicator(
+                                              value: _progressAnimation.value,
+                                              strokeWidth: 12,
+                                              backgroundColor: Colors.grey[200],
+                                              color: Colors.blueAccent,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      AnimatedBuilder(
+                                        animation: _progressAnimation,
+                                        builder: (context, child) {
+                                          return Text(
+                                            '${(_progressAnimation.value * 100).toStringAsFixed(0)}%',
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 15),
+                                  AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 500),
+                                    child: Text(
+                                      'Módulos completados: $completedModules / $totalModules',
+                                      key: ValueKey<int>(completedModules),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    transitionBuilder: (Widget child, Animation<double> animation) {
+                                      return ScaleTransition(scale: animation, child: child);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      FadeTransition(
+                        opacity: _cardsOpacityAnimation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.5),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: _cardsController,
+                            curve: Curves.easeOut,
+                          )),
+                          child: const Text(
+                            'Detalle por Módulo',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final module = modules[index];
+                    final moduleId = module['id'];
+                    final percentage = modulePercentages[moduleId] ?? 0.0;
+                    final quizCompleted = moduleQuizCompleted[moduleId] ?? false;
+                    final isCompleted = percentage == 100 && quizCompleted;
+                    
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
+                      child: ScaleTransition(
+                        scale: Tween<double>(
+                          begin: 0.9,
+                          end: 1.0,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: _cardsController,
+                            curve: Interval(
+                              0.1 + (index * 0.1),
+                              0.5 + (index * 0.1),
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                        ),
+                        child: FadeTransition(
+                          opacity: Tween<double>(
+                            begin: 0,
+                            end: 1,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: _cardsController,
+                              curve: Interval(
+                                0.1 + (index * 0.1),
+                                0.5 + (index * 0.1),
+                                curve: Curves.easeIn,
+                              ),
+                            ),
+                          ),
+                          child: _buildModuleCard(module, isCompleted),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: modules.length,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      FadeTransition(
+                        opacity: _cardsOpacityAnimation,
+                        child: const Text(
+                          'Continúa aprendiendo para completar todos los módulos',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 15,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Colors.blueAccent,
+                              Colors.lightBlue,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.emoji_events, color: Colors.white),
+                            SizedBox(width: 10),
+                            Text(
+                              '¡Tú puedes!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _colorAnimation.value!,
+                  _colorAnimation.value!.withOpacity(0.9),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() => _currentIndex = index);
+                if (index == 0) {
+                  Navigator.pushReplacement(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => const ModulesScreen(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                    ),
+                  );
+                }
+              },
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white70,
+              selectedIconTheme: const IconThemeData(size: 28),
+              unselectedIconTheme: const IconThemeData(size: 24),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Inicio',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.bar_chart),
+                  label: 'Progreso',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  @override
+  void dispose() {
+    _mainController.dispose();
+    _cardsController.dispose();
+    super.dispose();
   }
 }

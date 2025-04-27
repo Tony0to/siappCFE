@@ -1,472 +1,873 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'tema1.dart';
+import 'tema2.dart';
+import 'tema3.dart';
+import 'tema4.dart';
 
 class ContenidoScreen extends StatefulWidget {
-final Map<String, dynamic> moduleData;
+  final Map<String, dynamic> moduleData;
 
-const ContenidoScreen({Key? key, required this.moduleData}) : super(key: key);
+  const ContenidoScreen({Key? key, required this.moduleData}) : super(key: key);
 
-@override
-_ContenidoScreenState createState() => _ContenidoScreenState();
+  @override
+  _ContenidoScreenState createState() => _ContenidoScreenState();
 }
 
-class _ContenidoScreenState extends State<ContenidoScreen> with SingleTickerProviderStateMixin {
-late AnimationController _animationController;
-late Animation<double> _fadeAnimation;
-double _progress = 0.0;
+class _ContenidoScreenState extends State<ContenidoScreen>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Color?> _colorAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _progressAnimation;
+  final List<AnimationController> _progressControllers = [];
+  double _progress = 0.0;
+  bool _isLoading = true;
+  String? _errorMessage;
+  final ScrollController _scrollController = ScrollController();
 
-@override
-void initState() {
-super.initState();
-_animationController = AnimationController(
-vsync: this,
-duration: const Duration(milliseconds: 500),
-);
-_fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-);
-_animationController.forward();
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _colorAnimation = ColorTween(
+      begin: const Color(0xFF0D47A1),
+      end: const Color(0xFF1976D2),
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutQuart,
+      ),
+    );
+
+    _loadModuleProgress().then((_) {
+      _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Curves.easeOutQuart,
+        ),
+      );
+      _animationController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    for (var controller in _progressControllers) {
+      controller.dispose();
+    }
+    _progressControllers.clear();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadModuleProgress() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          _errorMessage = 'Usuario no autenticado.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final progressDoc = await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .get();
+
+      if (progressDoc.exists) {
+        final data = progressDoc.data();
+        final savedProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
+        setState(() {
+          _progress = savedProgress / 100;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _progress = 0.0;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar el progreso: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<bool> _hasCompletedModule() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      final progressDoc = await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .get();
+
+      if (progressDoc.exists) {
+        final data = progressDoc.data();
+        final progressPercentage = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
+        return progressPercentage >= 100.0;
+      }
+      return false;
+    } catch (e) {
+      print('Error checking module progress: $e');
+      return false;
+    }
+  }
+
+  Future<void> _resetModuleProgress() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .set({
+        'porcentaje': 0.0,
+        'last_updated': FieldValue.serverTimestamp(),
+        'module_id': widget.moduleData['id'] ?? 'module1',
+        'module_title': widget.moduleData['module_title'] ?? 'Módulo',
+        'completed': false,
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _progress = 0.0;
+        _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: 0.0)
+            .animate(CurvedAnimation(
+              parent: _animationController,
+              curve: Curves.easeOutQuart,
+            ));
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al reiniciar el progreso: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _updateModuleProgress(double newProgress) async {
+    final hasCompleted = await _hasCompletedModule();
+    if (hasCompleted) {
+      return;
+    }
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .set({
+            'porcentaje': newProgress * 100,
+            'last_updated': FieldValue.serverTimestamp(),
+            'module_id': widget.moduleData['id'] ?? 'module1',
+            'module_title': widget.moduleData['module_title'] ?? 'Módulo',
+            'completed': newProgress >= 1.0,
+          }, SetOptions(merge: true));
+
+      final progressController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 800),
+      );
+
+      _progressControllers.add(progressController);
+
+      setState(() {
+        _progress = newProgress;
+        _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: newProgress)
+            .animate(CurvedAnimation(
+              parent: progressController,
+              curve: Curves.easeOutQuart,
+            ));
+      });
+
+      progressController.forward();
+
+      progressController.addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _progressControllers.remove(progressController);
+          progressController.dispose();
+        }
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar el progreso: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _updateProgress(int completedSections, int totalSections) {
+    final newProgress = completedSections / totalSections;
+    _updateModuleProgress(newProgress);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
+    final moduleImage = widget.moduleData['image'] as String? ??
+        'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
+
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            title: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Text(
+                widget.moduleData['module_title'] ?? 'Contenido',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 22,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(1, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            iconTheme: const IconThemeData(color: Colors.white),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: _loadModuleProgress,
+                  tooltip: 'Actualizar progreso',
+                ),
+              ),
+            ],
+          ),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _colorAnimation.value!,
+                  _colorAnimation.value!.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: _isLoading || _errorMessage != null
+                ? _buildLoadingOrError()
+                : ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: content.isEmpty
+                        ? _buildEmptyContent()
+                        : CustomScrollView(
+                            controller: _scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            slivers: [
+                              SliverToBoxAdapter(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 80),
+                                    _buildModuleHeader(moduleImage),
+                                    const SizedBox(height: 20),
+                                    _buildProgressIndicator(),
+                                    const SizedBox(height: 30),
+                                  ],
+                                ),
+                              ),
+                              SliverPadding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                sliver: SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final sectionKey = content.keys.elementAt(index);
+                                      final section = content[sectionKey];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 16.0),
+                                        child: SectionCard(
+                                          index: index,
+                                          title: section['title'] ?? 'Sección',
+                                          description: section['description'] ?? '',
+                                          onTap: () async {
+                                            final hasCompleted = await _hasCompletedModule();
+                                            if (hasCompleted) {
+                                              await _resetModuleProgress();
+                                            }
+                                            Widget targetScreen;
+                                            switch (index) {
+                                              case 0:
+                                                targetScreen = Tema1Screen(
+                                                  section: section,
+                                                  moduleData: widget.moduleData,
+                                                  sectionIndex: index,
+                                                  totalSections: content.length,
+                                                  onComplete: (index) {
+                                                    _updateProgress(index + 1, content.length);
+                                                  },
+                                                );
+                                                break;
+                                              case 1:
+                                                targetScreen = Tema2Screen(
+                                                  section: section,
+                                                  moduleData: widget.moduleData,
+                                                  sectionIndex: index,
+                                                  totalSections: content.length,
+                                                  onComplete: (index) {
+                                                    _updateProgress(index + 1, content.length);
+                                                  },
+                                                );
+                                                break;
+                                              case 2:
+                                                targetScreen = Tema3Screen(
+                                                  section: section,
+                                                  moduleData: widget.moduleData,
+                                                  sectionIndex: index,
+                                                  totalSections: content.length,
+                                                  onComplete: (index) {
+                                                    _updateProgress(index + 1, content.length);
+                                                  },
+                                                );
+                                                break;
+                                              case 3:
+                                                targetScreen = Tema4Screen(
+                                                  section: section,
+                                                  moduleData: widget.moduleData,
+                                                  sectionIndex: index,
+                                                  totalSections: content.length,
+                                                  onComplete: (index) {
+                                                    _updateProgress(index + 1, content.length);
+                                                  },
+                                                );
+                                                break;
+                                              default:
+                                                return;
+                                            }
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                pageBuilder: (context, animation, secondaryAnimation) =>
+                                                    targetScreen,
+                                                transitionsBuilder:
+                                                    (context, animation, secondaryAnimation, child) {
+                                                  return FadeTransition(
+                                                    opacity: animation,
+                                                    child: child,
+                                                  );
+                                                },
+                                                transitionDuration: const Duration(milliseconds: 300),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
+                                    childCount: content.length,
+                                  ),
+                                ),
+                              ),
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: 30),
+                              ),
+                            ],
+                          ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildModuleHeader(String imageUrl) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Hero(
+        tag: 'module-image-${widget.moduleData['id']}',
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: Colors.white.withOpacity(0.1),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.white.withOpacity(0.1),
+                      child: const Icon(Icons.menu_book, size: 50, color: Colors.white),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.moduleData['module_title'] ?? 'Módulo',
+                          style: GoogleFonts.poppins(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        if (widget.moduleData['subtitle'] != null)
+                          Text(
+                            widget.moduleData['subtitle'],
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+      child: AnimatedBuilder(
+        animation: _progressAnimation,
+        builder: (context, child) {
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Tu progreso',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  Text(
+                    '${(_progressAnimation.value * 100).toStringAsFixed(0)}% completado',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Stack(
+                children: [
+                  Container(
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutQuart,
+                    width: double.infinity,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.white, Color(0xFF64B5F6)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: _progressAnimation.value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blueAccent.withOpacity(0.4),
+                              blurRadius: 6,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyContent() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.menu_book_rounded,
+              size: 60,
+              color: Colors.white.withOpacity(0.5),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'No hay contenido disponible',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.blue[800],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              ),
+              child: Text(
+                'Volver',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingOrError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isLoading) ...[
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 3,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Cargando contenido...',
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+            ] else ...[
+              Icon(
+                Icons.error_outline_rounded,
+                size: 50,
+                color: Colors.red[200],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.poppins(
+                  color: Colors.red[200],
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _loadModuleProgress,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.blue[800],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                ),
+                child: Text(
+                  'Reintentar',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-@override
-void dispose() {
-_animationController.dispose();
-super.dispose();
+class SectionCard extends StatefulWidget {
+  final int index;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  const SectionCard({
+    Key? key,
+    required this.index,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  State<SectionCard> createState() => _SectionCardState();
 }
 
-void _updateProgress(int completedSections, int totalSections) {
-setState(() {
-_progress = completedSections / totalSections;
-});
-}
+class _SectionCardState extends State<SectionCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
 
-@override
-Widget build(BuildContext context) {
-final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
 
-return Scaffold(
-appBar: AppBar(
-title: Text(
-widget.moduleData['module_title'] ?? 'Contenido del Módulo',
-style: const TextStyle(fontWeight: FontWeight.bold),
-),
-backgroundColor: Colors.deepPurple,
-),
-body: FadeTransition(
-opacity: _fadeAnimation,
-child: content.isEmpty
-? const Center(
-child: Text(
-'No hay contenido disponible',
-style: TextStyle(fontSize: 18, color: Colors.grey),
-),
-)
-: Padding(
-padding: const EdgeInsets.all(24.0),
-child: Column(
-crossAxisAlignment: CrossAxisAlignment.stretch,
-children: [
-const Text(
-'Selecciona una sección:',
-style: TextStyle(
-fontSize: 24,
-fontWeight: FontWeight.bold,
-color: Colors.deepPurple,
-),
-),
-const SizedBox(height: 20),
-...content.keys.map((sectionKey) {
-final section = content[sectionKey];
-return Padding(
-padding: const EdgeInsets.symmetric(vertical: 8.0),
-child: ElevatedButton(
-onPressed: () {
-Navigator.push(
-context,
-MaterialPageRoute(
-builder: (context) => SectionDetailScreen(
-section: section,
-sectionTitle: section['title'],
-sectionIndex: content.keys.toList().indexOf(sectionKey),
-totalSections: content.length,
-content: content,
-moduleData: widget.moduleData,
-onComplete: (index) {
-_updateProgress(index + 1, content.length);
-},
-),
-),
-);
-},
-style: ElevatedButton.styleFrom(
-backgroundColor: Colors.deepPurple,
-foregroundColor: Colors.white,
-padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-shape: RoundedRectangleBorder(
-borderRadius: BorderRadius.circular(12),
-),
-),
-child: Text(
-section['title'],
-style: const TextStyle(fontSize: 18),
-),
-),
-);
-}).toList(),
-const Spacer(),
-Padding(
-padding: const EdgeInsets.symmetric(vertical: 16.0),
-child: Column(
-children: [
-Text(
-'Progreso: ${(_progress * 100).toStringAsFixed(0)}%',
-style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-),
-const SizedBox(height: 8),
-LinearProgressIndicator(
-value: _progress,
-backgroundColor: Colors.grey[300],
-valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-minHeight: 8,
-),
-],
-),
-),
-],
-),
-),
-),
-);
-}
-}
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-class SectionDetailScreen extends StatelessWidget {
-final Map<String, dynamic> section;
-final String sectionTitle;
-final int sectionIndex;
-final int totalSections;
-final Map<String, dynamic> content;
-final Map<String, dynamic> moduleData;
-final Function(int) onComplete;
+  void _onTapDown(TapDownDetails details) {
+    _controller.forward();
+    setState(() => _isPressed = true);
+  }
 
-const SectionDetailScreen({
-Key? key,
-required this.section,
-required this.sectionTitle,
-required this.sectionIndex,
-required this.totalSections,
-required this.content,
-required this.moduleData,
-required this.onComplete,
-}) : super(key: key);
+  void _onTapUp(TapUpDetails details) {
+    _controller.reverse();
+    setState(() => _isPressed = false);
+    widget.onTap();
+  }
 
-static final Map<String, String> _sectionImages = {
-'lenguaje_programacion': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'hardware_software': 'https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'bajo_alto_nivel': 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'pensamiento_logico': 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'diagramas_flujo': 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'hardware_components': 'https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'software_types': 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'low_level': 'https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'flowchart_example': 'https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-'os_layers': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-};
+  void _onTapCancel() {
+    _controller.reverse();
+    setState(() => _isPressed = false);
+  }
 
-String _getImageForSection(String title) {
-if (title.toLowerCase().contains('lenguaje')) return _sectionImages['lenguaje_programacion']!;
-if (title.toLowerCase().contains('hardware') || title.toLowerCase().contains('software')) return _sectionImages['hardware_software']!;
-if (title.toLowerCase().contains('nivel')) return _sectionImages['bajo_alto_nivel']!;
-if (title.toLowerCase().contains('pensamiento')) return _sectionImages['pensamiento_logico']!;
-if (title.toLowerCase().contains('diagrama')) return _sectionImages['diagramas_flujo']!;
-return _sectionImages['lenguaje_programacion']!;
-}
-
-Widget _buildNetworkImageWithCaption(String imageUrl, String caption, {double height = 220}) {
-return Padding(
-padding: const EdgeInsets.symmetric(vertical: 16),
-child: Column(
-children: [
-ClipRRect(
-borderRadius: BorderRadius.circular(12),
-child: Image.network(
-imageUrl,
-height: height,
-width: double.infinity,
-fit: BoxFit.cover,
-loadingBuilder: (context, child, loadingProgress) {
-if (loadingProgress == null) return child;
-return Container(
-height: height,
-color: Colors.grey[200],
-child: Center(
-child: CircularProgressIndicator(
-value: loadingProgress.expectedTotalBytes != null
-? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-: null,
-),
-),
-);
-},
-errorBuilder: (context, error, stackTrace) {
-return Container(
-height: height,
-color: Colors.grey[200],
-child: const Center(child: Icon(Icons.error_outline, color: Colors.red)),
-);
-},
-),
-),
-const SizedBox(height: 8),
-Text(
-caption,
-style: TextStyle(fontSize: 14, color: Colors.grey[700], fontStyle: FontStyle.italic),
-textAlign: TextAlign.center,
-),
-],
-),
-);
-}
-
-List<Widget> _formatContent(String content) {
-return content.split('\n').map((paragraph) {
-if (paragraph.trim().isEmpty) return const SizedBox(height: 12);
-if (paragraph.startsWith('•') || paragraph.startsWith('1.')) {
-return Padding(
-padding: const EdgeInsets.only(left: 20, top: 8, bottom: 8),
-child: Row(
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-Icon(Icons.circle, size: 8, color: Colors.deepPurple.withOpacity(0.7)),
-const SizedBox(width: 12),
-Expanded(
-child: Text(
-paragraph.substring(paragraph.startsWith('•') ? 1 : 2).trim(),
-style: const TextStyle(fontSize: 16, height: 1.6),
-textAlign: TextAlign.justify,
-),
-),
-],
-),
-);
-}
-if (paragraph.startsWith('[') && paragraph.endsWith(']')) {
-return Container(
-margin: const EdgeInsets.symmetric(vertical: 12),
-padding: const EdgeInsets.all(16),
-decoration: BoxDecoration(
-color: Colors.grey[100],
-borderRadius: BorderRadius.circular(8),
-border: Border.all(color: Colors.grey[300]!),
-),
-child: Text(
-paragraph.substring(1, paragraph.length - 1),
-style: const TextStyle(fontSize: 15, fontFamily: 'monospace', color: Colors.deepPurple),
-),
-);
-}
-return Padding(
-padding: const EdgeInsets.symmetric(vertical: 8),
-child: Text(
-paragraph,
-style: const TextStyle(fontSize: 16, height: 1.6),
-textAlign: TextAlign.justify,
-),
-);
-}).toList();
-}
-
-@override
-Widget build(BuildContext context) {
-final subsections = section['subsections'] as List<dynamic>? ?? [];
-
-return WillPopScope(
-onWillPop: () async {
-// When the back button is pressed, reload ContenidoScreen
-Navigator.pushReplacement(
-context,
-MaterialPageRoute(
-builder: (context) => ContenidoScreen(moduleData: moduleData),
-),
-);
-return false; // Prevent default back behavior since we handled it
-},
-child: Scaffold(
-appBar: AppBar(
-title: Text(
-sectionTitle,
-style: const TextStyle(fontWeight: FontWeight.bold),
-),
-backgroundColor: Colors.deepPurple,
-leading: IconButton(
-icon: const Icon(Icons.arrow_back),
-onPressed: () {
-// When the AppBar back button is pressed, reload ContenidoScreen
-Navigator.pushReplacement(
-context,
-MaterialPageRoute(
-builder: (context) => ContenidoScreen(moduleData: moduleData),
-),
-);
-},
-),
-),
-body: SingleChildScrollView(
-padding: const EdgeInsets.all(24.0),
-child: Column(
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
-_buildNetworkImageWithCaption(
-_getImageForSection(sectionTitle),
-sectionTitle,
-height: 200,
-),
-const SizedBox(height: 20),
-...subsections.expand((subsection) {
-final title = subsection['title'] as String;
-final content = subsection['content'] as String;
-final highlight = subsection['highlight'] as Map<String, dynamic>?;
-final additionalContent = subsection['additional_content'] as String?;
-
-List<Widget> widgets = [
-Padding(
-padding: const EdgeInsets.symmetric(vertical: 12),
-child: Text(
-title,
-style: const TextStyle(
-fontSize: 20,
-fontWeight: FontWeight.bold,
-color: Colors.deepPurple,
-),
-),
-),
-..._formatContent(content),
-];
-
-if (title.toLowerCase().contains('hardware')) {
-widgets.insert(
-0,
-_buildNetworkImageWithCaption(
-_sectionImages['hardware_components']!,
-'Componentes principales del hardware',
-),
-);
-} else if (title.toLowerCase().contains('software')) {
-widgets.insert(
-0,
-_buildNetworkImageWithCaption(
-_sectionImages['software_types']!,
-'Diferentes tipos de software',
-),
-);
-} else if (title.toLowerCase().contains('bajo nivel')) {
-widgets.insert(
-0,
-_buildNetworkImageWithCaption(
-_sectionImages['low_level']!,
-'Lenguajes de bajo nivel interactuando con hardware',
-),
-);
-} else if (title.toLowerCase().contains('diagrama')) {
-widgets.insert(
-0,
-_buildNetworkImageWithCaption(
-_sectionImages['flowchart_example']!,
-'Ejemplo práctico de diagrama de flujo',
-),
-);
-}
-
-if (highlight != null) {
-widgets.add(
-Container(
-margin: const EdgeInsets.symmetric(vertical: 16),
-padding: const EdgeInsets.all(16),
-decoration: BoxDecoration(
-color: highlight['color'] == 'blue' ? Colors.blue[50] : Colors.green[50],
-border: Border(
-left: BorderSide(
-color: highlight['color'] == 'blue' ? Colors.blue : Colors.green,
-width: 4,
-),
-),
-borderRadius: BorderRadius.circular(8),
-),
-child: Column(
-children: [
-if (highlight['text'].toLowerCase().contains('sistema operativo'))
-_buildNetworkImageWithCaption(
-_sectionImages['os_layers']!,
-'Capas de un sistema operativo',
-height: 180,
-),
-Text(
-highlight['text'],
-style: const TextStyle(fontSize: 16),
-),
-],
-),
-),
-);
-}
-
-if (additionalContent != null) {
-widgets.addAll(_formatContent(additionalContent));
-}
-
-return widgets;
-}).toList(),
-const SizedBox(height: 30),
-Center(
-child: ElevatedButton(
-onPressed: () {
-onComplete(sectionIndex);
-if (sectionIndex < totalSections - 1) {
-final nextSectionIndex = sectionIndex + 1;
-final nextSectionKey = content.keys.elementAt(nextSectionIndex);
-final nextSectionData = content[nextSectionKey];
-// Replace the current screen with the next section
-Navigator.pushReplacement(
-context,
-MaterialPageRoute(
-builder: (context) => SectionDetailScreen(
-section: nextSectionData,
-sectionTitle: nextSectionData['title'],
-sectionIndex: nextSectionIndex,
-totalSections: totalSections,
-content: content,
-moduleData: moduleData,
-onComplete: onComplete,
-),
-),
-);
-} else {
-// When "Volver al Inicio" is pressed, reload ContenidoScreen
-Navigator.pushReplacement(
-context,
-MaterialPageRoute(
-builder: (context) => ContenidoScreen(moduleData: moduleData),
-),
-);
-}
-},
-style: ElevatedButton.styleFrom(
-backgroundColor: Colors.deepPurple,
-foregroundColor: Colors.white,
-padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-shape: RoundedRectangleBorder(
-borderRadius: BorderRadius.circular(12),
-),
-),
-child: Text(
-sectionIndex < totalSections - 1 ? 'Siguiente Sección' : 'Volver al Inicio',
-style: const TextStyle(fontSize: 18),
-),
-),
-),
-],
-),
-),
-),
-);
-}
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white.withOpacity(_isPressed ? 0.2 : 0.15),
+            boxShadow: _isPressed
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Text(
+                        '${widget.index + 1}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ],
+                ),
+                if (widget.description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.description,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

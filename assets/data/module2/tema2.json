@@ -1,0 +1,216 @@
+{
+  "introduccion": {
+    "titulo": "",
+    "contenido": [
+      "Toda solución informática necesita almacenar, organizar y manipular información. Para lograrlo de forma eficiente, es fundamental conocer las distintas formas en las que los datos pueden representarse dentro de un programa.",
+      "En este subtema, exploraremos conceptos clave como las variables y sus tipos de datos, que permiten guardar información temporal. También abordaremos estructuras más complejas como arreglos, matrices y listas, herramientas esenciales para agrupar y gestionar múltiples valores de manera ordenada.",
+      "Dominar estas estructuras te permitirá escribir programas más potentes y organizados, capaces de manejar desde datos simples hasta colecciones más complejas."
+    ]
+  },
+  "subtema1": {
+    "titulo": "Variables y tipos de datos",
+    "contenido": [
+      "Las variables y los tipos de datos son conceptos fundamentales en cualquier lenguaje de programación, y Java no es la excepción. Comprender cómo funcionan te permitirá almacenar y manipular información en tus programas de manera efectiva."
+    ],
+    "secciones": [
+      {
+        "titulo": "¿Qué es una Variable?",
+        "contenido": "\"Una variable es un espacio en la memoria que se utiliza para almacenar un valor que puede cambiar durante la ejecución de un programa\".",
+        "tipo": "highlight",
+        "color": "green",
+        "items": [
+          "Declaración de Variables.",
+          "Inicialización de Variables."
+        ]
+      },
+      {
+        "titulo": "Convenciones de Nombres para Variables",
+        "contenido": "Las más importantes y que la mayoría de los lenguajes recomienda son las siguientes:",
+        "tipo": "highlight",
+        "color": "blue",
+        "items": [
+          "Usa nombres descriptivos.",
+          "Comienza con una letra minúscula (también puedes utilizar mayúsculas o algunos símbolos especiales).",
+          "Evita usar palabras reservadas como int, class, for, etc."
+        ]
+      },
+      {
+        "titulo": "¿Qué son los tipos de datos?",
+        "contenido": "\"Los tipos de datos son una forma de clasificar y organizar la información que una variable u objeto puede contener\".\n\nPueden incluir diferentes tipos de información, como números enteros, números con decimales, caracteres individuales, cadenas de caracteres (texto), valores booleanos (verdadero o falso), fechas y horas, y estructuras de datos complejas como matrices o tablas.\nSe pueden clasificar principalmente en:",
+        "tipo": "highlight",
+        "color": "green"
+      },
+      {
+        "titulo": "Datos primitivos.",
+        "contenido": "Cada lenguaje de programación tiene un conjunto de tipos de datos primitivos, que pueden variar ligeramente de un lenguaje a otro. Sin embargo, la mayoría de los lenguajes de programación modernos incluyen los siguientes tipos de datos primitivos: enteros, números de coma flotante, caracteres, booleanos y nulos.",
+        "tipo": "highlight",
+        "color": "purple",
+        "clasificacion": {
+          "titulo": "Clasificación",
+          "items": [
+            "Enteros: Son uno de los tipos de datos primitivos más comunes, se representan mediante la palabra clave 'int' o 'long', dependiendo del tamaño.",
+            "Números de coma flotante: Se utilizan para representar números que tienen una fracción decimal, se representan con la palabra clave \"flotante\" o \"doble\".",
+            "Caracteres: Se utilizan para representar letras, números y otros símbolos, están representados por la palabra clave 'char'.",
+            "Booleanos: Para representar valores de verdad. Sólo pueden tener uno de dos valores: verdadero o falso, se representan con la palabra clave \"bool\".",
+            "Nulos: El valor nulo es un tipo especial de valor que representa la ausencia de un valor. Representado por la palabra clave \"null\"."
+          ]
+        },
+        "ejemplos": [
+          "int edad = 25;",
+          "double altura = 1.75;",
+          "char inicial = 'A';",
+          "boolean esEstudiante = true;"
+        ],
+        "conclusion": "Se puede decir que son tipos de datos básicos que representan valores simples y se almacenan directamente en la memoria. Ya que no tienen métodos; no son objetos y además no necesitan una invocación para ser creados."
+      },
+      {
+        "titulo": "Datos no primitivos.",
+        "contenido": "Además de los tipos de datos primitivos, también existen otro tipo de datos, los no primitivos, son estructuras que almacenan valores o colecciones de valores, y que pueden ser más complejos que los tipos primitivos. Los tipos más comunes incluyen:",
+        "tipo": "highlight",
+        "color": "green",
+        "clasificacion": {
+          "titulo": "Clasificación",
+          "items": [
+            "String: Representa una secuencia de caracteres. Es una clase en Java, pero se usa como un tipo de dato básico.",
+            "Arrays: Una estructura que almacena múltiples valores del mismo tipo.",
+            "Clases: Puedes crear tus propios tipos de datos mediante clases."
+          ]
+        },
+        "ejemplos": [
+          "String nombre = \"Juan\";",
+          "int[] numeros = {1, 2, 3, 4, 5};"
+        ],
+        "conclusion": "Por lo tanto, se puede concluir que son tipos de datos más complejos que hacen referencia a objetos almacenados en memoria. Estos objetos pueden almacenar conjuntos de datos, ya sean enteros o caracteres."
+      },
+      {
+        "titulo": "Clasificación de variables",
+        "contenido": "Ahora bien, una vez que ha quedado claro los tipos de datos, podemos enfocarnos en las variables, ya definimos lo que son, pero también hay una clasificación para estas:",
+        "items": [
+          "Las variables locales se declaran en un método y solo son accesibles dentro de ese método.",
+          "Las variables de instancia pertenecen a una instancia específica de una clase y se declaran dentro de la clase, pero fuera de cualquier método.",
+          "Las variables de clase son compartidas por todas las instancias de una clase y se declaran utilizando la palabra clave static."
+        ],
+        "conclusion": "Claro que la declaración de estas variables depende del lenguaje que se esté utilizando.\n\nEntender cómo funcionan las variables y los tipos de datos es un paso crucial en tu aprendizaje. Estos conceptos te permitirán gestionar y manipular información de manera eficiente en tus programas. A medida que sigas practicando, te familiarizarás con la variedad de tipos de datos que ofrece cada lenguaje y cómo utilizarlos para resolver problemas específicos."
+      }
+    ]
+  },
+  "subtema2": {
+    "titulo": "Arreglos, matrices y listas",
+    "contenido": [
+      "Son las más básicas e importantes también, ya que a partir de ellas se pueden formar otras estructuras de datos con un comportamiento más complejo o adecuado para alguna tarea particular."
+    ],
+    "secciones": [
+      {
+        "titulo": "Arreglos.",
+        "contenido": "\"Estructuras de datos compuestos en las que se utilizan uno o más subíndices para identificar los elementos individuales almacenados, a los que es posible tener acceso en cualquier orden\".",
+        "tipo": "highlight",
+        "color": "blue",
+        "ejemplos": [
+          "# Se define una lista de tareas\ntareas = [\"Despertar\", \"Preparar café\", \"Desayunar\", \"Leer noticias\"]",
+          "# Se define una tupla con las coordenadas de un punto\npunto = (10, 20)"
+        ],
+        "descripcion": "Permite acceder a cada elemento mediante un índice numérico, lo que facilita la manipulación de grandes volúmenes de información. Son imprescindibles y existen distintos tipos, vectores, tuplas, etc.",
+        "definicion": "En el contexto de los sistemas de cómputo, un arreglo es una estructura de datos que hace referencia a un grupo de casillas de memoria que se puede ver como una colección finita, homogénea y ordenada de elementos.",
+        "usos": [
+          "Almacenar grandes volúmenes de datos de manera eficiente.",
+          "Optimizar el rendimiento de algoritmos de búsqueda y ordenamiento.",
+          "Manejar datos en estructuras más complejas como grafos y listas enlazadas.",
+          "Facilitar el procesamiento de imágenes y señales en inteligencia artificial."
+        ],
+        "conclusion": "Por lo que es importante aprender a manejarlos."
+      },
+      {
+        "titulo": "Matrices.",
+        "contenido": "Además de las estructuras unidimensionales como arreglos o listas, existe una estructura más compleja llamada matriz, también conocida como arreglo bidimensional. Una matriz puede imaginarse como una tabla con filas y columnas, donde cada fila es en sí misma una secuencia ordenada de elementos.",
+        "tipo": "highlight",
+        "color": "green",
+        "ejemplos": [
+          "# Matriz 2x3 en lenguaje Python (2 filas, 3 columnas)\nmatriz_python = [\n    [1, 2, 3],\n    [4, 5, 6]\n]",
+          "# Matriz 2x3en lenguaje Java (2 filas, 3 columnas)\nint[][] matrizJava = {\n    {1, 2, 3},\n    {4, 5, 6}\n};"
+        ],
+        "operaciones": [
+          "Acceder a un elemento específico: matriz[fila][columna]",
+          "Recorrer una matriz con bucles anidados.",
+          "Modificar valores de celdas específicas.",
+          "Sumar, restar, multiplicar matrices.",
+          "Transponer (intercambiar filas por columnas)."
+        ],
+        "conclusion": "Desde el punto de vista de programación, una matriz es una secuencia de secuencias: un arreglo donde cada elemento es a su vez otro arreglo. Por esta razón, las matrices también pueden extenderse a más dimensiones (matrices tridimensionales, etc.), aunque lo más común es trabajar con matrices de dos dimensiones."
+      },
+      {
+        "titulo": "Listas.",
+        "contenido": "Una lista es una colección ordenada de elementos. Puede contener distintos tipos de datos y permite duplicados. En muchos lenguajes de programación, las listas son estructuras dinámicas que pueden cambiar de tamaño durante la ejecución.",
+        "tipo": "highlight",
+        "color": "blue",
+        "caracteristicas": [
+          "Tamaño variable.",
+          "Puede permitir distintos tipos de datos (como en Python).",
+          "Métodos integrados para agregar, eliminar, buscar u ordenar elementos."
+        ],
+        "ejemplo": "lista = [10, \"hola\", 3.14]\nlista.append(42)\nprint(lista[1])  # Imprime: hola",
+        "conclusion": "Son muy parecidas a los arreglos, pero no son lo mismo, mientras que los arreglos son ideales cuando conoces la cantidad fija de datos y buscas eficiencia, las listas son más flexibles para trabajar con información dinámica."
+      }
+    ]
+  },
+  "quiz": {
+    "titulo": "Cuestionario de Repaso",
+    "contenido": "Prueba tus conocimientos sobre variables, tipos de datos, arreglos, matrices y listas con las siguientes preguntas.",
+    "preguntas": [
+      {
+        "pregunta": "¿Qué es una variable en programación?",
+        "opciones": [
+          "Un espacio en la memoria que almacena un valor que puede cambiar durante la ejecución del programa.",
+          "Una función que realiza cálculos matemáticos.",
+          "Un tipo de dato que no puede modificarse.",
+          "Una estructura de datos para almacenar múltiples valores."
+        ],
+        "respuesta_correcta": "Un espacio en la memoria que almacena un valor que puede cambiar durante la ejecución del programa.",
+        "explicacion": "Una variable es un espacio en la memoria que se utiliza para almacenar un valor que puede cambiar durante la ejecución de un programa. Es fundamental para manipular datos en cualquier lenguaje de programación."
+      },
+      {
+        "pregunta": "¿Cuál de los siguientes es un tipo de dato primitivo en Java?",
+        "opciones": [
+          "String",
+          "int",
+          "Array",
+          "Clase"
+        ],
+        "respuesta_correcta": "int",
+        "explicacion": "En Java, los tipos de datos primitivos incluyen int, double, char, boolean, entre otros. String y Array son tipos no primitivos, y una Clase es una definición de un tipo de dato personalizado."
+      },
+      {
+        "pregunta": "¿Qué característica distingue a las listas de los arreglos en lenguajes como Python?",
+        "opciones": [
+          "Las listas tienen un tamaño fijo, mientras que los arreglos son dinámicos.",
+          "Las listas pueden contener diferentes tipos de datos, mientras que los arreglos son homogéneos.",
+          "Las listas no permiten duplicados, mientras que los arreglos sí.",
+          "Las listas son más lentas que los arreglos en todas las operaciones."
+        ],
+        "respuesta_correcta": "Las listas pueden contener diferentes tipos de datos, mientras que los arreglos son homogéneos.",
+        "explicacion": "En lenguajes como Python, las listas son estructuras dinámicas que pueden contener diferentes tipos de datos y cambiar de tamaño, mientras que los arreglos (como los de la biblioteca numpy) son homogéneos, es decir, todos sus elementos deben ser del mismo tipo."
+      },
+      {
+        "pregunta": "¿Cómo se accede a un elemento en una matriz bidimensional en Java?",
+        "opciones": [
+          "matriz[fila][columna]",
+          "matriz(columna, fila)",
+          "matriz[fila, columna]",
+          "matriz.get(fila, columna)"
+        ],
+        "respuesta_correcta": "matriz[fila][columna]",
+        "explicacion": "En Java, para acceder a un elemento en una matriz bidimensional, se utiliza la sintaxis matriz[fila][columna], donde el primer índice indica la fila y el segundo la columna."
+      },
+      {
+        "pregunta": "¿Cuál de las siguientes afirmaciones sobre las variables de clase en Java es correcta?",
+        "opciones": [
+          "Son accesibles solo dentro del método donde se declaran.",
+          "Pertenecen a una instancia específica de una clase.",
+          "Son compartidas por todas las instancias de una clase y se declaran con la palabra clave static.",
+          "No pueden ser modificadas después de su inicialización."
+        ],
+        "respuesta_correcta": "Son compartidas por todas las instancias de una clase y se declaran con la palabra clave static.",
+        "explicacion": "Las variables de clase en Java son declaradas con la palabra clave static y son compartidas por todas las instancias de una clase, lo que significa que tienen un único valor para todas las instancias."
+      }
+    ]
+  }
+}

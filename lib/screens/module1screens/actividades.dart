@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'hardware_software_activity.dart';
 import 'order_steps_activity.dart';
 import 'flowchart_activity.dart';
@@ -12,10 +16,17 @@ class ActividadesScreen extends StatefulWidget {
   _ActividadesScreenState createState() => _ActividadesScreenState();
 }
 
-class _ActividadesScreenState extends State<ActividadesScreen> with SingleTickerProviderStateMixin {
+class _ActividadesScreenState extends State<ActividadesScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+  int _remainingAttempts = 3;
+  bool _isAttemptsLoading = true;
+  bool _isAttemptsExhausted = false;
+  String? _errorMessage;
+  Map<String, bool> _completedActivities = {
+    'hardware_software': false,
+    'order_steps': false,
+    'flowchart': false,
+  };
 
   @override
   void initState() {
@@ -23,24 +34,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with SingleTicker
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
+      duration: const Duration(milliseconds: 800),
+    )..forward();
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.95, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutBack,
-      ),
-    );
-
-    _animationController.forward();
+    _loadProgressFromFirestore();
   }
 
   @override
@@ -49,381 +46,436 @@ class _ActividadesScreenState extends State<ActividadesScreen> with SingleTicker
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final activities = widget.moduleData['activities'] as List<dynamic>;
+  Future<void> _loadProgressFromFirestore() async {
+    setState(() {
+      _isAttemptsLoading = true;
+    });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Actividades - ${widget.moduleData['module_title'] ?? 'Módulo'}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.green,
-        elevation: 4,
-      ),
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Actividades Complementarias',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Selecciona una actividad para comenzar:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    ...activities.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final activity = entry.value as Map<String, dynamic>;
-                      return _buildActivityButton(index, activity);
-                    }).toList(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HardwareSoftwareActivityScreen(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Clasificar Hardware o Software',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => OrderStepsActivityScreen(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Ordenar Pasos de Actividades',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FlowchartActivityScreen(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Diseñar Diagrama de Flujo',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          _errorMessage = 'Usuario no autenticado.';
+          _isAttemptsLoading = false;
+        });
+        return;
+      }
+
+      final progressDoc = await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .get();
+
+      if (progressDoc.exists) {
+        final data = progressDoc.data();
+        final attempts = (data?['intentos'] as num?)?.toInt() ?? 3;
+        final completed = data?['completed_activities'] as Map<String, dynamic>? ?? {};
+        setState(() {
+          _remainingAttempts = attempts;
+          _isAttemptsExhausted = attempts <= 0;
+          _completedActivities = {
+            'hardware_software': completed['hardware_software'] ?? false,
+            'order_steps': completed['order_steps'] ?? false,
+            'flowchart': completed['flowchart'] ?? false,
+          };
+          _isAttemptsLoading = false;
+        });
+      } else {
+        await FirebaseFirestore.instance
+            .collection('progress')
+            .doc(user.uid)
+            .collection('modules')
+            .doc(widget.moduleData['id'] ?? 'module1')
+            .set({
+          'intentos': 3,
+          'completed_activities': {
+            'hardware_software': false,
+            'order_steps': false,
+            'flowchart': false,
+          },
+          'last_updated': FieldValue.serverTimestamp(),
+          'module_id': widget.moduleData['id'] ?? 'module1',
+          'module_title': widget.moduleData['module_title'] ?? 'Módulo',
+        }, SetOptions(merge: true));
+
+        setState(() {
+          _remainingAttempts = 3;
+          _isAttemptsExhausted = false;
+          _isAttemptsLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar el progreso: $e';
+        _isAttemptsLoading = false;
+      });
+    }
   }
 
-  Widget _buildActivityButton(int index, Map<String, dynamic> activity) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ActivityDetailScreen(
-                activity: activity,
-                activityIndex: index,
-              ),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          activity['subtopic'],
-          style: const TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
+  Future<void> _decrementAttempts() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-class ActivityDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> activity;
-  final int activityIndex;
+      final newAttempts = _remainingAttempts - 1;
 
-  const ActivityDetailScreen({
-    Key? key,
-    required this.activity,
-    required this.activityIndex,
-  }) : super(key: key);
+      await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .set({
+        'intentos': newAttempts,
+        'last_updated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
-  @override
-  _ActivityDetailScreenState createState() => _ActivityDetailScreenState();
-}
-
-class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
-  final Map<int, int> _selectedAnswers = {};
-  final Map<int, bool> _correctAnswers = {};
-  bool _answersChecked = false;
-
-  void _checkAnswers() {
-    // Verificar que 'theory' y 'questions' existan en widget.activity
-    if (widget.activity['theory'] == null || widget.activity['theory']['questions'] == null) {
+      setState(() {
+        _remainingAttempts = newAttempts;
+        _isAttemptsExhausted = newAttempts <= 0;
+      });
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: Datos de preguntas no disponibles')),
+        SnackBar(
+          content: Text('Error al actualizar los intentos: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  Future<void> _markActivityCompleted(String activityId) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData['id'] ?? 'module1')
+          .set({
+        'completed_activities': {activityId: true},
+        'last_updated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _completedActivities[activityId] = true;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al registrar la actividad: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  void _navigateToActivity(Widget screen, String activityId) {
+    if (_isAttemptsExhausted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Has agotado todos tus intentos. Contacta al soporte o intenta de nuevo más tarde.'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
       );
       return;
     }
 
-    final questions = widget.activity['theory']['questions'] as List<dynamic>;
-
-    for (int i = 0; i < questions.length; i++) {
-      final question = questions[i] as Map<String, dynamic>? ?? {};
-      final correctAnswer = question['correctAnswer'] as int?;
-      if (correctAnswer == null) {
-        _correctAnswers[i] = false; // Asumimos incorrecto si no hay respuesta válida
-      } else if (_selectedAnswers[i] == correctAnswer) {
-        _correctAnswers[i] = true;
-      } else {
-        _correctAnswers[i] = false;
-      }
+    if (_completedActivities[activityId]!) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Esta actividad ya está completada.'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+      return;
     }
-    setState(() {
-      _answersChecked = true;
-    });
-  }
 
-  void _resetAnswers() {
-    setState(() {
-      _selectedAnswers.clear();
-      _correctAnswers.clear();
-      _answersChecked = false;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    ).then((result) {
+      if (result is bool) {
+        if (result) {
+          _markActivityCompleted(activityId);
+        } else {
+          _decrementAttempts();
+        }
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Verificar que 'theory' y 'objective' existan en widget.activity
-    final objective = widget.activity['objective'] ?? 'No hay objetivo definido';
-    final questions = widget.activity['theory']?['questions'] as List<dynamic>? ?? [];
+    if (_isAttemptsLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF003459), Color(0xFF00A8E8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(color: Color(0xFFFFFFFF)),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage ?? 'Cargando progreso...',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: const Color(0xFFFFFFFF),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(duration: 500.ms),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  _buildAnimatedButton(
+                    text: 'Reintentar',
+                    onPressed: _loadProgressFromFirestore,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
+                    ),
+                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final completedCount = _completedActivities.values.where((completed) => completed).length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.activity['subtopic'] ?? 'Actividad'),
-        backgroundColor: Colors.green,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              objective,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ...questions.asMap().entries.map((entry) {
-              final index = entry.key;
-              final question = entry.value as Map<String, dynamic>? ?? {};
-              return _buildQuestionCard(index, question);
-            }).toList(),
-            const SizedBox(height: 40),
-            Center(
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: _answersChecked
-                        ? null
-                        : () {
-                            _checkAnswers();
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Verificar Respuestas',
-                      style: TextStyle(fontSize: 18),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GlassmorphicCard(
+                  child: Text(
+                    'Actividades - ${widget.moduleData['module_title'] ?? 'Módulo'}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFFFFFFF),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  if (_answersChecked)
-                    ElevatedButton(
-                      onPressed: () {
-                        _resetAnswers();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Intentos restantes',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: const Color(0xFFFFFFFF).withOpacity(0.9),
                         ),
                       ),
-                      child: const Text(
-                        'Reiniciar Actividad',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  const SizedBox(height: 16),
-                  if (_answersChecked)
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      Text(
+                        '$_remainingAttempts',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: _remainingAttempts > 0 ? const Color(0xFFFFFFFF) : const Color(0xFFEF4444),
                         ),
                       ),
-                      child: const Text(
-                        'Volver a Actividades',
-                        style: TextStyle(fontSize: 18),
-                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Text(
+                    'Progreso: $completedCount/3 actividades completadas',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: const Color(0xFFFFFFFF).withOpacity(0.9),
                     ),
-                ],
+                  ),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Text(
+                    'Actividades Complementarias',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF4FC3F7),
+                    ),
+                  ),
+                ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+                const SizedBox(height: 20),
+                Text(
+                  'Selecciona una actividad para comenzar:',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    height: 1.6,
+                    color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                  ),
+                ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                const SizedBox(height: 30),
+                _buildActivityButton(
+                  text: 'Clasificar Hardware o Software',
+                  onPressed: () => _navigateToActivity(
+                    const HardwareSoftwareActivityScreen(),
+                    'hardware_software',
+                  ),
+                  isCompleted: _completedActivities['hardware_software']!,
+                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
+                const SizedBox(height: 16),
+                _buildActivityButton(
+                  text: 'Ordenar Pasos de Actividades',
+                  onPressed: () => _navigateToActivity(
+                    const OrderStepsActivityScreen(),
+                    'order_steps',
+                  ),
+                  isCompleted: _completedActivities['order_steps']!,
+                ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
+                const SizedBox(height: 16),
+                _buildActivityButton(
+                  text: 'Diseñar Diagrama de Flujo',
+                  onPressed: () => _navigateToActivity(
+                    const FlowchartActivityScreen(),
+                    'flowchart',
+                  ),
+                  isCompleted: _completedActivities['flowchart']!,
+                ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.2, end: 0),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityButton({
+    required String text,
+    required VoidCallback onPressed,
+    required bool isCompleted,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isCompleted
+                ? [Colors.green.shade600, Colors.green.shade400]
+                : _isAttemptsExhausted
+                    ? [Colors.grey.shade600, Colors.grey.shade400]
+                    : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFFFFFFF),
               ),
             ),
-            const SizedBox(height: 40),
+            if (isCompleted)
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFFFFFFFF),
+                size: 24,
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuestionCard(int index, Map<String, dynamic> question) {
-    final options = question['options'] as List<dynamic>? ?? [];
-    final questionText = question['question'] ?? 'Pregunta no disponible';
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              questionText,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+  Widget _buildAnimatedButton({
+    required String text,
+    required VoidCallback? onPressed,
+    required LinearGradient gradient,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-            const SizedBox(height: 16),
-            ...options.asMap().entries.map((entry) {
-              final optionIndex = entry.key;
-              final option = entry.value;
-              return RadioListTile<int>(
-                title: Text(option.toString()),
-                value: optionIndex,
-                groupValue: _selectedAnswers[index],
-                onChanged: _answersChecked
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _selectedAnswers[index] = value!;
-                        });
-                      },
-              );
-            }).toList(),
-            if (_correctAnswers.containsKey(index))
-              Text(
-                _correctAnswers[index]! ? 'Correcto' : 'Incorrecto',
-                style: TextStyle(
-                  color: _correctAnswers[index]! ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
           ],
         ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFFFFFFFF),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+
+
+class GlassmorphicCard extends StatelessWidget {
+  final Widget child;
+
+  const GlassmorphicCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

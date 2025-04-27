@@ -1,0 +1,218 @@
+{
+  "introduccion": {
+    "titulo": "Estructuras de Control",
+    "contenido": "Para construir programas funcionales y eficientes, es esencial comprender las estructuras fundamentales que conforman la lógica de programación. Estas estructuras determinan la forma en que las instrucciones se organizan y ejecutan dentro de un algoritmo, permitiéndote desarrollar soluciones estructuradas y comprensibles.\n\nEn este tema, exploraremos las secuencias, condicionales y bucles, elementos clave que controlan el flujo de ejecución de un programa. Aprenderás cómo encadenar instrucciones de manera ordenada, tomar decisiones con estructuras condicionales y repetir procesos utilizando ciclos.\n\n¡Es momento de dar el siguiente paso en tu aprendizaje!",
+    "highlight": {
+      "text": "Las estructuras de control son un conjunto de reglas que hacen posible la gestión del flujo de ejecución de los programas, esto lo logran determinando el orden en que las instrucciones se ejecutan.\n\"Las estructuras de control permiten que el código tome decisiones, repita acciones o bien siga su flujo de ejecución secuencial\".\nLas estructuras de control se dividen en tres categorías: secuenciales, condicionales e iterativas. Veamos en qué consiste cada una.",
+      "color": "green"
+    }
+  },
+  "caracteristicas": {
+    "titulo": "Características clave de las estructuras",
+    "items": [
+      "Orden lógico: Garantiza que las instrucciones se ejecuten de forma consecutiva y en el orden correcto, asegurando el procesamiento adecuado de los datos y operaciones.",
+      "Flujo predecible: Asegura que las instrucciones sigan un camino lineal y que el programa produzca los mismos resultados con los mismos datos de entrada, evitando comportamientos impredecibles."
+    ],
+    "color": "blue"
+  },
+  "subtema1": {
+    "titulo": "Secuenciales",
+    "contenido": "Las estructuras de control secuenciales son las más básicas. En este caso, las instrucciones se ejecutan una tras otra en el mismo orden en que están escritas.\n\"Se refieren a la ejecución ordenada y secuencial de instrucciones, una tras otra, en el mismo orden en que fueron escritas\".\nBasa su funcionamiento en tener acciones o instrucciones que sigan a otras de forma secuencial, se ejecutan en un orden específico, de arriba a abajo, una tras otra, sin bifurcaciones ni saltos, por lo que es unidireccional.",
+    "ejemplo": {
+      "titulo": "Estructura",
+      "descripcion": "En el siguiente ejemplo, la primera línea asigna un valor a la variable nombre, luego se crea un saludo y finalmente se imprime en la consola. Todas las acciones ocurren en el orden en que fueron escritas.",
+      "codigo": "// Ejemplo en JavaScript\nlet nombre = \"María\";\nlet saludo = \"Hola, \" + nombre + \"!\";\nconsole.log(saludo);",
+      "color": "blue"
+    },
+    "conclusion": "Al seguir un flujo de ejecución estructurado y predecible, se pueden evitar errores comunes, mejorar la legibilidad del código y asegurar que el programa funcione de manera confiable."
+  },
+  "subtema2": {
+    "titulo": "Condicionales",
+    "contenido": "Son otra de las estructuras básicas en la programación, permiten que el programa vaya tomando decisiones con base en ciertas condiciones.\n\"Las condicionales son estructuras fundamentales en la programación que permiten ejecutar instrucciones dependiendo de si una condición se cumple o no\".\nExisten varios tipos de estructuras condicionales, como los if o switch, y cada una de ellas se utiliza para ejecutar diferentes bloques de código, esto dependiendo de si una condición es verdadera o falsa.",
+    "condicionales": [
+      {
+        "tipo": "if",
+        "descripcion": "Este condicional tiene dos casos particulares. El primero es cuando se emplea simplemente la condición if, donde se busca comprobar una relación y, si se cumple, ejecutar un bloque de código determinado.",
+        "ejemplo": "if (edad >= 18) {\n  console.log(\"Eres mayor de edad\");\n}",
+        "color": "blue"
+      },
+      {
+        "tipo": "if-else",
+        "descripcion": "Es el segundo caso de un if, este se da cuando se emplea la estructura if-else. En este caso, se evalúa una condición y, si es verdadera, se ejecuta un bloque de código; si es falsa, se ejecuta otro bloque alternativo.",
+        "ejemplo": "if (edad >= 18) {\n  console.log(\"Eres mayor de edad\");\n} else {\n  console.log(\"Eres menor de edad\");\n}",
+        "color": "purple"
+      },
+      {
+        "tipo": "if-else anidados",
+        "descripcion": "También se pueden utilizar de forma anidada, es decir, un if dentro de otro. En algunos casos, se pueden anidar múltiples if-else para evaluar más de dos condiciones, ya que nos permiten manejar varios casos y tomar decisiones más complejas.",
+        "ejemplo": "if (nota >= 90) {\n  console.log(\"Excelente\");\n} else if (nota >= 70) {\n  console.log(\"Bueno\");\n} else if (nota >= 60) {\n  console.log(\"Aprobado\");\n} else {\n  console.log(\"Reprobado\");\n}",
+        "color": "indigo"
+      },
+      {
+        "tipo": "switch",
+        "descripcion": "El condicional switch es una estructura de control utilizada cuando una variable puede tomar distintos valores y, según cada valor, se ejecuta una acción específica. A diferencia del if-else, que evalúa condiciones lógicas, el switch compara el valor de una variable con diferentes casos predefinidos.",
+        "ejemplo": "switch(diaSemana) {\n  case 1: console.log(\"Lunes\"); break;\n  case 2: console.log(\"Martes\"); break;\n  case 3: console.log(\"Miércoles\"); break;\n  default: console.log(\"Día no válido\");\n}",
+        "color": "teal"
+      },
+      {
+        "tipo": "switch sin break",
+        "descripcion": "Es la segunda versión del condicional switch, en este caso no se utiliza el break. Si no se usa break, se ejecutarán todos los casos siguientes hasta encontrar uno que sí lo tenga. Esto puede ser útil en ciertos escenarios.",
+        "ejemplo": "switch(mes) {\n  case 1: case 3: case 5: case 7: case 8: case 10: case 12:\n    console.log(\"31 días\"); break;\n  case 4: case 6: case 9: case 11:\n    console.log(\"30 días\"); break;\n  case 2:\n    console.log(\"28 o 29 días\"); break;\n}",
+        "color": "cyan"
+      }
+    ],
+    "nota_importante": {
+      "text": "El condicional if-else es fundamental en la programación porque permite la toma de decisiones dentro de un programa. Su correcta implementación es clave para el flujo lógico del software, permitiendo ejecutar diferentes bloques de código según las condiciones evaluadas.",
+      "color": "green"
+    },
+    "cuando_usar_switch": {
+      "titulo": "¿Cuándo usar switch en lugar de if-else?",
+      "items": [
+        "Cuando se tiene una variable con múltiples valores predefinidos.",
+        "Cuando las comparaciones son directas y no dependen de expresiones complejas.",
+        "Cuando se quiere hacer el código más claro y organizado.",
+        "No es recomendable cuando se necesitan evaluar rangos de valores (<, >, <=, >=) o condiciones compuestas (&&, ||). En estos casos, es mejor usar if-else."
+      ],
+      "conclusion": "El condicional switch es una herramienta útil para estructurar decisiones múltiples de forma clara y eficiente, especialmente cuando se trata de valores discretos y definidos.",
+      "color": "green"
+    }
+  },
+  "subtema3": {
+    "titulo": "Iterativas o Bucles",
+    "contenido": "Permiten repetir un conjunto de instrucciones varias veces, se presenta cuando necesitamos realizar la misma acción en diferentes valores, o cuando no sabemos cuántas veces una condición será verdadera.\n\"Los bucles son estructuras con fragmentos de código que se ejecutan repetidas veces dependiendo de si una condición se cumple o no, continua hasta que la condición se vuelve falsa\".\nSon complementadas por una condicional, por lo que es primordial comprender el funcionamiento de estas. Hay dos tipos principales de bucles: for y while, cada uno tiene una estructura y función diferente.",
+    "bucles": [
+      {
+        "tipo": "for",
+        "descripcion": "Esta estructura es similar al bucle while, en este la operación se ejecuta para un número determinado de repeticiones, se utiliza para iterar en una secuencia de elementos.",
+        "definicion": "\"Estructura de control que ejecuta repetidamente en un bloque de código un número de veces conocido\".",
+        "explicacion": "La idea principal es repetir un bloque de código un número específico de veces o para cada elemento en una colección.",
+        "estructura": "El bucle for en Java inicializa una variable i en 2 y la incrementa en 1 en cada iteración, sumando su valor a la variable suma mientras i sea menor o igual a 10, calculando así la suma de los números del 2 al 10.\n\nEn contraste, el bucle for en Python itera sobre los números generados por range(5), que son del 0 al 4, y en cada iteración calcula el cuadrado del número actual, imprimiendo tanto el número como su respectivo cuadrado.",
+        "ejemplos": [
+          {
+            "lenguaje": "Java",
+            "codigo": "for (int i = 2; i <= 10; i++) {\n  suma = suma + i;\n}"
+          },
+          {
+            "lenguaje": "Python",
+            "codigo": "for numero in range(5):\n  cuadrado = numero ** 2\n  print(f\"El cuadrado de {numero} es: {cuadrado}\")"
+          }
+        ],
+        "cuando_usar": [
+          "Recorrer una lista de elementos.",
+          "Solicitar una serie de números al usuario, cuando se conoce de antemano cuántas veces se debe realizar la solicitud.",
+          "Realizar sumatorias u otras operaciones repetitivas donde el número de pasos a ejecutar es conocido.",
+          "Iterar un número específico de veces utilizando un rango numérico."
+        ],
+        "conclusion": "Es ideal cuando se conoce de antemano el número de veces que se debe ejecutar un bloque de código, reduciendo la complejidad del código y haciendo que el código sea más legible y menos propenso a errores de \"fuera de rango\".",
+        "color": "orange"
+      },
+      {
+        "tipo": "while",
+        "descripcion": "Esta estructura es de las más simples, como su nombre lo dice, el bucle while ejecuta las instrucciones dentro de su bloque mientras o siempre que se cumpla una condición.",
+        "definicion": "\"Estructura de control que ejecuta repetidamente en un bloque de código, continua mientras la condición sea verdadera\"",
+        "explicacion": "Si en algún momento la condición se evalúa como falsa, el bucle se detiene y la ejecución continúa con el código después del bucle.",
+        "estructura": "Python while: Imprime números desde el valor inicial de x hasta 9, incrementando x en cada paso.\nJava while: Imprime la frase \"El valor de i es:\" junto con los números del 1 al 5, incrementando i en cada paso.",
+        "ejemplos": [
+          {
+            "lenguaje": "Python",
+            "codigo": "while x < 10:\n  print(x)\n  x = x + 1"
+          },
+          {
+            "lenguaje": "Java",
+            "codigo": "int i = 1;\nwhile (i <= 5) {\n  System.out.println(\"El valor de i es: \" + i);\n  i = i + 1;\n}"
+          }
+        ],
+        "cuando_usar": [
+          "Si necesitas leer datos de un archivo hasta un final específico o se encuentre cierta información.",
+          "Ejecución hasta que una variable cambie.",
+          "Comprobar las veces que se cumple una condición sin un número fijo.",
+          "Cuando el número exacto de iteraciones que se deben realizar no se conoce de antemano."
+        ],
+        "conclusion": "Es aplicado sobre todo cuando no hay un número exacto de repeticiones, in contraste con el funcionamiento del ciclo for.",
+        "color": "purple"
+      },
+      {
+        "tipo": "do-while",
+        "descripcion": "Esta estructura asegura que el código dentro del bucle se ejecute al menos una vez.",
+        "definicion": "\"Estructura de control que ejecuta repetidamente en un bloque de código, continua hasta que la condición se vuelve falsa\"",
+        "explicacion": "A diferencia del bucle while, el do-while es ideal en situaciones donde necesitas que el bloque de código se ejecute sí o sí la primera vez, como en la validación de entrada del usuario o al presentar un menú de opciones. El bucle continuará repitiéndose mientras la condición especificada se mantenga verdadera.",
+        "estructura": "En el ejemplo 1 tenemos un ciclo que ejecutaría al menos una vez la impresión del valor de x y su incremento, luego continuaría repitiéndose mientras x sea menor que 10.\n\nPor otro lado, el ejemplo 2 muestra una solicitud al usuario para ingresar un número y almacenándolo en una variable. Posteriormente, evalúa si es menor o igual a 500; si lo es, repite la solicitud, termina solo cuando el número es mayor que 500.",
+        "ejemplos": [
+          {
+            "lenguaje": "Python",
+            "codigo": "while True:\n  print(x)\n  x = x + 1\n  if not (x < 10):\n    break"
+          },
+          {
+            "lenguaje": "Java",
+            "codigo": "do {\n  System.out.println(\"Ingrese un numero: \");\n  numero = sc.nextInt();\n} while(numero <= 500);"
+          }
+        ],
+        "cuando_usar": [
+          "Validación de entrada del usuario.",
+          "Al presentar un menú de opciones a un usuario.",
+          "Repetición de una acción hasta que se cumpla una condición."
+        ],
+        "conclusion": "La clave para elegir un do-while es la necesidad de garantizar la primera ejecución del bloque de código. Si la condición debe verificarse antes de la primera ejecución, un bucle while simple sería más apropiado.",
+        "color": "indigo"
+      }
+    ],
+    "nota_importante": {
+      "text": "Es importante saber identificar en qué momento es mejor aplicar cada bloque, es decir, si es necesario un for, while o do-while. En programación un bucle es utilizado generalmente para buscar y procesar datos, interactuar con el usuario. Por ejemplo, para pedir al usuario que ingrese una serie de números, etc.\n\nDeben contener una condición de salida clara y que sean controlados adecuadamente para evitar bucles infinitos. Por ello, se debe aumentar o cambiar la condición de parada en cada iteración.",
+      "color": "green"
+    }
+  },
+  "quiz": {
+    "titulo": "Evaluación de Estructuras de Control",
+    "descripcion": "Pon a prueba tus conocimientos sobre las estructuras de control con las siguientes preguntas. Selecciona la opción correcta o indica si la afirmación es verdadera o falsa.",
+    "preguntas": [
+      {
+        "tipo": "multiple_choice",
+        "pregunta": "¿Cuál de las siguientes estructuras de control ejecuta las instrucciones en el orden en que están escritas, sin bifurcaciones ni repeticiones?",
+        "opciones": [
+          "Estructura condicional",
+          "Estructura secuencial",
+          "Estructura iterativa",
+          "Estructura switch"
+        ],
+        "respuesta_correcta": "Estructura secuencial",
+        "explicacion": "La estructura secuencial ejecuta las instrucciones una tras otra en el orden en que están escritas, sin saltos ni repeticiones."
+      },
+      {
+        "tipo": "true_false",
+        "pregunta": "El condicional 'switch' es más adecuado que 'if-else' cuando se evalúan rangos de valores o condiciones compuestas.",
+        "respuesta_correcta": false,
+        "explicacion": "El condicional 'switch' es ideal para comparar una variable con valores discretos predefinidos, no para rangos o condiciones compuestas, donde 'if-else' es más apropiado."
+      },
+      {
+        "tipo": "multiple_choice",
+        "pregunta": "¿Qué bucle es más adecuado cuando se conoce de antemano el número exacto de iteraciones?",
+        "opciones": [
+          "while",
+          "do-while",
+          "for",
+          "switch"
+        ],
+        "respuesta_correcta": "for",
+        "explicacion": "El bucle 'for' es ideal cuando se conoce el número exacto de iteraciones, ya que permite definir el inicio, fin e incremento en una sola línea."
+      },
+      {
+        "tipo": "true_false",
+        "pregunta": "Un bucle 'do-while' garantiza que el bloque de código se ejecute al menos una vez, incluso si la condición es falsa inicialmente.",
+        "respuesta_correcta": true,
+        "explicacion": "El bucle 'do-while' ejecuta el bloque de código al menos una vez antes de verificar la condición, a diferencia del bucle 'while'."
+      },
+      {
+        "tipo": "multiple_choice",
+        "pregunta": "¿Qué sucede en un condicional 'switch' si no se incluye la instrucción 'break'?",
+        "opciones": [
+          "El programa termina inmediatamente",
+          "Se ejecutan todos los casos posteriores hasta encontrar un 'break' o el final del switch",
+          "Solo se ejecuta el caso actual",
+          "Se genera un error de compilación"
+        ],
+        "respuesta_correcta": "Se ejecutan todos los casos posteriores hasta encontrar un 'break' o el final del switch",
+        "explicacion": "Sin la instrucción 'break', el flujo de ejecución continúa con los casos siguientes hasta que se encuentra un 'break' o el switch termina."
+      }
+    ]
+  }
+}

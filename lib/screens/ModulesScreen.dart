@@ -1,237 +1,536 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:siapp/screens/home_screen.dart';
 import 'package:siapp/screens/login_screen.dart';
 import 'package:siapp/screens/progress_screen.dart';
+import 'package:siapp/screens/home_screen.dart'; // Import HomeScreen
 import 'module1.dart';
 import 'module2.dart';
 import 'module3.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Módulos de Estudio',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: ModulesScreen(),
-    );
-  }
-}
+import 'module4.dart';
 
 class ModulesScreen extends StatefulWidget {
+  const ModulesScreen({Key? key}) : super(key: key);
+
   @override
-  _ModulesScreenState createState() => _ModulesScreenState();
+  State<ModulesScreen> createState() => _ModulesScreenState();
 }
 
-class _ModulesScreenState extends State<ModulesScreen> {
+class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+  late AnimationController _controller;
+  late Animation<Color?> _gradientAnimation;
 
-  final List<Map<String, dynamic>> modules = [
+  final List<Map<String, dynamic>> _modules = [
     {
-      'image': 'assets/siaapp.png',
-      'title': 'Introducción a la programación',
-      'activities': 5,
+      'image': 'https://cecytebcs.edu.mx/wp-content/uploads/2022/02/programacion.jpeg',
+      'title': 'Módulo 1: Introducción a la Programación',
+      'subtitle': 'Conceptos básicos de programación',
+      'activities': 4,
       'id': 'module1',
+      'summary': 'Aprende los fundamentos de la programación, variables y estructuras de control para comenzar tu viaje en el desarrollo de software.',
     },
     {
-      'image': 'assets/siaapp.png',
-      'title': 'Algoritmos',
-      'activities': 3,
+      'image': 'https://adrianvegaonline.wordpress.com/wp-content/uploads/2020/06/3964906.jpg',
+      'title': 'Módulo 2: Lógica de programación',
+      'subtitle': 'Fundamentos de lógica para programar',
+      'activities': 4,
       'id': 'module2',
+      'summary': 'Domina el pensamiento lógico y las habilidades de resolución de problemas esenciales para escribir código eficiente.',
     },
     {
-      'image': 'assets/siaapp.png',
-      'title': 'Introducción a Java',
+      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
+      'title': 'Módulo 3: Algoritmos',
+      'subtitle': 'Diseño y análisis de algoritmos',
       'activities': 4,
       'id': 'module3',
+      'summary': 'Explora técnicas de diseño de algoritmos y analiza su eficiencia para aplicaciones en el mundo real.',
+    },
+    {
+      'image': 'https://matiasgandolfo.com/wp-content/uploads/2019/12/Paradigma-Blog.jpeg',
+      'title': 'Módulo 4: Paradigmas',
+      'subtitle': 'Diferentes enfoques de programación',
+      'activities': 4,
+      'id': 'module4',
+      'summary': 'Comprende varios paradigmas de programación como orientado a objetos y programación funcional.',
     },
   ];
 
-  Future<void> addModuleDetailsAndNavigate(BuildContext context, Map<String, dynamic> module) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
-      return;
-    }
-
-    final String? userEmail = user.email;
-    if (userEmail == null || userEmail.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("El correo del usuario no está disponible.")),
-      );
-      return;
-    }
-
-    final QuerySnapshot userQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: userEmail)
-        .get();
-
-    if (userQuery.docs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("El documento del usuario no existe en Firestore.")),
-      );
-      return;
-    }
-
-    final DocumentSnapshot userDoc = userQuery.docs.first;
-    final data = userDoc.data() as Map<String, dynamic>?;
-
-    if (data == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Los datos del usuario son nulos.")),
-      );
-      return;
-    }
-
-    final String ncontrol = data['ncontrol']?.toString() ?? '';
-    if (ncontrol.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("El número de control no está configurado.")),
-      );
-      return;
-    }
-
-    final DocumentReference progressRef =
-        FirebaseFirestore.instance.collection('progress').doc(ncontrol);
-
-    final DocumentSnapshot progressSnapshot =
-        await progressRef.collection('module_details').doc(module['id']).get();
-
-    if (!progressSnapshot.exists) {
-      await progressRef.collection('module_details').doc(module['id']).set({
-        'porcentaje': 0,
-        'quiz_completed': false,
-        'topics_completed': [],
-      }, SetOptions(merge: true));
-    }
-
-    // Redireccionar directamente al módulo correspondiente
-    switch (module['id']) {
-      case 'module1':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Module1IntroScreen(module: module)),
-        );
-        break;
-      case 'module2':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Module2Screen(module: module)),
-        );
-        break;
-      case 'module3':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Module3Screen(module: module)),
-        );
-        break;
-    }
+  @override
+  void initState() {
+    super.initState();
+    
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat(reverse: true);
+    
+    _gradientAnimation = ColorTween(
+      begin: Colors.blueAccent[400],
+      end: Colors.lightBlue[700],
+    ).animate(_controller);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Escoge un tema")),
-      body: ListView.builder(
-        padding: EdgeInsets.all(16),
-        itemCount: modules.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _ModuleCard(
-            module: modules[index],
-            onTap: () => addModuleDetailsAndNavigate(context, modules[index]),
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _addModuleDetailsAndNavigate(BuildContext context, Map<String, dynamic> module) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    try {
+      // Verificar si el usuario tiene documento en Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        _showSnackBar(context, "No se encontraron datos del usuario");
+        return;
+      }
+
+      // Crear o actualizar progreso del módulo usando transacción
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final progressRef = FirebaseFirestore.instance
+            .collection('progress')
+            .doc(user.uid)
+            .collection('modules')
+            .doc(module['id']);
+
+        final progressDoc = await transaction.get(progressRef);
+
+        if (!progressDoc.exists) {
+          transaction.set(progressRef, {
+            'porcentaje': 0,
+            'quiz_completed': false,
+            'topics_completed': [],
+            'last_updated': FieldValue.serverTimestamp(),
           });
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProgressScreen()),
-            );
-          }
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Cuenta'),
-        ],
+        }
+      });
+
+      _navigateToModule(context, module);
+    } catch (e) {
+      _showSnackBar(context, "Error al acceder a los datos: ${e.toString()}");
+      debugPrint("Error detallado: $e");
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red[400],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
-}
 
-class _ModuleCard extends StatelessWidget {
-  final Map<String, dynamic> module;
-  final VoidCallback onTap;
+  void _navigateToModule(BuildContext context, Map<String, dynamic> module) {
+    final routes = {
+      'module1': (ctx) => Module1IntroScreen(module: module),
+      'module2': (ctx) => Module2IntroScreen(module: module),
+      'module3': (ctx) => Module3Screen(module: module),
+      'module4': (ctx) => Module4Screen(module: module),
+    };
 
-  _ModuleCard({required this.module, required this.onTap});
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => routes[module['id']]!(context),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      elevation: 4,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    module['title'],
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Scaffold(
+          extendBody: true,
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _gradientAnimation.value!,
+                  _gradientAnimation.value!.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: SafeArea(
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            width: 150,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.2),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.4),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 3,
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/siaap.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                  Icons.school,
+                                  size: 50,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Módulos de Estudio',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(1, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Comienza',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final module = _modules[index];
+                          return ModuleCard(
+                            key: ValueKey(module['id']),
+                            module: module,
+                            onNavigate: () => _addModuleDetailsAndNavigate(context, module),
+                          );
+                        },
+                        childCount: _modules.length,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: onTap,
-                    child: Text('Start'),
                   ),
                 ],
               ),
             ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                module['image'],
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
+          ),
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _gradientAnimation.value!,
+                  _gradientAnimation.value!.withOpacity(0.9),
+                ],
               ),
             ),
-          ],
-        ),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() => _currentIndex = index);
+                if (index == 1) {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ProgressScreen(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                    ),
+                  );
+                }
+              },
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white70,
+              selectedIconTheme: const IconThemeData(size: 28),
+              unselectedIconTheme: const IconThemeData(size: 24),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Inicio',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.bar_chart),
+                  label: 'Progreso',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModuleCard extends StatefulWidget {
+  final Map<String, dynamic> module;
+  final VoidCallback onNavigate;
+
+  const ModuleCard({
+    required Key key,
+    required this.module,
+    required this.onNavigate,
+  }) : super(key: key);
+
+  @override
+  State<ModuleCard> createState() => _ModuleCardState();
+}
+
+class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateMixin {
+  late AnimationController _expandController;
+  late Animation<double> _heightAnimation;
+  late Animation<double> _fadeAnimation;
+  bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _heightAnimation = Tween<double>(begin: 120, end: 340).animate(
+      CurvedAnimation(parent: _expandController, curve: Curves.easeInOut),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _expandController,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _expandController.dispose();
+    super.dispose();
+  }
+
+  void _toggleExpanded() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _expandController.forward();
+      } else {
+        _expandController.reverse();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: AnimatedBuilder(
+        animation: _expandController,
+        builder: (context, child) {
+          return Material(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(20),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: _toggleExpanded,
+              child: Container(
+                constraints: BoxConstraints(
+                  minHeight: 120,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Hero(
+                            tag: 'module-image-${widget.module['id']}',
+                            child: Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.4),
+                                  width: 2,
+                                ),
+                              ),
+                              child: ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.module['image'],
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (context, url, error) => const Icon(Icons.menu_book, size: 40),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.module['title'],
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.module['subtitle'],
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.assignment, size: 16, color: Colors.white70),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${widget.module['activities']} actividades',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            _isExpanded ? Icons.expand_less : Icons.expand_more,
+                            color: Colors.white70,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizeTransition(
+                      sizeFactor: _expandController,
+                      axisAlignment: 1.0,
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.module['image'],
+                                  height: 120,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[800],
+                                    height: 120,
+                                    child: const Center(child: CircularProgressIndicator()),
+                                  ),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: Colors.grey[800],
+                                    height: 120,
+                                    child: const Icon(Icons.menu_book, size: 50),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                widget.module['summary'],
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              const SizedBox(height: 16),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton(
+                                  onPressed: widget.onNavigate,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.blue[800],
+                                  ),
+                                  child: const Text('Iniciar Módulo'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

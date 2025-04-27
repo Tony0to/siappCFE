@@ -1,72 +1,214 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HardwareSoftwareActivityScreen extends StatefulWidget {
-  const HardwareSoftwareActivityScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic>? moduleData;
+
+  const HardwareSoftwareActivityScreen({Key? key, this.moduleData}) : super(key: key);
 
   @override
   _HardwareSoftwareActivityScreenState createState() => _HardwareSoftwareActivityScreenState();
 }
 
-class _HardwareSoftwareActivityScreenState extends State<HardwareSoftwareActivityScreen> {
+class _HardwareSoftwareActivityScreenState extends State<HardwareSoftwareActivityScreen> with TickerProviderStateMixin {
   int _currentImageIndex = 0;
   final Map<int, String?> _userAnswers = {};
   bool _answersChecked = false;
   final Map<int, bool> _correctAnswers = {};
+  bool _isAttemptsLoading = true;
+  int _remainingAttempts = 3;
+  bool _isAttemptsExhausted = false;
+  String? _errorMessage;
+  late AnimationController _animationController;
 
   final List<Map<String, dynamic>> _images = [
     {
-      'url': 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware', // CPU
-      'description': 'Procesador (CPU)'
+      'url': 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Hardware',
+      'description': 'Procesador (CPU)',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware', // Microchip
-      'description': 'Microchip'
+      'url': 'https://images.unsplash.com/photo-1591799264316-4564e8e69d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Hardware',
+      'description': 'Memoria RAM',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1591488320449-011701bb6704?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware', // Componentes de computadora
-      'description': 'Componentes de computadora'
+      'url': 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Hardware',
+      'description': 'Disco duro (HDD)',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software', // Pantalla con código
-      'description': 'Interfaz de software'
+      'url': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Hardware',
+      'description': 'Teclado',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software', // Escritorio con aplicaciones
-      'description': 'Aplicaciones en escritorio'
+      'url': 'https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Hardware',
+      'description': 'Placa base',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware', // Disco duro
-      'description': 'Disco duro'
+      'url': 'https://images.unsplash.com/photo-1547088886-8d8c7a9e5f6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Software',
+      'description': 'Editor de código (VS Code)',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1547088886-8d8c7a9e5f6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software', // Editor de código
-      'description': 'Editor de código'
+      'url': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Software',
+      'description': 'Sistema operativo Windows',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software', // Interfaz de software en laptop
-      'description': 'Interfaz de software en laptop'
+      'url': 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Software',
+      'description': 'Interfaz de base de datos',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware', // Teclado
-      'description': 'Teclado'
+      'url': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Software',
+      'description': 'Aplicación de diseño gráfico',
     },
     {
-      'url': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software', // Sistema operativo
-      'description': 'Sistema operativo'
+      'url': 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
+      'correctAnswer': 'Software',
+      'description': 'Entorno de desarrollo (IDE)',
     },
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..forward();
+    _loadAttemptsFromFirestore();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAttemptsFromFirestore() async {
+    setState(() {
+      _isAttemptsLoading = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          _errorMessage = 'Usuario no autenticado.';
+          _isAttemptsLoading = false;
+        });
+        return;
+      }
+
+      final progressDoc = await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData?['id'] ?? 'module1')
+          .get();
+
+      if (progressDoc.exists) {
+        final data = progressDoc.data();
+        final attempts = (data?['intentos'] as num?)?.toInt() ?? 3;
+        final completed = data?['completed_activities'] as Map<String, dynamic>? ?? {};
+        setState(() {
+          _remainingAttempts = attempts;
+          _isAttemptsExhausted = attempts <= 0 || (completed['hardware_software'] ?? false);
+          _isAttemptsLoading = false;
+        });
+      } else {
+        setState(() {
+          _remainingAttempts = 3;
+          _isAttemptsExhausted = false;
+          _isAttemptsLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar los intentos: $e';
+        _isAttemptsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _decrementAttempts() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final newAttempts = _remainingAttempts - 1;
+
+      await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData?['id'] ?? 'module1')
+          .set({
+        'intentos': newAttempts,
+        'last_updated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _remainingAttempts = newAttempts;
+        _isAttemptsExhausted = newAttempts <= 0;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al actualizar los intentos: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  Future<void> _markActivityCompleted() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc(widget.moduleData?['id'] ?? 'module1')
+          .set({
+        'completed_activities': {'hardware_software': true},
+        'last_updated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _isAttemptsExhausted = true;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al registrar la actividad: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
   void _selectAnswer(String answer) {
+    if (_isAttemptsExhausted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No tienes más intentos o la actividad ya está completada.'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _userAnswers[_currentImageIndex] = answer;
       if (_currentImageIndex < _images.length - 1) {
@@ -78,15 +220,36 @@ class _HardwareSoftwareActivityScreenState extends State<HardwareSoftwareActivit
   }
 
   void _checkAnswers() {
+    bool allCorrect = true;
     for (int i = 0; i < _images.length; i++) {
       _correctAnswers[i] = _userAnswers[i] == _images[i]['correctAnswer'];
+      if (!_correctAnswers[i]!) {
+        allCorrect = false;
+      }
     }
     setState(() {
       _answersChecked = true;
     });
+
+    if (allCorrect) {
+      _markActivityCompleted();
+      Navigator.pop(context, true); // Retorna true para indicar que la actividad fue completada
+    } else {
+      _decrementAttempts();
+    }
   }
 
   void _resetActivity() {
+    if (_isAttemptsExhausted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No tienes más intentos o la actividad ya está completada.'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _currentImageIndex = 0;
       _userAnswers.clear();
@@ -97,225 +260,388 @@ class _HardwareSoftwareActivityScreenState extends State<HardwareSoftwareActivit
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Clasificar Hardware o Software'),
-        backgroundColor: Colors.green,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              '¿Es Hardware o Software?',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
+    if (_isAttemptsLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF003459), Color(0xFF00A8E8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            const SizedBox(height: 20),
-            if (!_answersChecked) ...[
-              Text(
-                'Imagen ${_currentImageIndex + 1} de ${_images.length}',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 20),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  _images[_currentImageIndex]['url'],
-                  height: 300,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 300,
-                      color: Colors.grey[200],
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 300,
-                      color: Colors.grey[200],
-                      child: const Center(child: Icon(Icons.error_outline, color: Colors.red)),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                _images[_currentImageIndex]['description'],
-                style: TextStyle(fontSize: 14, color: Colors.grey[700], fontStyle: FontStyle.italic),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _selectAnswer('Hardware');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Hardware',
-                      style: TextStyle(fontSize: 18),
-                    ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(color: Color(0xFFFFFFFF)),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage ?? 'Cargando progreso...',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: const Color(0xFFFFFFFF),
+                    fontWeight: FontWeight.w500,
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _selectAnswer('Software');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(duration: 500.ms),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  _buildAnimatedButton(
+                    text: 'Reintentar',
+                    onPressed: _loadAttemptsFromFirestore,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
                     ),
-                    child: const Text(
-                      'Software',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
+                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
                 ],
-              ),
-            ],
-            if (_answersChecked) ...[
-              const Text(
-                'Resultados',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ..._images.asMap().entries.map((entry) {
-                final index = entry.key;
-                final image = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GlassmorphicCard(
                   child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          image['url'],
-                          height: 60,
-                          width: 60,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              height: 60,
-                              width: 60,
-                              color: Colors.grey[200],
-                              child: const Center(child: CircularProgressIndicator()),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 60,
-                              width: 60,
-                              color: Colors.grey[200],
-                              child: const Center(child: Icon(Icons.error_outline, color: Colors.red)),
-                            );
-                          },
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFFFF)),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
                       ),
-                      const SizedBox(width: 16),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              image['description'],
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              'Tu respuesta: ${_userAnswers[index] ?? "No respondido"}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            Text(
-                              _correctAnswers[index]! ? 'Correcto' : 'Incorrecto',
-                              style: TextStyle(
-                                color: _correctAnswers[index]! ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'Clasificar Hardware o Software',
+                          style: GoogleFonts.poppins(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFFFFFFF),
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
                   ),
-                );
-              }).toList(),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  _resetActivity();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Intentos restantes',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                        ),
+                      ),
+                      Text(
+                        '$_remainingAttempts',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: _remainingAttempts > 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                child: const Text(
-                  'Reiniciar Actividad',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Text(
+                    'Instrucciones: Clasifica cada imagen como Hardware o Software.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Volver a Actividades',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-            ],
-            const SizedBox(height: 40),
-          ],
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                if (!_answersChecked) ...[
+                  GlassmorphicCard(
+                    child: Column(
+                      children: [
+                        Text(
+                          'Imagen ${_currentImageIndex + 1} de ${_images.length}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            _images[_currentImageIndex]['url'],
+                            height: 300,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                height: 300,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFFFF).withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    color: const Color(0xFF00A8E8),
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 300,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFFFF).withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Center(
+                                  child: Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 40),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          _images[_currentImageIndex]['description'],
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildAnimatedButton(
+                        text: 'Hardware',
+                        onPressed: _isAttemptsExhausted ? null : () => _selectAnswer('Hardware'),
+                        gradient: LinearGradient(
+                          colors: _isAttemptsExhausted
+                              ? [Colors.grey.shade600, Colors.grey.shade400]
+                              : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
+                        ),
+                      ).animate().fadeIn(delay: 300.ms).scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                      _buildAnimatedButton(
+                        text: 'Software',
+                        onPressed: _isAttemptsExhausted ? null : () => _selectAnswer('Software'),
+                        gradient: LinearGradient(
+                          colors: _isAttemptsExhausted
+                              ? [Colors.grey.shade600, Colors.grey.shade400]
+                              : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
+                        ),
+                      ).animate().fadeIn(delay: 400.ms).scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                    ],
+                  ),
+                ],
+                if (_answersChecked) ...[
+                  GlassmorphicCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Resultados',
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF4FC3F7),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ..._images.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final image = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: GlassmorphicCard(
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      image['url'],
+                                      height: 60,
+                                      width: 60,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Container(
+                                          height: 60,
+                                          width: 60,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFFFFFF).withOpacity(0.3),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Center(child: CircularProgressIndicator(color: Color(0xFF00A8E8))),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          height: 60,
+                                          width: 60,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFFFFFF).withOpacity(0.3),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Center(child: Icon(Icons.error_outline, color: Color(0xFFEF4444))),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          image['description'],
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                                          ),
+                                        ),
+                                        Text(
+                                          'Tu respuesta: ${_userAnswers[index] ?? "No respondido"}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                                          ),
+                                        ),
+                                        Text(
+                                          _correctAnswers[index]! ? 'Correcto' : 'Incorrecto',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: _correctAnswers[index]! ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                  const SizedBox(height: 30),
+                  _buildAnimatedButton(
+                    text: 'Reiniciar Actividad',
+                    onPressed: _isAttemptsExhausted ? null : _resetActivity,
+                    gradient: LinearGradient(
+                      colors: _isAttemptsExhausted
+                          ? [Colors.grey.shade600, Colors.grey.shade400]
+                          : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
+                    ),
+                  ).animate().fadeIn(delay: 300.ms).scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  const SizedBox(height: 16),
+                  _buildAnimatedButton(
+                    text: 'Volver a Actividades',
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
+                    ),
+                  ).animate().fadeIn(delay: 400.ms).scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                ],
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedButton({
+    required String text,
+    required VoidCallback? onPressed,
+    required LinearGradient gradient,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFFFFFFFF),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GlassmorphicCard extends StatelessWidget {
+  final Widget child;
+
+  const GlassmorphicCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

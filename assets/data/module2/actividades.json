@@ -1,0 +1,293 @@
+{
+  "activities": {
+    "sectionTitle": "Actividades de Programación",
+    "sectionDescription": "Esta sección contiene actividades interactivas diseñadas para reforzar tu comprensión de los conceptos de programación. Completa cada ejercicio y verifica tus conocimientos.",
+    "exercises": [
+      {
+        "id": 1,
+        "title": "Desafío de Bucles Anidados",
+        "description": "Analiza el comportamiento de un programa con bucles anidados para determinar su salida. Considera cómo las condiciones y contadores afectan el flujo del programa.",
+        "quiz": [
+          {
+            "question": "¿Cuál es la salida del siguiente código?\n\n```c\nint main() {\n  int count = 0;\n  for (int i = 1; i <= 3; i++) {\n    for (int j = 1; j <= i; j++) {\n      count++;\n    }\n  }\n  printf(\"%d\", count);\n}\n```",
+            "options": ["3", "6", "9", "12"],
+            "correctAnswer": 1
+          },
+          {
+            "question": "¿Cuántas veces se ejecuta el cuerpo del bucle interno en el código anterior?",
+            "options": ["3 veces", "6 veces", "9 veces", "12 veces"],
+            "correctAnswer": 1
+          },
+          {
+            "question": "Si cambiamos la condición del bucle externo a `i <= 4`, ¿cuál sería la nueva salida?",
+            "options": ["4", "6", "10", "12"],
+            "correctAnswer": 2
+          }
+        ],
+        "requirements": [
+          "Entender cómo funcionan los bucles anidados.",
+          "Calcular el número de iteraciones basándote en las condiciones.",
+          "Predecir la salida del programa."
+        ],
+        "exampleInput": "No se requiere entrada",
+        "exampleOutput": "6",
+        "relatedTopics": ["Bucles", "Condicionales", "Programación en C"]
+      },
+      {
+        "id": 2,
+        "title": "Depuración de Arreglos",
+        "description": "Identifica errores en un programa que manipula arreglos. Evalúa el código para encontrar bugs y determinar la salida correcta o el comportamiento esperado.",
+        "quiz": [
+          {
+            "question": "¿Cuál es el problema en el siguiente código?\n\n```python\narr = [1, 2, 3, 4]\nsum = 0\nfor i in range(5):\n    sum += arr[i]\nprint(sum)\n```",
+            "options": [
+              "No hay error",
+              "Índice fuera de rango",
+              "Variable sum no inicializada",
+              "Bucle infinito"
+            ],
+            "correctAnswer": 1
+          },
+          {
+            "question": "¿Qué sucede si corregimos el rango a `range(4)`?",
+            "options": ["Imprime 10", "Imprime 4", "Imprime 0", "Lanza un error"],
+            "correctAnswer": 0
+          },
+          {
+            "question": "¿Cómo deberíamos modificar el código para sumar solo los elementos pares del arreglo?",
+            "options": [
+              "Usar `if arr[i] % 2 == 0` dentro del bucle",
+              "Cambiar el rango a `range(2)`",
+              "Sumar `arr[i] * 2`",
+              "Usar un bucle while"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Si el arreglo fuera `[2, 4, 6, 8]`, ¿cuál sería la suma de los elementos pares con la corrección anterior?",
+            "options": ["10", "20", "12", "24"],
+            "correctAnswer": 1
+          }
+        ],
+        "requirements": [
+          "Identificar errores de índices en arreglos.",
+          "Corregir bugs en el código.",
+          "Modificar el programa para cumplir nuevos requisitos."
+        ],
+        "exampleInput": "[1, 2, 3, 4]",
+        "exampleOutput": "10",
+        "relatedTopics": ["Arreglos", "Depuración", "Programación en Python"]
+      },
+      {
+        "id": 3,
+        "title": "Alcance y Funciones",
+        "description": "Evalúa cómo las funciones y el alcance de variables afectan el comportamiento de un programa. Predice la salida considerando el paso por valor y las modificaciones locales.",
+        "quiz": [
+          {
+            "question": "¿Cuál es la salida del siguiente código?\n\n```javascript\nfunction modify(x) {\n  x = x * 2;\n  return x;\n}\nlet a = 5;\nlet b = modify(a);\nconsole.log(a, b);\n```",
+            "options": ["5 10", "10 10", "5 5", "10 5"],
+            "correctAnswer": 0
+          },
+          {
+            "question": "¿Por qué la variable `a` no cambia después de llamar a `modify`?",
+            "options": [
+              "JavaScript usa paso por valor para números",
+              "La función no retorna un valor",
+              "La variable `a` es constante",
+              "El alcance global impide cambios"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Si queremos que `a` se modifique, ¿cómo deberíamos cambiar el código?",
+            "options": [
+              "Asignar `a = modify(a)`",
+              "Usar un objeto como parámetro",
+              "Eliminar el retorno",
+              "Cambiar a paso por referencia"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Si `modify` devuelve `x * 3` y llamamos `a = modify(a)`, ¿cuál es la salida de `console.log(a)`?",
+            "options": ["5", "10", "15", "20"],
+            "correctAnswer": 2
+          }
+        ],
+        "requirements": [
+          "Comprender el alcance de variables en funciones.",
+          "Analizar el paso por valor vs. paso por referencia.",
+          "Modificar el código para lograr el comportamiento deseado."
+        ],
+        "exampleInput": "5",
+        "exampleOutput": "5 10",
+        "relatedTopics": ["Funciones", "Alcance", "Programación en JavaScript"]
+      },
+      {
+        "id": 4,
+        "title": "Optimización de Algoritmos",
+        "description": "Evalúa diferentes enfoques para resolver un problema y selecciona el más eficiente en términos de complejidad temporal. Analiza algoritmos comunes y sus casos de uso.",
+        "quiz": [
+          {
+            "question": "¿Cuál es la complejidad temporal de buscar un elemento en un arreglo desordenado de tamaño n?",
+            "options": ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+            "correctAnswer": 2
+          },
+          {
+            "question": "Si el arreglo estuviera ordenado, ¿qué algoritmo sería más eficiente para buscar?",
+            "options": [
+              "Búsqueda lineal",
+              "Búsqueda binaria",
+              "Búsqueda por interpolación",
+              "Búsqueda exponencial"
+            ],
+            "correctAnswer": 1
+          },
+          {
+            "question": "¿Cuál es la complejidad temporal de la búsqueda binaria?",
+            "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+            "correctAnswer": 1
+          },
+          {
+            "question": "Para un arreglo de 1000 elementos, ¿cuál algoritmo es más eficiente para encontrar el elemento máximo?",
+            "options": [
+              "Búsqueda binaria",
+              "Búsqueda lineal",
+              "Ordenamiento y selección",
+              "División y conquista"
+            ],
+            "correctAnswer": 1
+          },
+          {
+            "question": "¿Cuántas comparaciones aproximadas requiere la búsqueda binaria en un arreglo de 1024 elementos en el peor caso?",
+            "options": ["10", "20", "512", "1024"],
+            "correctAnswer": 0
+          }
+        ],
+        "requirements": [
+          "Entender la notación Big-O.",
+          "Comparar la eficiencia de algoritmos de búsqueda.",
+          "Seleccionar el algoritmo adecuado según el contexto."
+        ],
+        "exampleInput": "[5, 2, 8, 1, 9], buscar 8",
+        "exampleOutput": "Índice 2",
+        "relatedTopics": ["Algoritmos", "Complejidad", "Búsqueda"]
+      },
+      {
+        "id": 5,
+        "title": "Identificador de Números Primos",
+        "description": "Analiza el diagrama de flujo y el pseudocódigo para un programa que identifica si un número es primo. Responde las preguntas relacionadas con su lógica y funcionamiento.",
+        "flowchart": {
+          "flowchartId": "identificador_primos",
+          "description": "El diagrama de flujo representa un algoritmo que determina si un número ingresado es primo verificando divisores hasta su raíz cuadrada."
+        },
+        "pseudocode": "Algoritmo IdentificadorPrimos\n  Leer numero\n  Si numero < 2 Entonces\n    Mostrar 'No es primo'\n  Sino\n    esPrimo = Verdadero\n    Para i = 2 Hasta raíz(numero) Hacer\n      Si numero % i = 0 Entonces\n        esPrimo = Falso\n        Salir\n      FinSi\n    FinPara\n    Si esPrimo Entonces\n      Mostrar 'Es primo'\n    Sino\n      Mostrar 'No es primo'\n    FinSi\n  FinSi\nFinAlgoritmo",
+        "quiz": [
+          {
+            "question": "¿Cuál es el propósito del algoritmo representado en el diagrama de flujo?",
+            "options": [
+              "Calcular el factorial de un número",
+              "Determinar si un número es primo",
+              "Encontrar divisores de un número",
+              "Verificar si un número es par"
+            ],
+            "correctAnswer": 1
+          },
+          {
+            "question": "¿Por qué el algoritmo solo verifica divisores hasta la raíz cuadrada del número?",
+            "options": [
+              "Para reducir el tiempo de ejecución",
+              "Porque los números primos son cuadrados perfectos",
+              "Para evitar divisiones por cero",
+              "Porque todos los divisores están en ese rango"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Si se ingresa el número 17, ¿qué mostrará el algoritmo?",
+            "options": [
+              "No es primo",
+              "Es primo",
+              "Error",
+              "17 es divisible"
+            ],
+            "correctAnswer": 1
+          }
+        ],
+        "requirements": [
+          "El programa debe identificar correctamente números primos.",
+          "Debe ser eficiente, verificando solo los divisores necesarios.",
+          "Debe manejar números enteros positivos."
+        ],
+        "exampleInput": "17",
+        "exampleOutput": "Es primo",
+        "relatedTopics": ["Algoritmos", "Números primos", "Optimización"]
+      },
+      {
+        "id": 6,
+        "title": "Conversor de Temperaturas",
+        "description": "Examina el diagrama de flujo y el pseudocódigo para un conversor de temperaturas entre Celsius y Fahrenheit. Responde las preguntas sobre su implementación.",
+        "flowchart": {
+          "flowchartId": "conversor_temperaturas",
+          "description": "El diagrama de flujo muestra un algoritmo que convierte una temperatura de Celsius a Fahrenheit y viceversa, según la selección del usuario."
+        },
+        "pseudocode": "Algoritmo ConversorTemperaturas\n  Leer opcion\n  Si opcion = 'C' Entonces\n    Leer celsius\n    fahrenheit = (celsius * 9/5) + 32\n    Mostrar fahrenheit\n  Sino Si opcion = 'F' Entonces\n    Leer fahrenheit\n    celsius = (fahrenheit - 32) * 5/9\n    Mostrar celsius\n  Sino\n    Mostrar 'Opción inválida'\n  FinSi\nFinAlgoritmo",
+        "quiz": [
+          {
+            "question": "¿Qué fórmula se usa para convertir de Celsius a Fahrenheit en el algoritmo?",
+            "options": [
+              "C * 9/5 + 32",
+              "C * 5/9 + 32",
+              "(C - 32) * 5/9",
+              "C + 273.15"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Si el usuario ingresa 'C' y 0 grados Celsius, ¿qué mostrará el algoritmo?",
+            "options": [
+              "0 °F",
+              "32 °F",
+              "273.15 °F",
+              "Error"
+            ],
+            "correctAnswer": 1
+          },
+          {
+            "question": "¿Qué sucede si el usuario ingresa una opción diferente a 'C' o 'F'?",
+            "options": [
+              "El programa convierte a Kelvin",
+              "Muestra 'Opción inválida'",
+              "Ignora la entrada",
+              "Lanza un error"
+            ],
+            "correctAnswer": 1
+          }
+        ],
+        "requirements": [
+          "El programa debe permitir seleccionar el tipo de conversión.",
+          "Debe calcular correctamente las temperaturas convertidas.",
+          "Debe manejar entradas inválidas."
+        ],
+        "exampleInput": "C, 0",
+        "exampleOutput": "32 °F",
+        "relatedTopics": ["Algoritmos", "Conversiones", "Entrada/Salida"]
+      }
+    ],
+    "grading": {
+      "criteria": [
+        {"aspect": "Correctitud", "weight": 0.35},
+        {"aspect": "Comprensión", "weight": 0.35},
+        {"aspect": "Análisis", "weight": 0.20},
+        {"aspect": "Presentación", "weight": 0.10}
+      ],
+      "scoreConversion": [
+        {"range": "90-100", "grade": "Excelente"},
+        {"range": "80-89", "grade": "Muy Bueno"},
+        {"range": "70-79", "grade": "Bueno"},
+        {"range": "60-69", "grade": "Suficiente"},
+        {"range": "0-59", "grade": "Insuficiente"}
+      ]
+    }
+  }
+}
