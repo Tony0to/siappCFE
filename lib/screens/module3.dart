@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:siapp/screens/module1screens/actividades.dart';
+import 'package:siapp/screens/module3screens/actividades.dart';
 import 'package:siapp/screens/module3screens/contenido_screen.dart';
 import 'package:siapp/screens/ModulesScreen.dart';
 
@@ -489,7 +489,7 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ActividadesScreen(moduleData: moduleContent),
+                    builder: (context) => Module3ActividadesScreen(moduleData: moduleContent),
                   ),
                 );
               },
