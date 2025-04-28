@@ -3,12 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
 import 'package:confetti/confetti.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'flowcharts3.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
 
 class ActividadesScreen extends StatefulWidget {
   final Map<String, dynamic> actividadesData;
@@ -30,7 +31,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   String? _errorMessage;
   late AnimationController _controller;
   late ConfettiController _confettiController;
-  int _remainingAttempts = 3; // Default value before Firestore load
+  late ScrollController _scrollController;
+  int _remainingAttempts = 3;
   bool _isAttemptsLoading = true;
   bool _isAttemptsExhausted = false;
 
@@ -39,8 +41,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     super.initState();
     _controller = AnimationController(vsync: this);
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _scrollController = ScrollController();
     debugPrint('ActividadesScreen initState: actividadesData = ${widget.actividadesData}');
-    _loadAttemptsFromFirestore(); // Load attempts from Firestore
+    _loadAttemptsFromFirestore();
     _loadJsonContent();
   }
 
@@ -48,6 +51,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   void dispose() {
     _controller.dispose();
     _confettiController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -75,14 +79,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
       if (progressDoc.exists) {
         final data = progressDoc.data();
-        final attempts = (data?['intentos'] as num?)?.toInt() ?? 3; // Default to 3 if not set
+        final attempts = (data?['intentos'] as num?)?.toInt() ?? 3;
         setState(() {
           _remainingAttempts = attempts;
           _isAttemptsExhausted = attempts <= 0;
           _isAttemptsLoading = false;
         });
       } else {
-        // If document doesn't exist, initialize with 3 attempts
         await FirebaseFirestore.instance
             .collection('progress')
             .doc(user.uid)
@@ -131,12 +134,14 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         _isAttemptsExhausted = newAttempts <= 0;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al actualizar los intentos: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al actualizar los intentos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -158,17 +163,18 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             'last_updated': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
 
-      // Decrement attempts if the final grade is less than 70
       if (percentage < 70) {
         await _decrementAttempts();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar la calificación: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar la calificación: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -233,9 +239,189 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     debugPrint('Initialized data: ${exercises.length} exercises, grading: ${gradingInfo.keys}, userAnswers: $userAnswers, answeredQuestions: $answeredQuestions');
   }
 
+  Widget _buildCodeBox(String code, {String language = 'plaintext', bool selectable = false}) {
+    if (code.isEmpty) {
+      return const Text(
+        'Código no disponible',
+        style: TextStyle(color: Colors.white70),
+      );
+    }
+
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'c':
+        highlightLanguage = 'c';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'pseudocode':
+      case 'plaintext':
+        highlightLanguage = 'plaintext';
+        break;
+      default:
+        highlightLanguage = 'plaintext';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A2463).withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF3E92CC).withOpacity(0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3E92CC),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              language.toLowerCase() == 'pseudocode' ? 'Pseudocódigo' : 'Código',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: selectable
+                    ? SelectableText.rich(
+                        TextSpan(
+                          text: code,
+                          style: GoogleFonts.sourceCodePro(
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                        style: GoogleFonts.sourceCodePro(
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      )
+                    : HighlightView(
+                        code,
+                        language: highlightLanguage,
+                        theme: githubTheme,
+                        padding: const EdgeInsets.all(12),
+                        textStyle: GoogleFonts.sourceCodePro(
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _formatQuestion(String question) {
+    final codeBlockRegExp = RegExp(r'```(\w+)?\n([\s\S]*?)\n```');
+    final matches = codeBlockRegExp.allMatches(question);
+    final widgets = <Widget>[];
+    int lastEnd = 0;
+
+    for (final match in matches) {
+      final start = match.start;
+      final end = match.end;
+      final language = match.group(1) ?? 'plaintext';
+      final code = kDelimiter + match.group(2)! + kDelimiter;
+
+      if (lastEnd < start) {
+        final text = question.substring(lastEnd, start).trim();
+        if (text.isNotEmpty) {
+          widgets.add(
+            Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          );
+        }
+      }
+
+      widgets.add(
+        _buildCodeBox(
+          code,
+          language: language,
+        ),
+      );
+
+      lastEnd = end;
+    }
+
+    if (lastEnd < question.length) {
+      final text = question.substring(lastEnd).trim();
+      if (text.isNotEmpty) {
+        widgets.add(
+          Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+        );
+      }
+    }
+
+    if (matches.isEmpty) {
+      widgets.add(
+        Text(
+          question,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building ActividadesScreen, _contentData: ${_contentData != null}, _errorMessage: $_errorMessage');
+    debugPrint('Building ActividadesScreen, _contentData: ${_contentData != null}, _isAttemptsLoading: $_isAttemptsLoading');
     if (_contentData == null || _isAttemptsLoading) {
       return Scaffold(
         body: Container(
@@ -316,6 +502,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           child: Stack(
             children: [
               SingleChildScrollView(
+                controller: _scrollController,
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,7 +617,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
               LinearProgressIndicator(
                 value: (currentExerciseIndex + 1) / exercises.length,
                 minHeight: 8,
-                backgroundColor: Colors.white24,
+                backgroundColor: Colors.white.withOpacity(0.24),
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
               ).animate().fadeIn(duration: 600.ms),
               Container(
@@ -492,8 +679,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }
 
   Widget _buildFlowChartSection(Map<String, dynamic> exercise) {
-    final flowchart = exercise['flowchart'] as Map<String, dynamic>?;
-    final flowchartId = flowchart?['flowchartId']?.toString() ?? (exercise['id'] == 5 ? 'identificador_primos' : 'conversor_temperaturas');
+    final flowchart = exercise['flowchart'] as Map<String, dynamic>;
+    final flowchartId = flowchart['flowchartId'].toString();
     debugPrint('Rendering flowchart: $flowchartId');
 
     final flowchartConfig = {
@@ -523,7 +710,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           ),
           const SizedBox(height: 12),
           Text(
-            flowchart?['description']?.toString() ?? 'Descripción no disponible',
+            flowchart['description']?.toString() ?? 'Descripción no disponible',
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.white70,
@@ -577,6 +764,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }
 
   Widget _buildPseudocodeSection(Map<String, dynamic> exercise) {
+    final pseudocode = exercise['pseudocode']?.toString() ?? 'Pseudocódigo no disponible';
+
     return GlassmorphicCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -596,18 +785,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade900.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade700.withOpacity(0.5)),
-            ),
-            child: SelectableText(
-              exercise['pseudocode']?.toString() ?? 'Pseudocódigo no disponible',
-              style: GoogleFonts.sourceCodePro(fontSize: 14, color: Colors.white),
-            ),
+          _buildCodeBox(
+            pseudocode,
+            language: 'pseudocode',
+            selectable: true,
           ),
         ],
       ),
@@ -701,6 +882,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     );
   }
 
+  static const kDelimiter = '<DELIMITER>';
   Widget _buildQuizQuestions(Map<String, dynamic> exercise) {
     final quiz = List<Map<String, dynamic>>.from(exercise['quiz'] ?? []);
     debugPrint('Rendering quiz for exercise ${exercise['id']}, questions: ${quiz.length}');
@@ -807,14 +989,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  question['question']?.toString() ?? 'Pregunta no disponible',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ).animate().fadeIn(delay: (100 * questionIndex).ms),
+                ..._formatQuestion(question['question']?.toString() ?? 'Pregunta no disponible')
+                    .map((widget) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: widget,
+                        )),
                 const SizedBox(height: 12),
                 ...options.asMap().entries.map((optionEntry) {
                   final optionIndex = optionEntry.key;
@@ -925,11 +1104,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                       ),
                     ).animate().scale(delay: (100 * optionIndex).ms, duration: 400.ms, curve: Curves.easeOutBack),
                   );
-                }).toList(),
+                }),
                 const SizedBox(height: 16),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -1046,6 +1225,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     if (currentExerciseIndex > 0) {
       setState(() {
         currentExerciseIndex--;
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       });
     }
   }
@@ -1054,6 +1238,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     if (currentExerciseIndex < exercises.length - 1) {
       setState(() {
         currentExerciseIndex++;
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       });
     } else {
       _showCompletionDialog();
@@ -1071,7 +1260,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     final screenWidth = MediaQuery.of(context).size.width;
     debugPrint('Showing completion dialog: screenWidth=$screenWidth, correctAnswers=$correctAnswers, totalQuestions=$totalQuestions');
 
-    // Save the final grade, update quiz completion status, and decrement attempts if necessary
     _saveFinalGrade(percentage);
 
     if (percentage >= 90) {
@@ -1184,8 +1372,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // Close the dialog
-                    Navigator.pop(context); // Pop ActividadesScreen to return to module2.dart
+                    Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                   child: Text(
                     'Continuar',
@@ -1238,7 +1426,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   int _getTotalQuestions() {
     return exercises
         .where((e) => e.containsKey('quiz'))
-        .fold(0, (sum, e) => sum + (e['quiz'] as List<dynamic>).length);
+        .fold(0, (total, e) => total + (e['quiz'] as List<dynamic>).length);
   }
 
   Color _getScoreColor(int percentage) {

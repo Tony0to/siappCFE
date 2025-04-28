@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double _progress = 0.0;
   bool _isInitializing = false;
   String? _initializationError;
-  final int totalModules = 4; // Matches the total modules in progress_screen.dart
+  final int totalModules = 4;
 
   @override
   void initState() {
@@ -62,7 +62,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> _loadUserProgress() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      debugPrint('No user logged in');
+      return;
+    }
 
     try {
       final moduleDetails = await FirebaseFirestore.instance
@@ -103,12 +106,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       });
     } catch (e) {
       debugPrint('Error cargando progreso: $e');
+      setState(() {
+        _initializationError = 'Error al cargar progreso: $e';
+      });
     }
   }
 
   Future<void> _initializeUserData() async {
     if (_isInitializing) return;
-    
+
     setState(() {
       _isInitializing = true;
       _initializationError = null;
@@ -119,21 +125,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (user == null) {
         throw Exception("Usuario no autenticado");
       }
-
-      // Verificar o crear usuario
-      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        final userDoc = await transaction.get(userRef);
-        
-        if (!userDoc.exists) {
-          transaction.set(userRef, {
-            'email': user.email,
-            'name': user.displayName ?? 'Usuario',
-            'ncontrol': _generateControlNumber(user),
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-        }
-      });
 
       // Verificar o crear progreso
       final progressRef = FirebaseFirestore.instance
@@ -150,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             'mcompleto': [],
             'ultimo_acceso': FieldValue.serverTimestamp(),
           });
+          debugPrint('Progress initialized for userId: ${user.uid}');
         }
       });
 
@@ -159,19 +151,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     } catch (e, stackTrace) {
       debugPrint('Error inicializando datos: $e');
       debugPrint('Stack trace: $stackTrace');
-      
       setState(() {
         _isInitializing = false;
         _initializationError = 'Error al inicializar datos. Por favor, reinicia la aplicación.';
       });
     }
-  }
-
-  String _generateControlNumber(User user) {
-    if (user.email != null) {
-      return user.email!.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    }
-    return 'user_${DateTime.now().millisecondsSinceEpoch}';
   }
 
   Future<void> _navigateToModules() async {
@@ -183,13 +167,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         context,
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => const ModulesScreen(),
-          transitionsBuilder: (_, a, __, c) => 
-            FadeTransition(opacity: a, child: c),
+          transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_initializationError ?? 'Error: ${e.toString()}'),
@@ -229,8 +211,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     context,
                     PageRouteBuilder(
                       pageBuilder: (_, __, ___) => const AuthScreen(),
-                      transitionsBuilder: (_, a, __, c) => 
-                        FadeTransition(opacity: a, child: c),
+                      transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
                     ),
                     (Route<dynamic> route) => false,
                   );
@@ -376,7 +357,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       child: _buildLogoutButton(),
                     ),
                   ),
-                  
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
@@ -414,7 +394,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ),
                           ),
                           const SizedBox(height: 50),
-
                           FadeTransition(
                             opacity: _fadeAnimation,
                             child: Text(
@@ -440,7 +419,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ),
                           ),
                           const SizedBox(height: 40),
-
                           if (_isInitializing)
                             const CircularProgressIndicator(color: Colors.white)
                           else
@@ -452,7 +430,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               onPressed: _navigateToModules,
                               animationDelay: 0.4,
                             ),
-                          
                           if (_initializationError != null)
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -465,7 +442,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 textAlign: TextAlign.center,
                               ),
                             ),
-
                           const SizedBox(height: 20),
                           FadeTransition(
                             opacity: _fadeAnimation,

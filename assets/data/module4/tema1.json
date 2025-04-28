@@ -1,0 +1,223 @@
+{
+  "sectionImage": "https://press.com.mx/wp-content/uploads/2021/03/curso-desarrollo-web-1000x641.jpg",
+  "sectionTitle": "Paradigmas de Programación",
+  "introText": "Los paradigmas de programación son enfoques o estilos para resolver problemas mediante código. Cada paradigma ofrece una perspectiva única sobre cómo estructurar y organizar un programa, y su elección depende del problema a resolver y las necesidades del proyecto.",
+  "subsections": [
+    {
+      "title": "1. Programación Imperativa",
+      "content": "La programación imperativa es el paradigma más directo y tradicional. En él, se le dice a la computadora exactamente qué hacer, paso a paso. El foco está en cómo se deben hacer las cosas para llegar a un resultado, y se hace uso de instrucciones, variables, condicionales y bucles.",
+      "examples": [
+        {
+          "title": "Características Principales",
+          "content": [
+            {
+              "subtitle": "Forma de pensar",
+              "text": "Es como dar órdenes directas y secuenciales. Cada línea de código representa una acción que la computadora debe ejecutar en el orden en que se le presenta."
+            },
+            {
+              "subtitle": "Analogía",
+              "text": "Imagina una receta de cocina. No solo dices que quieres una pizza, sino que indicas cómo amasar la harina, cuándo agregar la salsa y a qué temperatura hornear."
+            },
+            {
+              "subtitle": "Características",
+              "text": "- Uso intensivo de variables.\n- Cambios de estado frecuentes.\n- Control total del flujo de ejecución.\n- Lenguaje muy detallado."
+            }
+          ]
+        },
+        {
+          "title": "Ejemplo",
+          "code": "#include <stdio.h>\nint main() {\n    int suma = 0;\n    for (int i = 1; i <= 10; i++) {\n        suma += i;\n    }\n    printf(\"La suma es: %d\\n\", suma);\n    return 0;\n}",
+          "explanation": "Este código en C suma los números del 1 al 10. Aquí está cómo funciona de manera sencilla:\n\n1. **int suma = 0;** Crea una caja llamada 'suma' donde guardaremos el total, empezando en 0.\n2. **for (int i = 1; i <= 10; i++)** Es como decir: 'cuenta del 1 al 10, uno por uno'. La variable 'i' toma cada número en orden.\n3. **suma += i;** Cada vez que contamos un número, lo añadimos a la caja 'suma'. Por ejemplo, en la primera vuelta, suma = 0 + 1; en la segunda, suma = 1 + 2, y así.\n4. **printf(\"La suma es: %d\\n\", suma);** Al final, mostramos el resultado, que será 55 (1 + 2 + 3 + ... + 10).\n5. **return 0;** Indica que el programa terminó correctamente.\n\nEste código es imperativo porque damos pasos exactos: inicializar, contar, sumar y mostrar."
+        },
+        {
+          "title": "Ventajas",
+          "content": "Muy flexible.\nÚtil para tareas donde el orden es crítico.\nFácil de traducir a lenguaje de máquina."
+        },
+        {
+          "title": "Desventajas",
+          "content": "Mayor posibilidad de errores si no se controla el flujo correctamente.\nDificultad para escalar en proyectos grandes."
+        },
+        {
+          "title": "Aplicaciones Comunes",
+          "content": "Sistemas embebidos.\nControl de hardware.\nJuegos clásicos."
+        },
+        {
+          "title": "Dato Curioso",
+          "content": "Es el paradigma base de lenguajes como C, Pascal y Assembly. Aún hoy se usa para sistemas operativos y firmware.",
+          "color": "#10B981",
+          "opacity": 0.3
+        }
+      ],
+      "questions": [
+        {
+          "text": "¿Cuál de los siguientes lenguajes es un ejemplo de programación imperativa?",
+          "options": ["SQL", "Haskell", "C", "Prolog"],
+          "correct": "C"
+        }
+      ]
+    },
+    {
+      "title": "2. Programación Declarativa",
+      "content": "Este paradigma se centra en qué se quiere lograr, no en cómo. El programador expresa el resultado deseado, y el motor de ejecución decide los pasos para alcanzarlo.",
+      "examples": [
+        {
+          "title": "Características Principales",
+          "content": [
+            {
+              "subtitle": "Forma de pensar",
+              "text": "En lugar de dar instrucciones, se expresan condiciones o resultados esperados."
+            },
+            {
+              "subtitle": "Analogía",
+              "text": "Pedir comida en un restaurante: tú no das los pasos de la receta, solo haces el pedido y dejas que el chef lo prepare."
+            },
+            {
+              "subtitle": "Características",
+              "text": "- Alta abstracción.\n- Enfoque en el resultado final.\n- Menor control del flujo.\n- Sintaxis más concisa."
+            }
+          ]
+        },
+        {
+          "title": "Ejemplo",
+          "code": "SELECT nombre, edad FROM usuarios WHERE edad > 18;",
+          "explanation": "Este es un código en SQL, un lenguaje declarativo, que pide información de una base de datos. Veamos cómo funciona de forma sencilla:\n\n1. **SELECT nombre, edad** Dice: 'Quiero los nombres y edades'.\n2. **FROM usuarios** Indica que la información está en una tabla llamada 'usuarios'.\n3. **WHERE edad > 18** Añade una condición: 'Solo quiero los datos de personas mayores de 18 años'.\n\nAquí no decimos cómo buscar los datos ni cómo filtrarlos. Solo pedimos el resultado final, y el motor de la base de datos (como MySQL) decide cómo hacerlo. Es como pedir 'tráeme solo los adultos' sin preocuparte por cómo se revisan los registros."
+        },
+        {
+          "title": "Ventajas",
+          "content": "Código más corto y fácil de mantener.\nMenos propenso a errores lógicos.\nOptimización automática del proceso."
+        },
+        {
+          "title": "Desventajas",
+          "content": "Menor control en operaciones complejas.\nDepende del motor del lenguaje."
+        },
+        {
+          "title": "Aplicaciones Comunes",
+          "content": "Consultas de bases de datos.\nAutomatización de infraestructura.\nDesarrollo web (HTML, CSS)."
+        },
+        {
+          "title": "Dato Curioso",
+          "content": "Lenguajes como Prolog, SQL y HTML son completamente declarativos.",
+          "color": "#10B981",
+          "opacity": 0.3
+        }
+      ],
+      "questions": [
+        {
+          "text": "¿Qué paradigma de programación se centra en expresar el resultado deseado sin especificar los pasos para lograrlo?",
+          "options": ["Imperativa", "Funcional", "Lógica", "Declarativa"],
+          "correct": "Declarativa"
+        }
+      ]
+    },
+    {
+      "title": "3. Programación Funcional",
+      "content": "Se basa en la creación de funciones puras, es decir, funciones que no modifican el estado externo y que siempre dan el mismo resultado con los mismos datos. Este paradigma evita el uso de variables mutables y promueve el uso de funciones como ciudadanos de primera clase.",
+      "examples": [
+        {
+          "title": "Características Principales",
+          "content": [
+            {
+              "subtitle": "Forma de pensar",
+              "text": "Se transforma un conjunto de datos de entrada en un resultado de salida mediante funciones independientes entre sí."
+            },
+            {
+              "subtitle": "Analogía",
+              "text": "Una máquina expendedora: si insertas la misma moneda y seleccionas el mismo producto, siempre recibirás el mismo resultado."
+            },
+            {
+              "subtitle": "Características",
+              "text": "- Funciones puras.\n- Inmutabilidad.\n- Uso intensivo de recursividad.\n- Ausencia de efectos secundarios."
+            }
+          ]
+        },
+        {
+          "title": "Ejemplo",
+          "code": "const sumaLista = (lista) => lista.reduce((acum, num) => acum + num, 0);\nconsole.log(sumaLista([1, 2, 3, 4, 5]));",
+          "explanation": "Este código en JavaScript usa programación funcional para sumar una lista de números. Aquí está cómo funciona de manera sencilla:\n\n1. **const sumaLista = (lista) =>** Crea una función llamada 'sumaLista' que recibe una lista de números.\n2. **lista.reduce((acum, num) => acum + num, 0)** Usa una función especial llamada 'reduce'. Imagina que 'reduce' toma la lista y la convierte en un solo valor. Aquí, suma cada número ('num') al valor acumulado ('acum'), empezando desde 0.\n3. **console.log(sumaLista([1, 2, 3, 4, 5]));** Llama a la función con la lista [1, 2, 3, 4, 5], y muestra el resultado: 15.\n\nEsto es funcional porque la función es 'pura': no cambia nada fuera de ella, y siempre da el mismo resultado con la misma lista. No hay variables que cambien, solo transformamos datos."
+        },
+        {
+          "title": "Ventajas",
+          "content": "Código más predecible y testeable.\nIdeal para sistemas distribuidos y paralelos.\nEvita errores difíciles de detectar."
+        },
+        {
+          "title": "Desventajas",
+          "content": "Puede ser difícil de entender al principio.\nUso excesivo de recursividad en lugar de bucles."
+        },
+        {
+          "title": "Aplicaciones Comunes",
+          "content": "Finanzas.\nCiencia de datos.\nParalelismo masivo."
+        },
+        {
+          "title": "Dato Curioso",
+          "content": "Netflix y Twitter utilizan Scala, a functional language, para procesar millones de datos en tiempo real.",
+          "color": "#10B981",
+          "opacity": 0.3
+        }
+      ],
+      "questions": [
+        {
+          "text": "¿Cuál de estas características es típica de la programación funcional?",
+          "options": ["Uso intensivo de variables mutables", "Funciones puras", "Instrucciones secuenciales", "Motor de inferencia lógica"],
+          "correct": "Funciones puras"
+        }
+      ]
+    },
+    {
+      "title": "4. Programación Lógica",
+      "content": "Utiliza lógica formal para representar relaciones entre datos mediante hechos, reglas y consultas. El motor del lenguaje se encarga de deducir conclusiones a partir de esta base lógica.",
+      "examples": [
+        {
+          "title": "Características Principales",
+          "content": [
+            {
+              "subtitle": "Forma de pensar",
+              "text": "Describes lo que sabes (hechos) y lo que se puede deducir (reglas), y luego haces preguntas (consultas)."
+            },
+            {
+              "subtitle": "Analogía",
+              "text": "Como una sala de interrogatorios: tú das las pistas, el sistema deduce las respuestas."
+            },
+            {
+              "subtitle": "Características",
+              "text": "- Reglas y hechos definidos explícitamente.\n- Motor de inferencia lógica.\n- Programación no procedimental."
+            }
+          ]
+        },
+        {
+          "title": "Ejemplo",
+          "code": "padre(juan, maria).\npadre(juan, pedro).\nabuelo(X, Y) :- padre(X, Z), padre(Z, Y).\n?- abuelo(juan, Y).",
+          "explanation": "Este código en Prolog, un lenguaje lógico, describe relaciones familiares. Aquí está cómo funciona de forma sencilla:\n\n1. **padre(juan, maria).** Dice: 'Juan es padre de María'. Es un hecho.\n2. **padre(juan, pedro).** Dice: 'Juan es padre de Pedro'. Otro hecho.\n3. **abuelo(X, Y) :- padre(X, Z), padre(Z, Y).** Es una regla que dice: 'X es abuelo de Y si X es padre de Z y Z es padre de Y'. Aquí, X, Y, Z son como variables que pueden tomar cualquier nombre.\n4. **?- abuelo(juan, Y).** Es una consulta: '¿Quiénes son los nietos de Juan?'. Prolog revisa los hechos y la regla, y deduce que Juan es abuelo de los hijos de María o Pedro (si hay más hechos).\n\nEsto es lógico porque solo damos hechos y reglas, y Prolog deduce las respuestas. No decimos cómo buscar, solo qué queremos saber."
+        },
+        {
+          "title": "Ventajas",
+          "content": "Muy útil en problemas complejos de lógica.\nIdeal para inferencia y razonamiento."
+        },
+        {
+          "title": "Desventajas",
+          "content": "No es adecuado para todas las tareas.\nMayor curva de aprendizaje."
+        },
+        {
+          "title": "Aplicaciones Comunes",
+          "content": "Inteligencia Artificial.\nMotores de búsqueda semánticos.\nAsistentes inteligentes."
+        },
+        {
+          "title": "Dato Curioso",
+          "content": "Prolog fue un pilar de los sistemas expertos de los años 80, como en diagnósticos médicos y sistemas legales automatizados.",
+          "color": "#10B981",
+          "opacity": 0.3
+        }
+      ],
+      "questions": [
+        {
+          "text": "¿Qué lenguaje es comúnmente asociado con la programación lógica?",
+          "options": ["C", "JavaScript", "Prolog", "SQL"],
+          "correct": "Prolog"
+        }
+      ]
+    }
+  ],
+  "video": {
+    "title": "Video Explicativo",
+    "description": "Este video proporciona una introducción a los paradigmas de programación."
+  }
+}

@@ -1,0 +1,306 @@
+{
+    "module_title": "Módulo 3: Algoritmos",
+    "welcome": {
+        "title": "¡Bienvenido al Módulo 3!",
+        "description": "\n¡Bienvenido al Módulo 3!\nEn esta etapa nos adentraremos en el mundo de los algoritmos, el núcleo de la programación. Un algoritmo es una serie de pasos ordenados que permiten resolver un problema de forma lógica y eficiente. Comprender su estructura y propósito es esencial para desarrollar soluciones claras y efectivas.\nExploraremos los conceptos fundamentales de los algoritmos y estudiaremos técnicas clave como la búsqueda, el ordenamiento y la recursividad. También aprenderás a utilizar algoritmos estructurados para resolver problemas complejos de manera organizada y óptima. Este conocimiento fortalecerá tu capacidad para crear programas más inteligentes, eficientes y adaptados a los desafíos actuales.\n¡Es momento de avanzar con lógica y precisión!\n"
+    },
+    "syllabus": {
+        "title": "Temario completo:",
+        "sections": [
+            {
+                "title": "I. Conceptos fundamentales de un algoritmo",
+                "items": [
+                    "Definición y características de un algoritmo",
+                    "Complejidad algorítmica: Introducción al análisis de eficiencia",
+                    "Tipos de algoritmos y ejemplos básicos"
+                ]
+            },
+            {
+                "title": "II. Algoritmos de búsqueda y ordenamiento",
+                "items": [
+                    "Búsqueda lineal y búsqueda binaria",
+                    "Métodos de ordenamiento: burbuja, inserción, selección, merge sort, quicksort"
+                ]
+            },
+            {
+                "title": "III. Algoritmos recursivos y estructurados",
+                "items": [
+                    "Concepto de recursividad",
+                    "Ejemplos de funciones recursivas",
+                    "Algoritmos iterativos vs. recursivos"
+                ]
+            },
+            {
+                "title": "IV. Aplicación de algoritmos en problemas reales",
+                "items": [
+                    "Algoritmos en estructuras de datos",
+                    "Aplicación en resolución de problemas cotidianos",
+                    "Desarrollo de proyectos prácticos"
+                ]
+            }
+        ]
+    },
+    "learning_points": {
+        "title": "En este módulo aprenderás:",
+        "points": [
+            {
+                "icon": "algorithm",
+                "title": "Conceptos fundamentales de un algoritmo",
+                "description": "Entenderás qué es un algoritmo, sus características esenciales y cómo analizar su eficiencia mediante la complejidad algorítmica."
+            },
+            {
+                "icon": "search",
+                "title": "Algoritmos de búsqueda y ordenamiento",
+                "description": "Aprenderás a implementar y aplicar algoritmos de búsqueda (lineal y binaria) y ordenamiento (burbuja, inserción, selección, merge sort, quicksort) para manejar datos de manera eficiente."
+            },
+            {
+                "icon": "recursive",
+                "title": "Algoritmos recursivos y estructurados",
+                "description": "Dominarás el concepto de recursividad, crearás funciones recursivas y compararás enfoques recursivos e iterativos para resolver problemas."
+            },
+            {
+                "icon": "real_world",
+                "title": "Aplicación de algoritmos en problemas reales",
+                "description": "Aplicarás algoritmos a estructuras de datos y resolverás problemas cotidianos, desarrollando proyectos prácticos que refuercen tus habilidades lógicas."
+            }
+        ]
+    },
+    "motivation": {
+        "text": "No te preocupes si los algoritmos parecen complejos al principio. Con práctica, transformarás problemas en soluciones elegantes y eficientes. ¡Sigue adelante!",
+        "icon": "lightbulb_outline"
+    },
+    "button_text": "Comenzar módulo",
+    "content": {
+        "section_1": {
+            "title": "I. Conceptos fundamentales de un algoritmo",
+            "subsections": [
+                {
+                    "title": "Definición y características de un algoritmo",
+                    "content": "Un algoritmo es un conjunto de pasos o instrucciones claramente definidos, que se siguen en un orden específico para resolver un problema, realizar un cálculo o llevar a cabo una tarea. Estas instrucciones deben ser comprensibles, ejecutables y producir un resultado determinado al finalizar el proceso.\n\nCaracterísticas de un buen algoritmo:\n- Precisos: Objetivos, sin ambigüedad.\n- Ordenados: Las instrucciones deben seguir una secuencia lógica.\n- Finitos: Todo algoritmo debe tener un número limitado de pasos.\n- Concretos: Ofrecen una solución determinada para el problema planteado.\n- Definidos: Cada paso debe estar claramente especificado.\n- Eficientes: Resuelve el problema utilizando la menor cantidad posible de recursos y tiempo.\n\nPartes de un algoritmo:\n- Input (entrada): Información inicial con la que trabaja el algoritmo.\n- Proceso: Conjunto de pasos para transformar los datos de entrada en una solución.\n- Output (salida): Resultados obtenidos tras el proceso."
+                },
+                {
+                    "title": "Complejidad algorítmica: Introducción al análisis de eficiencia",
+                    "content": "La complejidad algorítmica permite analizar la eficiencia de un algoritmo en términos de tiempo y memoria, especialmente cuando la cantidad de datos aumenta.\n\nExisten dos tipos principales:\n- Complejidad temporal: Mide el tiempo que tarda en ejecutarse.\n- Complejidad espacial: Evalúa el uso de memoria.\n\nLa notación Big O describe cómo crece el tiempo de ejecución o el uso de memoria conforme aumenta el tamaño de la entrada. Ejemplos:\n- O(1): Tiempo constante.\n- O(n): Tiempo lineal.\n- O(n²): Tiempo cuadrático.\n\nAnalizar la eficiencia es crucial para comparar soluciones y elegir la más adecuada para un problema.",
+                    "highlight": {
+                        "text": "Nota: La notación Big O es una herramienta estándar en informática para evaluar la escalabilidad de los algoritmos, como se describe en textos como 'Introduction to Algorithms' de Cormen et al.",
+                        "color": "green"
+                    }
+                },
+                {
+                    "title": "Tipos de algoritmos y ejemplos básicos",
+                    "content": "Los algoritmos pueden clasificarse según su estructura, finalidad o forma de resolución. Algunos tipos comunes incluyen:\n\n- Algoritmos de búsqueda: Localizan elementos dentro de una estructura de datos (por ejemplo, búsqueda secuencial y binaria).\n- Algoritmos de ordenamiento: Reorganizan elementos según un criterio (por ejemplo, ordenamiento burbuja, quicksort).\n\nEjemplo de búsqueda secuencial:\nLa búsqueda secuencial recorre una lista de principio a fin, comparando cada elemento con el objetivo. Es simple pero ineficiente para listas grandes (complejidad O(n)).\n\nEjemplo de búsqueda binaria:\nLa búsqueda binaria divide una lista ordenada en mitades, reduciendo el número de comparaciones (complejidad O(log n)). Requiere que la lista esté ordenada."
+                }
+            ]
+        },
+        "section_2": {
+            "title": "II. Algoritmos de búsqueda y ordenamiento",
+            "subsections": [
+                {
+                    "title": "Búsqueda lineal y búsqueda binaria",
+                    "content": "Los algoritmos de búsqueda permiten localizar elementos en una lista o conjunto de datos.\n\nBúsqueda lineal:\n- Recorre la lista secuencialmente, comparando cada elemento con el objetivo.\n- Ventaja: Funciona con listas no ordenadas.\n- Desventaja: Ineficiente para listas grandes (complejidad O(n)).\n\nBúsqueda binaria:\n- Divide una lista ordenada en mitades, comparando el elemento central con el objetivo.\n- Ventaja: Muy eficiente para listas grandes (complejidad O(log n)).\n- Desventaja: Requiere que la lista esté ordenada.\n\nEjemplo de búsqueda lineal: Buscar el número 50 en [10, 25, 33, 50, 71, 90].\nEjemplo de búsqueda binaria: Buscar el número 33 en [5, 10, 25, 33, 50, 71, 90].",
+                    "highlight": {
+                        "text": "Consejo: Usa búsqueda binaria cuando la lista esté ordenada para aprovechar su eficiencia.",
+                        "color": "blue"
+                    }
+                },
+                {
+                    "title": "Métodos de ordenamiento: burbuja, inserción, selección, merge sort, quicksort",
+                    "content": "Los algoritmos de ordenamiento reorganizan los elementos de una lista según un criterio, como el orden numérico o lexicográfico.\n\n- Ordenamiento burbuja: Compara pares adyacentes y los intercambia si están en el orden incorrecto (complejidad O(n²)).\n- Ordenamiento por inserción: Inserta cada elemento en su posición correcta en una sublista ordenada (complejidad O(n²)).\n- Ordenamiento por selección: Selecciona el elemento más pequeño y lo coloca al principio (complejidad O(n²)).\n- Merge sort: Divide la lista en mitades, las ordena y las combina (complejidad O(n log n)).\n- Quicksort: Elige un pivote y divide la lista en elementos menores y mayores, ordenándolos recursivamente (complejidad promedio O(n log n)).\n\nEjemplo: Ordenar [5, 3, 8, 1, 2] con burbuja resulta en [1, 2, 3, 5, 8]."
+                }
+            ]
+        },
+        "section_3": {
+            "title": "III. Algoritmos recursivos y estructurados",
+            "subsections": [
+                {
+                    "title": "Concepto de recursividad",
+                    "content": "La recursividad es una técnica donde una función se llama a sí misma para resolver un problema, dividiéndolo en subproblemas más simples hasta llegar a un caso base que detiene la recursión.\n\nCaracterísticas principales:\n- Caso base: Condición que detiene la recursión.\n- Llamada recursiva: La función se invoca con un valor modificado.\n- División del problema: Resuelve una parte y delega el resto a la llamada recursiva.\n\nEjemplo: Calcular el factorial de 5 (5! = 5 × 4 × 3 × 2 × 1 = 120) usando recursividad."
+                },
+                {
+                    "title": "Ejemplos de funciones recursivas",
+                    "content": "Las funciones recursivas son útiles para problemas que se pueden dividir en subproblemas similares.\n\nEjemplos:\n- Factorial: factorial(n) = n × factorial(n-1), con caso base factorial(0) = 1.\n- Fibonacci: fib(n) = fib(n-1) + fib(n-2), con casos base fib(0) = 0, fib(1) = 1.\n- Contar dígitos: Divide un número entre 10 hasta que sea menor a 10.\n- Invertir cadena: Coloca el primer carácter al final del resto invertido.\n\nEjemplo: Calcular fib(6) = 8 en la secuencia [0, 1, 1, 2, 3, 5, 8].",
+                    "highlight": {
+                        "text": "Consejo: Asegúrate de definir un caso base claro para evitar recursiones infinitas.",
+                        "color": "green"
+                    }
+                },
+                {
+                    "title": "Algoritmos iterativos vs. recursivos",
+                    "content": "Los algoritmos iterativos usan bucles (for, while) para repetir operaciones, mientras que los recursivos se basan en llamadas a sí mismos.\n\nComparación:\n- Iterativos: Menor consumo de memoria, más rápidos, más fáciles de depurar.\n- Recursivos: Más elegantes para problemas jerárquicos, pero pueden consumir más memoria y ser más lentos.\n\nEjemplo: Calcular factorial iterativamente con un bucle vs. recursivamente con llamadas a la función.\n\nUsa iterativos para optimizar rendimiento y recursivos para problemas que se descomponen naturalmente en subproblemas."
+                }
+            ]
+        },
+        "section_4": {
+            "title": "IV. Aplicación de algoritmos en problemas reales",
+            "subsections": [
+                {
+                    "title": "Algoritmos en estructuras de datos",
+                    "content": "Los algoritmos operan sobre estructuras de datos como arreglos, listas, pilas, colas y árboles para manipular información eficientemente.\n\nEjemplos:\n- Búsqueda: Secuencial en arreglos, binaria en listas ordenadas.\n- Ordenamiento: Burbuja, quicksort en listas.\n- Inserción/eliminación: Agregar o quitar elementos en pilas o colas.\n- Recorrido: Acceder a elementos con ciclos.\n\nUsar la estructura adecuada mejora el rendimiento y la claridad del algoritmo."
+                },
+                {
+                    "title": "Aplicación en resolución de problemas cotidianos",
+                    "content": "Los algoritmos pueden resolver problemas diarios traduciendo situaciones en soluciones programadas.\n\nEjemplos:\n- Organización de gastos: Registrar ingresos y egresos, calcular saldo.\n- Control de temperatura: Verificar si la temperatura está en un rango óptimo.\n- Sistema de calificaciones: Calcular promedios y determinar aprobación.\n\nEstos problemas refuerzan habilidades lógicas y el uso de estructuras como listas y condicionales."
+                },
+                {
+                    "title": "Desarrollo de proyectos prácticos",
+                    "content": "Los proyectos prácticos permiten aplicar algoritmos a escenarios reales.\n\nEjemplos de ejercicios:\n- Implementar búsqueda lineal y binaria en una lista ordenada.\n- Ordenar calificaciones con burbuja.\n- Simular una cola FIFO para una fila de personas.\n- Contar vocales en una cadena recursivamente.\n\nEstos ejercicios desarrollan la capacidad de analizar problemas, elegir algoritmos adecuados y escribir código eficiente."
+                }
+            ]
+        }
+    },
+    "activities": [
+        {
+            "subtopic": "Conceptos fundamentales de un algoritmo",
+            "objective": "Comprender las características de los algoritmos, la notación Big O y los tipos de algoritmos básicos, relacionándolos con ejemplos prácticos.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál de las siguientes es una característica esencial de un algoritmo?",
+                        "options": [
+                            "Debe ser infinito para garantizar resultados.",
+                            "Debe tener pasos precisos y definidos.",
+                            "No necesita un orden lógico.",
+                            "Solo funciona con datos numéricos."
+                        ],
+                        "correctAnswer": 1
+                    },
+                    {
+                        "question": "¿Qué representa la notación O(n) en complejidad algorítmica?",
+                        "options": [
+                            "Tiempo constante",
+                            "Tiempo lineal",
+                            "Tiempo cuadrático",
+                            "Tiempo logarítmico"
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "¿Cómo puede el análisis de la complejidad algorítmica ayudarte a elegir un algoritmo adecuado para un problema específico?",
+            "practice": {
+                "question": "Clasifica los siguientes algoritmos según su tipo (búsqueda u ordenamiento).",
+                "elements": [
+                    "Búsqueda lineal",
+                    "Búsqueda binaria",
+                    "Ordenamiento burbuja",
+                    "Quicksort"
+                ],
+                "answers": {
+                    "Búsqueda": [
+                        "Búsqueda lineal",
+                        "Búsqueda binaria"
+                    ],
+                    "Ordenamiento": [
+                        "Ordenamiento burbuja",
+                        "Quicksort"
+                    ]
+                }
+            }
+        },
+        {
+            "subtopic": "Algoritmos de búsqueda y ordenamiento",
+            "objective": "Desarrollar la habilidad de implementar algoritmos de búsqueda y ordenamiento, comprendiendo sus diferencias y aplicaciones.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál es una ventaja de la búsqueda binaria sobre la búsqueda lineal?",
+                        "options": [
+                            "Funciona con listas no ordenadas.",
+                            "Es más eficiente para listas grandes.",
+                            "No requiere comparaciones.",
+                            "Es más simple de implementar."
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "¿En qué situaciones preferirías usar búsqueda lineal en lugar de búsqueda binaria?",
+            "practice": {
+                "question": "Escribe el pseudocódigo para buscar el número 25 en la lista [10, 15, 20, 25, 30] usando búsqueda binaria.",
+                "steps": [
+                    "Inicio",
+                    "Definir inicio = 0, fin = longitud(lista) - 1",
+                    "Mientras inicio <= fin",
+                    "Calcular medio = (inicio + fin) // 2",
+                    "Si lista[medio] = 25, mostrar posición",
+                    "Si lista[medio] < 25, inicio = medio + 1",
+                    "Si lista[medio] > 25, fin = medio - 1",
+                    "Si no encontrado, mostrar 'No encontrado'",
+                    "Fin"
+                ]
+            }
+        },
+        {
+            "subtopic": "Algoritmos recursivos y estructurados",
+            "objective": "Aplicar recursividad para resolver problemas y comparar enfoques recursivos e iterativos.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Qué es esencial en una función recursiva para evitar una recursión infinita?",
+                        "options": [
+                            "Múltiples llamadas recursivas",
+                            "Un caso base",
+                            "Un bucle for",
+                            "Variables globales"
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "¿Por qué la recursividad puede ser más elegante pero menos eficiente que la iteración en algunos casos?",
+            "practice": {
+                "question": "Escribe una función recursiva en pseudocódigo para calcular el factorial de un número n.",
+                "steps": [
+                    "Función factorial(n)",
+                    "Si n = 0 o n = 1, retornar 1",
+                    "Sino, retornar n * factorial(n-1)",
+                    "Fin función"
+                ]
+            }
+        },
+        {
+            "subtopic": "Aplicación de algoritmos en problemas reales",
+            "objective": "Resolver problemas cotidianos utilizando algoritmos y estructuras de datos adecuadas.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Qué estructura de datos es ideal para simular una fila de personas esperando atención?",
+                        "options": [
+                            "Pila",
+                            "Cola",
+                            "Arreglo",
+                            "Árbol"
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "¿Cómo puede la elección de una estructura de datos adecuada mejorar la eficiencia de un algoritmo?",
+            "practice": {
+                "question": "Crea un pseudocódigo para registrar las horas de estudio diarias de una semana y calcular el promedio.",
+                "steps": [
+                    "Inicio",
+                    "Definir lista horas vacía",
+                    "Para cada día de lunes a domingo",
+                    "Solicitar horas estudiadas",
+                    "Agregar horas a la lista",
+                    "Calcular total = suma de horas",
+                    "Calcular promedio = total / 7",
+                    "Mostrar total y promedio",
+                    "Si promedio >= 2, mostrar 'Buen ritmo'",
+                    "Sino, mostrar 'Mejora tu ritmo'",
+                    "Fin"
+                ]
+            }
+        }
+    ],
+    "activity_descriptions": [
+        "Fundamentos de algoritmos y complejidad",
+        "Búsqueda y ordenamiento de datos",
+        "Recursividad y comparación con iteración",
+        "Aplicación práctica de algoritmos"
+    ],
+    "activity_completion_message": "Actividad completada y progreso guardado",
+    "login_required_message": "Debes iniciar sesión primero.",
+    "user_not_found_message": "Usuario no encontrado en la base de datos."
+}

@@ -145,8 +145,8 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
     final routes = {
       'module1': (ctx) => Module1IntroScreen(module: module),
       'module2': (ctx) => Module2IntroScreen(module: module),
-      'module3': (ctx) => Module3Screen(module: module),
-      'module4': (ctx) => Module4Screen(module: module),
+      'module3': (ctx) => Module3IntroScreen(module: module),
+      'module4': (ctx) => Module4IntroScreen(module: module),
     };
 
     Navigator.push(

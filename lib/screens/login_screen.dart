@@ -65,16 +65,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         password: _passwordController.text.trim(),
       );
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const HomeScreen(),
-            transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const HomeScreen(),
+          transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+        (Route<dynamic> route) => false,
+      );
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Error al iniciar sesión';
       switch (e.code) {
@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
       _showError(errorMessage);
     } catch (e) {
-      _showError('Ocurrió un error inesperado');
+      _showError('Ocurrió un error inesperado: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -133,11 +133,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 key: _formKey,
                 child: Column(
                   children: [
-                    // Logo circular perfectamente redondeado
                     _buildLogoWithWelcome(),
                     const SizedBox(height: 20),
-
-                    // Mensaje de bienvenida
                     const Text(
                       'Bienvenido al Programa de Propedéutico',
                       style: TextStyle(
@@ -157,8 +154,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 30),
-
-                    // Campo de correo electrónico
                     _buildTextField(
                       controller: _emailController,
                       label: 'Correo electrónico',
@@ -174,8 +169,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       },
                     ),
                     const SizedBox(height: 20),
-
-                    // Campo de contraseña
                     _buildTextField(
                       controller: _passwordController,
                       label: 'Contraseña',
@@ -192,8 +185,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       },
                     ),
                     const SizedBox(height: 30),
-
-                    // Botón de inicio de sesión
                     _isLoading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
@@ -220,8 +211,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ),
                           ),
                     const SizedBox(height: 20),
-
-                    // Enlace a registro
                     TextButton(
                       onPressed: () => Navigator.pushReplacement(
                         context,
@@ -252,7 +241,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget _buildLogoWithWelcome() {
     return Column(
       children: [
-        // Contenedor circular perfecto para el logo
         Container(
           width: 150,
           height: 150,

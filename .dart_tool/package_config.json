@@ -200,6 +200,12 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "flutter_highlighter",
+      "rootUri": "file:///C:/Users/nenuk/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_highlighter-0.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter_inappwebview",
       "rootUri": "file:///C:/Users/nenuk/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_inappwebview-6.1.5",
       "packageUri": "lib/",
@@ -294,6 +300,12 @@
       "rootUri": "file:///C:/Users/nenuk/AppData/Local/Pub/Cache/hosted/pub.dev/google_fonts-6.2.1",
       "packageUri": "lib/",
       "languageVersion": "2.14"
+    },
+    {
+      "name": "highlighter",
+      "rootUri": "file:///C:/Users/nenuk/AppData/Local/Pub/Cache/hosted/pub.dev/highlighter-0.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "http",
@@ -662,7 +674,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-04-26T19:09:13.494995Z",
+  "generated": "2025-04-27T23:10:28.277025Z",
   "generator": "pub",
   "generatorVersion": "3.6.1",
   "flutterRoot": "file:///C:/Users/nenuk/dev/flutter",
