@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:siapp/screens/home_screen.dart';
-import 'package:siapp/screens/login_screen.dart';
+import 'home_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,13 +11,54 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _ncontrolController = TextEditingController();
   bool _isLoading = false;
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
+      ),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.3, 1.0, curve: Curves.fastOutSlowIn),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    _ncontrolController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
@@ -26,32 +67,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       // Crear usuario en Firebase Auth
-      final userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Guardar datos adicionales en Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user?.uid)
-          .set({
-        'name': _nameController.text.trim(),
-        'ncontrol': _ncontrolController.text.trim(),
-        'email': _emailController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final userId = userCredential.user!.uid;
+      final ncontrol = _ncontrolController.text.trim();
+
+      // Guardar datos adicionales en Firestore usando el UID como document ID
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(userId).set({
+          'name': _nameController.text.trim(),
+          'ncontrol': ncontrol,
+          'email': _emailController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        debugPrint('User document created for UID: $userId, ncontrol: $ncontrol');
+      } catch (firestoreError) {
+        // Si falla la escritura en Firestore, eliminar el usuario de Firebase Auth
+        await userCredential.user?.delete();
+        throw Exception('Error al guardar datos en Firestore: $firestoreError');
+      }
 
       // Navegar a la pantalla de inicio después del registro exitoso
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (Route<dynamic> route) => false,
+      );
     } on FirebaseAuthException catch (e) {
-      // Manejo de errores específicos de Firebase Auth
       String errorMessage = 'Error al registrar usuario';
       switch (e.code) {
         case 'email-already-in-use':
@@ -66,7 +112,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
       _showError(errorMessage);
     } catch (e) {
-      // Manejo de errores genéricos
       _showError('Ocurrió un error inesperado: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -83,22 +128,181 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+    required String? Function(String?) validator,
+  }) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            obscureText: obscureText,
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(
+                color: Colors.blueAccent[400],
+                fontWeight: FontWeight.w500,
+              ),
+              prefixIcon: Icon(icon, color: Colors.blueAccent[400]),
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+            ),
+            validator: validator,
+            style: const TextStyle(color: Colors.black87),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required String title,
+    required VoidCallback onPressed,
+    required bool isEnabled,
+    required double animationDelay,
+  }) {
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(0, 0.5),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(
+            animationDelay,
+            1.0,
+            curve: Curves.fastOutSlowIn,
+          ),
+        ),
+      ),
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isEnabled
+                    ? [Colors.blueAccent[400]!, Colors.lightBlue[700]!]
+                    : [Colors.grey.shade400, Colors.grey.shade300],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(30),
+                onTap: isEnabled ? onPressed : null,
+                splashColor: Colors.white30,
+                highlightColor: Colors.transparent,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.person_add, color: Colors.white, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // White background as requested
       appBar: AppBar(
-        title: const Text('Registro'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Campo de nombre completo
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: const Text(
+                    'Crear cuenta',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: const Text(
+                    'Regístrate para comenzar tu viaje',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 40),
                 _buildTextField(
                   controller: _nameController,
                   label: 'Nombre completo',
@@ -110,9 +314,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
-
-                // Campo de número de control
+                const SizedBox(height: 16),
                 _buildTextField(
                   controller: _ncontrolController,
                   label: 'Número de control',
@@ -128,9 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
-
-                // Campo de correo electrónico
+                const SizedBox(height: 16),
                 _buildTextField(
                   controller: _emailController,
                   label: 'Correo electrónico',
@@ -145,9 +345,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
-
-                // Campo de contraseña
+                const SizedBox(height: 16),
                 _buildTextField(
                   controller: _passwordController,
                   label: 'Contraseña',
@@ -163,39 +361,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 30),
-
-                // Botón de registro
+                const SizedBox(height: 40),
                 _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
+                    ? const CircularProgressIndicator(color: Colors.blueAccent)
+                    : _buildActionButton(
+                        title: 'Crear cuenta',
                         onPressed: _register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 50,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          'Crear cuenta',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                        isEnabled: !_isLoading,
+                        animationDelay: 0.4,
                       ),
                 const SizedBox(height: 20),
-
-                // Enlace a la pantalla de inicio de sesión
-                TextButton(
-                  onPressed: () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  ),
-                  child: const Text(
-                    '¿Ya tienes cuenta? Inicia sesión',
-                    style: TextStyle(color: Colors.blue),
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    },
+                    child: Text(
+                      '¿Ya tienes cuenta? Inicia sesión',
+                      style: TextStyle(
+                        color: Colors.blueAccent[400],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -203,30 +395,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  // Widget para construir campos de texto personalizados
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-    required String? Function(String?) validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.blue),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      validator: validator,
     );
   }
 }

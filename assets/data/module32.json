@@ -1,0 +1,434 @@
+{
+    "module_title": "Módulo 3: Algoritmos",
+    "welcome": {
+        "title": "¡Bienvenido al mundo de los algoritmos!",
+        "description": "¡Bienvenido al Módulo 3!\nEn esta etapa nos adentraremos en el mundo de los algoritmos, el núcleo de la programación. Un algoritmo es una serie de pasos ordenados que permiten resolver un problema de forma lógica y eficiente. Comprender su estructura y propósito es esencial para desarrollar soluciones claras y efectivas.\n\nExploraremos los conceptos fundamentales de los algoritmos y estudiaremos técnicas clave como la búsqueda, el ordenamiento y la recursividad. También aprenderás a utilizar algoritmos estructurados para resolver problemas complejos de manera organizada y óptima. Este conocimiento fortalecerá tu capacidad para crear programas más inteligentes, eficientes y adaptados a los desafíos actuales.\n\n¡Es momento de avanzar con lógica y precisión!"
+    },
+    "syllabus": {
+        "title": "Temario completo:",
+        "sections": [
+            {
+                "title": "I. Conceptos fundamentales de un algoritmo",
+                "items": [
+                    "Definición y características de un algoritmo",
+                    "Complejidad algorítmica: Introducción al análisis de eficiencia",
+                    "Tipos de algoritmos y ejemplos básicos"
+                ]
+            },
+            {
+                "title": "II. Algoritmos de Búsqueda y ordenamiento",
+                "items": [
+                    "Búsqueda lineal y búsqueda binaria",
+                    "Métodos de ordenamiento: burbuja, inserción, selección, merge sort, quicksort"
+                ]
+            },
+            {
+                "title": "III. Algoritmos recursivos y estructurados",
+                "items": [
+                    "Concepto de recursividad",
+                    "Ejemplos de funciones recursivas",
+                    "Algoritmos Iterativos vs. Recursivos"
+                ]
+            },
+            {
+                "title": "IV. Aplicación de algoritmos en problemas reales",
+                "items": [
+                    "Algoritmos en estructuras de datos",
+                    "Aplicación en resolución de problemas cotidianos",
+                    "Desarrollo de proyectos prácticos"
+                ]
+            }
+        ]
+    },
+    "learning_points": {
+        "title": "En este módulo aprenderás:",
+        "points": [
+            {
+                "icon": "computer",
+                "title": "Conceptos fundamentales de algoritmos",
+                "description": "Entenderás qué es un algoritmo, sus características esenciales y cómo analizar su eficiencia mediante la notación Big O."
+            },
+            {
+                "icon": "search",
+                "title": "Algoritmos de búsqueda y ordenamiento",
+                "description": "Aprenderás técnicas fundamentales como búsqueda lineal, búsqueda binaria y diversos métodos de ordenamiento, comprendiendo sus ventajas y casos de uso."
+            },
+            {
+                "icon": "psychology",
+                "title": "Recursividad y algoritmos estructurados",
+                "description": "Dominarás el concepto de recursividad, sus aplicaciones prácticas y cómo compararla con enfoques iterativos para resolver problemas."
+            },
+            {
+                "icon": "account_tree",
+                "title": "Aplicación en problemas reales",
+                "description": "Aplicarás algoritmos a situaciones cotidianas y estructuras de datos, desarrollando soluciones prácticas y eficientes."
+            }
+        ]
+    },
+    "motivation": {
+        "text": "Los algoritmos son el corazón de la programación. Dominarlos te convertirá en un solucionador de problemas más eficiente y creativo. ¡Cada línea de código que escribas es un paso hacia el dominio de esta poderosa herramienta!",
+        "icon": "lightbulb_outline"
+    },
+    "button_text": "Comenzar módulo",
+    "content": {
+        "section_1": {
+            "title": "I. Conceptos fundamentales de un algoritmo",
+            "subsections": [
+                {
+                    "title": "¿Qué es un algoritmo?",
+                    "content": "Un algoritmo es un conjunto de pasos o instrucciones claramente definidos, que se siguen en un orden específico para resolver un problema, realizar un cálculo o llevar a cabo una tarea. Estas instrucciones deben ser comprensibles, ejecutables y producir un resultado determinado al finalizar el proceso."
+                },
+                {
+                    "title": "Características de un buen algoritmo",
+                    "content": "Para que un algoritmo sea útil y efectivo, debe cumplir con ciertas características esenciales:\n\n- Precisos: Objetivos, sin ambigüedad.\n- Ordenados: Las instrucciones deben seguir una secuencia lógica, ya que el orden afecta el resultado.\n- Finitos: Todo algoritmo debe tener un número limitado de pasos; no puede ser infinito.\n- Concretos: Ofrecen una solución determinada para la situación o problema planteados.\n- Definidos: Cada paso debe estar claramente especificado, sin ambigüedades.\n- Eficientes: Debe buscar resolver el problema utilizando la menor cantidad posible de recursos y tiempo."
+                },
+                {
+                    "title": "Partes de un algoritmo",
+                    "content": "Las tres partes fundamentales de un algoritmo son:\n\n- Input (entrada): Información que damos al algoritmo con la que va a trabajar para ofrecer la solución esperada.\n- Proceso: Conjunto de pasos para que, a partir de los datos de entrada, llegue a la solución de la situación.\n- Output (salida): Resultados, a partir de la transformación de los valores de entrada durante el proceso."
+                },
+                {
+                    "title": "Complejidad algorítmica",
+                    "content": "La complejidad algorítmica permite analizar qué tan rápido y cuánta memoria necesita un algoritmo para ejecutarse, especialmente cuando la cantidad de datos aumenta. Se mide mediante la notación Big O, que describe cómo crece el tiempo de ejecución (o el uso de memoria) conforme aumenta el tamaño de la entrada.\n\nEjemplos comunes:\n- O(1): tiempo constante\n- O(n): tiempo lineal\n- O(n²): tiempo cuadrático\n- O(log n): tiempo logarítmico",
+                    "highlight": {
+                        "text": "Consejo: Cuando trabajamos con pequeñas cantidades de datos, las diferencias entre algoritmos pueden no ser notorias. Sin embargo, con grandes volúmenes de datos, un algoritmo mal diseñado puede volverse demasiado lento o inutilizable.",
+                        "color": "blue"
+                    }
+                },
+                {
+                    "title": "Tipos de algoritmos",
+                    "content": "Los algoritmos pueden clasificarse de diferentes maneras según su propósito:\n\n1. Algoritmos de búsqueda: Localizan elementos en estructuras de datos (ej: búsqueda secuencial, binaria).\n2. Algoritmos de ordenamiento: Reorganizan elementos según un criterio (ej: burbuja, quicksort).\n3. Algoritmos recursivos: Resuelven problemas dividiéndolos en subproblemas más pequeños del mismo tipo.\n4. Algoritmos de divide y vencerás: Dividen el problema en partes independientes (ej: merge sort)."
+                }
+            ]
+        },
+        "section_2": {
+            "title": "II. Algoritmos de Búsqueda y ordenamiento",
+            "subsections": [
+                {
+                    "title": "Búsqueda Lineal",
+                    "content": "La búsqueda lineal es el algoritmo más simple para encontrar un elemento en una lista. Recorre la lista secuencialmente comparando cada elemento hasta encontrar el buscado o llegar al final.\n\nCaracterísticas:\n- No requiere lista ordenada\n- Complejidad: O(n) en el peor caso\n- Fácil de implementar pero ineficiente para listas grandes\n\nEjemplo en Python:\n\ndef busqueda_lineal(lista, elemento):\n    for i in range(len(lista)):\n        if lista[i] == elemento:\n            return i\n    return -1",
+                    "highlight": {
+                        "text": "Nota: La búsqueda lineal es ideal para listas pequeñas o cuando no sabemos si la lista está ordenada. Para listas grandes y ordenadas, la búsqueda binaria es más eficiente.",
+                        "color": "green"
+                    }
+                },
+                {
+                    "title": "Búsqueda Binaria",
+                    "content": "La búsqueda binaria es un algoritmo eficiente que requiere una lista ordenada. Funciona dividiendo repetidamente la lista en dos mitades y comparando el elemento central con el valor buscado.\n\nCaracterísticas:\n- Requiere lista ordenada\n- Complejidad: O(log n)\n- Mucho más eficiente que la búsqueda lineal para listas grandes\n\nEjemplo en Python:\n\ndef busqueda_binaria(lista, elemento):\n    inicio = 0\n    fin = len(lista) - 1\n    while inicio <= fin:\n        medio = (inicio + fin) // 2\n        if lista[medio] == elemento:\n            return medio\n        elif lista[medio] < elemento:\n            inicio = medio + 1\n        else:\n            fin = medio - 1\n    return -1"
+                },
+                {
+                    "title": "Ordenamiento de Burbuja",
+                    "content": "El algoritmo de ordenamiento de burbuja es un método simple que organiza elementos comparando pares adyacentes y cambiándolos de posición si están en el orden incorrecto.\n\nCaracterísticas:\n- Fácil de entender e implementar\n- Complejidad: O(n²)\n- Ineficiente para listas grandes\n\nEjemplo en Python:\n\ndef ordenamiento_burbuja(lista):\n    n = len(lista)\n    for i in range(n):\n        for j in range(0, n-i-1):\n            if lista[j] > lista[j+1]:\n                lista[j], lista[j+1] = lista[j+1], lista[j]\n    return lista"
+                },
+                {
+                    "title": "Ordenamiento por Inserción",
+                    "content": "El ordenamiento por inserción construye la lista ordenada insertando un elemento a la vez en su posición correcta.\n\nCaracterísticas:\n- Eficiente para listas pequeñas o casi ordenadas\n- Complejidad: O(n²) en peor caso, O(n) en mejor caso\n- Más eficiente que burbuja en la práctica\n\nEjemplo en Python:\n\ndef insercion(lista):\n    for i in range(1, len(lista)):\n        actual = lista[i]\n        j = i-1\n        while j >= 0 and lista[j] > actual:\n            lista[j+1] = lista[j]\n            j -= 1\n        lista[j+1] = actual\n    return lista"
+                },
+                {
+                    "title": "Ordenamiento por Selección",
+                    "content": "El ordenamiento por selección encuentra el elemento mínimo y lo coloca en su posición correcta al principio de la lista, repitiendo el proceso con los elementos restantes.\n\nCaracterísticas:\n- Hace menos intercambios que burbuja\n- Complejidad: O(n²) siempre\n- Simple pero ineficiente para listas grandes\n\nEjemplo en Python:\n\ndef seleccion(lista):\n    n = len(lista)\n    for i in range(n):\n        min_idx = i\n        for j in range(i+1, n):\n            if lista[j] < lista[min_idx]:\n                min_idx = j\n        lista[i], lista[min_idx] = lista[min_idx], lista[i]\n    return lista"
+                },
+                {
+                    "title": "Merge Sort (Ordenamiento por Mezcla)",
+                    "content": "Merge Sort es un algoritmo eficiente que divide la lista en mitades recursivamente, las ordena y luego las combina (mezcla) en una sola lista ordenada.\n\nCaracterísticas:\n- Complejidad: O(n log n) en todos los casos\n- Estable (mantiene el orden de elementos iguales)\n- Requiere espacio adicional (no es in-place)\n\nEjemplo en Python:\n\ndef merge_sort(lista):\n    if len(lista) <= 1:\n        return lista\n    medio = len(lista) // 2\n    izquierda = merge_sort(lista[:medio])\n    derecha = merge_sort(lista[medio:])\n    return merge(izquierda, derecha)\n\ndef merge(izq, der):\n    resultado = []\n    i = j = 0\n    while i < len(izq) and j < len(der):\n        if izq[i] < der[j]:\n            resultado.append(izq[i])\n            i += 1\n        else:\n            resultado.append(der[j])\n            j += 1\n    resultado.extend(izq[i:])\n    resultado.extend(der[j:])\n    return resultado"
+                },
+                {
+                    "title": "Quicksort (Ordenamiento Rápido)",
+                    "content": "Quicksort es un algoritmo eficiente que elige un \"pivote\", divide la lista en elementos menores y mayores al pivote, y ordena cada parte recursivamente.\n\nCaracterísticas:\n- Complejidad promedio: O(n log n)\n- Peor caso (mal pivote): O(n²)\n- Generalmente más rápido que merge sort en la práctica\n\nEjemplo en Python:\n\ndef quicksort(lista):\n    if len(lista) <= 1:\n        return lista\n    pivote = lista[0]\n    menores = [x for x in lista[1:] if x <= pivote]\n    mayores = [x for x in lista[1:] if x > pivote]\n    return quicksort(menores) + [pivote] + quicksort(mayores)"
+                }
+            ]
+        },
+        "section_3": {
+            "title": "III. Algoritmos recursivos y estructurados",
+            "subsections": [
+                {
+                    "title": "Concepto de recursividad",
+                    "content": "La recursividad es una técnica de programación en la que una función se llama a sí misma para resolver un problema, dividiéndolo en subproblemas más simples hasta llegar a un caso base que detiene la recursión.\n\nCaracterísticas principales:\n- Caso base (condición de parada)\n- Llamada recursiva con un valor modificado\n- División del problema en partes más pequeñas\n- Puede ser más elegante pero menos eficiente que la iteración"
+                },
+                {
+                    "title": "Ejemplo: Cálculo del factorial",
+                    "content": "El factorial de un número n (n!) es el producto de todos los enteros positivos desde 1 hasta n. Se puede definir recursivamente como:\n- Caso base: 0! = 1, 1! = 1\n- Caso recursivo: n! = n × (n-1)!\n\nEjemplo en Python:\n\ndef factorial(n):\n    if n == 0 or n == 1:\n        return 1\n    else:\n        return n * factorial(n-1)\n\nprint(factorial(5)) # Salida: 120",
+                    "highlight": {
+                        "text": "Nota: El factorial es un ejemplo clásico de problema que se presta naturalmente a una solución recursiva debido a su definición matemática recursiva.",
+                        "color": "green"
+                    }
+                },
+                {
+                    "title": "Ejemplo: Serie de Fibonacci",
+                    "content": "La serie de Fibonacci es una secuencia donde cada número es la suma de los dos anteriores:\n0, 1, 1, 2, 3, 5, 8, 13...\n\nDefinición recursiva:\n- Caso base: fib(0) = 0, fib(1) = 1\n- Caso recursivo: fib(n) = fib(n-1) + fib(n-2)\n\nEjemplo en Python:\n\ndef fibonacci(n):\n    if n == 0:\n        return 0\n    elif n == 1:\n        return 1\n    else:\n        return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(6)) # Salida: 8"
+                },
+                {
+                    "title": "Ejemplo: Contar dígitos de un número",
+                    "content": "Podemos contar los dígitos de un número recursivamente dividiendo por 10 hasta que el número sea menor que 10.\n\nEjemplo en Python:\n\ndef contar_digitos(n):\n    if n < 10:\n        return 1\n    else:\n        return 1 + contar_digitos(n // 10)\n\nprint(contar_digitos(12345)) # Salida: 5"
+                },
+                {
+                    "title": "Algoritmos Iterativos vs. Recursivos",
+                    "content": "Comparación entre los dos enfoques:\n\n| Característica       | Iteración               | Recursión                 |\n|----------------------|-------------------------|---------------------------|\n| Definición           | Usa bucles (for, while) | Función que se llama a sí misma |\n| Control de flujo     | Estructuras de control  | Llamadas a función        |\n| Condición de parada  | Condición del bucle     | Caso base                 |\n| Consumo de memoria   | Menor (solo variables)  | Mayor (pila de llamadas)  |\n| Facilidad depuración | Más fácil               | Más compleja              |\n| Expresividad código  | Puede ser más verboso   | Más elegante para ciertos problemas |\n| Velocidad ejecución  | Generalmente más rápida | Puede ser más lenta       |",
+                    "highlight": {
+                        "text": "Consejo: Usa iteración cuando la eficiencia es crítica o el problema no es naturalmente recursivo. Usa recursión cuando el problema se define en términos de sí mismo o cuando la claridad del código es más importante que la eficiencia.",
+                        "color": "blue"
+                    }
+                },
+                {
+                    "title": "¿Cuándo usar recursión?",
+                    "content": "La recursión es especialmente útil en estos casos:\n1. Cuando el problema puede dividirse en subproblemas del mismo tipo\n2. Cuando existe un caso base claro\n3. Cuando trabajas con estructuras jerárquicas (árboles, grafos)\n4. Cuando necesitas explorar múltiples caminos (backtracking)\n5. Cuando la definición del problema es recursiva (factorial, Fibonacci)\n6. Cuando la claridad del código es más importante que la eficiencia\n\nEjemplos clásicos:\n- Recorrer árboles y directorios\n- Resolver laberintos\n- Generar permutaciones\n- Algoritmos divide y vencerás"
+                }
+            ]
+        },
+        "section_4": {
+            "title": "IV. Aplicación de algoritmos en problemas reales",
+            "subsections": [
+                {
+                    "title": "Algoritmos en estructuras de datos",
+                    "content": "Los algoritmos y las estructuras de datos están estrechamente relacionados. La elección correcta de estructura puede hacer que un algoritmo sea más eficiente:\n\n- Arreglos: Acceso rápido por índice, búsqueda binaria\n- Listas enlazadas: Inserción/eliminación eficiente\n- Pilas: Último en entrar, primero en salir (LIFO)\n- Colas: Primero en entrar, primero en salir (FIFO)\n- Árboles: Búsqueda jerárquica eficiente\n- Grafos: Representación de relaciones complejas"
+                },
+                {
+                    "title": "Ejemplo: Búsqueda en lista de productos",
+                    "content": "Aplicación de búsqueda secuencial en un sistema de inventario:\n\nPseudocódigo:\n\nlista ← [\"manzana\", \"banana\", \"naranja\", \"uva\", \"pera\"]\nproducto ← ingresar(\"Ingresa el nombre del producto:\")\nencontrado ← falso\n\npara cada item en lista hacer\n    si item = producto entonces\n        encontrado ← verdadero\n        romper\n    fin para\n\nsi encontrado entonces\n    mostrar(\"Producto encontrado.\")\nsino\n    mostrar(\"Producto no disponible.\")"
+                },
+                {
+                    "title": "Ejemplo: Organización de gastos mensuales",
+                    "content": "Programa para registrar ingresos y egresos:\n\nPython:\n\ningresos = float(input(\"Ingresa el total de ingresos del mes: \"))\negresos = []\n\nprint(\"Escribe tus egresos uno por uno. Escribe 0 para terminar.\")\nwhile True:\n    gasto = float(input(\"Egreso: \"))\n    if gasto == 0:\n        break\n    egresos.append(gasto)\n\ntotal_egresos = sum(egresos)\nsaldo = ingresos - total_egresos\n\nprint(f\"\\nIngresos: ${ingresos}\")\nprint(f\"Total de egresos: ${total_egresos}\")\nprint(f\"Saldo final: ${saldo}\")\n\nif saldo >= 0:\n    print(\"¡Buen trabajo! Terminaste el mes con saldo positivo.\")\nelse:\n    print(\"Cuidado, terminaste el mes con saldo negativo.\")"
+                },
+                {
+                    "title": "Ejemplo: Control de temperatura",
+                    "content": "Sistema para monitorear temperatura en un invernadero:\n\nPython:\n\ntemperatura = float(input(\"Ingresa la temperatura actual del invernadero: \"))\n\nif 18 <= temperatura <= 25:\n    print(\"Temperatura ideal. No es necesario hacer ajustes.\")\nelif temperatura < 18:\n    print(\"Hace demasiado frío. Considera encender el calefactor.\")\nelse:\n    print(\"Hace demasiado calor. Abre las ventanas o enciende el ventilador.\")"
+                },
+                {
+                    "title": "Ejemplo: Sistema de calificaciones",
+                    "content": "Cálculo de promedio de calificaciones:\n\nPython:\n\nnotas = []\nfor i in range(1, 4):\n    nota = float(input(f\"Ingrese la nota {i}: \"))\n    notas.append(nota)\n\npromedio = sum(notas) / len(notas)\nprint(f\"\\nPromedio final: {promedio:.2f}\")\n\nif promedio >= 70:\n    print(\"El estudiante ha aprobado.\")\nelse:\n    print(\"El estudiante no ha aprobado.\")"
+                }
+            ]
+        }
+    },
+    "activities": [
+        {
+            "subtopic": "Conceptos fundamentales de algoritmos",
+            "objective": "Comprender las características esenciales de un algoritmo y su importancia en la resolución de problemas.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál de las siguientes NO es una característica de un buen algoritmo?",
+                        "options": [
+                            "Debe ser finito",
+                            "Debe ser ambiguo para adaptarse a diferentes situaciones",
+                            "Debe ser preciso",
+                            "Debe ser eficiente"
+                        ],
+                        "correctAnswer": 1
+                    },
+                    {
+                        "question": "¿Qué representa la notación O(n) en complejidad algorítmica?",
+                        "options": [
+                            "Tiempo constante",
+                            "Tiempo lineal",
+                            "Tiempo cuadrático",
+                            "Tiempo logarítmico"
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "¿Por qué crees que es importante analizar la complejidad algorítmica antes de implementar una solución?",
+            "practice": {
+                "question": "Identifica si las siguientes afirmaciones sobre algoritmos son verdaderas (V) o falsas (F):",
+                "elements": [
+                    "Todo algoritmo debe tener un número finito de pasos.",
+                    "La eficiencia de un algoritmo no importa cuando trabajamos con pocos datos.",
+                    "Un algoritmo preciso no deja lugar a interpretaciones ambiguas.",
+                    "La notación O(1) representa un tiempo de ejecución que crece proporcionalmente al tamaño de la entrada."
+                ],
+                "answers": {
+                    "Verdadero": [
+                        "Todo algoritmo debe tener un número finito de pasos.",
+                        "Un algoritmo preciso no deja lugar a interpretaciones ambiguas."
+                    ],
+                    "Falso": [
+                        "La eficiencia de un algoritmo no importa cuando trabajamos con pocos datos.",
+                        "La notación O(1) representa un tiempo de ejecución que crece proporcionalmente al tamaño de la entrada."
+                    ]
+                }
+            }
+        },
+        {
+            "subtopic": "Algoritmos de búsqueda",
+            "objective": "Diferenciar y aplicar los algoritmos de búsqueda lineal y binaria según el contexto.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál es la principal ventaja de la búsqueda binaria sobre la búsqueda lineal?",
+                        "options": [
+                            "No necesita que la lista esté ordenada",
+                            "Es más fácil de implementar",
+                            "Es mucho más eficiente para listas grandes",
+                            "Puede buscar en listas no numéricas"
+                        ],
+                        "correctAnswer": 2
+                    },
+                    {
+                        "question": "¿Cuál es la complejidad en el peor caso de la búsqueda lineal?",
+                        "options": [
+                            "O(1)",
+                            "O(log n)",
+                            "O(n)",
+                            "O(n²)"
+                        ],
+                        "correctAnswer": 2
+                    }
+                ]
+            },
+            "reflection": "Imagina que tienes una lista de 1,000,000 de elementos ordenados. ¿Por qué sería ineficiente usar búsqueda lineal en este caso?",
+            "practice": {
+                "question": "Dada la siguiente lista ordenada: [2, 5, 8, 12, 16, 23, 38, 56, 72, 91], indica cuántas comparaciones necesitarían:",
+                "steps": [
+                    "Búsqueda lineal para encontrar el número 23",
+                    "Búsqueda binaria para encontrar el número 23",
+                    "Búsqueda lineal para encontrar el número 100 (no existe en la lista)",
+                    "Búsqueda binaria para encontrar el número 100 (no existe en la lista)"
+                ],
+                "answers": {
+                    "Búsqueda lineal para encontrar el número 23": "6 comparaciones",
+                    "Búsqueda binaria para encontrar el número 23": "3 comparaciones",
+                    "Búsqueda lineal para encontrar el número 100 (no existe en la lista)": "10 comparaciones",
+                    "Búsqueda binaria para encontrar el número 100 (no existe en la lista)": "4 comparaciones"
+                }
+            }
+        },
+        {
+            "subtopic": "Algoritmos de ordenamiento",
+            "objective": "Implementar diferentes algoritmos de ordenamiento y comprender sus diferencias en eficiencia.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál de estos algoritmos de ordenamiento tiene complejidad O(n log n) en el peor caso?",
+                        "options": [
+                            "Burbuja",
+                            "Inserción",
+                            "Merge Sort",
+                            "Selección"
+                        ],
+                        "correctAnswer": 2
+                    },
+                    {
+                        "question": "¿Qué algoritmo de ordenamiento funciona encontrando repetidamente el elemento mínimo y colocándolo al principio?",
+                        "options": [
+                            "Burbuja",
+                            "Quicksort",
+                            "Merge Sort",
+                            "Selección"
+                        ],
+                        "correctAnswer": 3
+                    }
+                ]
+            },
+            "reflection": "¿En qué situaciones reales crees que sería importante usar un algoritmo de ordenamiento eficiente como Merge Sort o Quicksort en lugar de Burbuja o Selección?",
+            "practice": {
+                "question": "Ordena manualmente la siguiente lista usando el algoritmo de burbuja: [5, 3, 8, 1, 2]. Muestra cada paso del proceso.",
+                "steps": [
+                    "Lista inicial: [5, 3, 8, 1, 2]",
+                    "Primera pasada completa",
+                    "Segunda pasada completa",
+                    "Tercera pasada completa",
+                    "Lista ordenada"
+                ],
+                "example_solution": {
+                    "Primera pasada": "Compara 5-3 (intercambia) → [3,5,8,1,2]; compara 5-8 (no cambia); compara 8-1 (intercambia) → [3,5,1,8,2]; compara 8-2 (intercambia) → [3,5,1,2,8]",
+                    "Segunda pasada": "Compara 3-5 (no cambia); compara 5-1 (intercambia) → [3,1,5,2,8]; compara 5-2 (intercambia) → [3,1,2,5,8]",
+                    "Tercera pasada": "Compara 3-1 (intercambia) → [1,3,2,5,8]; compara 3-2 (intercambia) → [1,2,3,5,8]",
+                    "Cuarta pasada": "No se realizan intercambios, lista ordenada"
+                }
+            }
+        },
+        {
+            "subtopic": "Algoritmos recursivos",
+            "objective": "Identificar problemas que pueden resolverse con recursión e implementar soluciones recursivas.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Qué elemento es esencial en toda función recursiva para evitar llamadas infinitas?",
+                        "options": [
+                            "Variable acumuladora",
+                            "Caso base",
+                            "Llamada a otra función",
+                            "Bucle while"
+                        ],
+                        "correctAnswer": 1
+                    },
+                    {
+                        "question": "¿Cuál de estos problemas se presta naturalmente a una solución recursiva?",
+                        "options": [
+                            "Calcular el promedio de una lista de números",
+                            "Encontrar el máximo en un arreglo",
+                            "Calcular el factorial de un número",
+                            "Buscar un elemento en una lista"
+                        ],
+                        "correctAnswer": 2
+                    }
+                ]
+            },
+            "reflection": "¿Por qué crees que la recursión puede ser menos eficiente que la iteración en algunos casos? ¿Cómo podrías mitigar este problema?",
+            "practice": {
+                "question": "Escribe una función recursiva que cuente cuántas veces aparece una letra específica en una cadena de texto. Ignora mayúsculas/minúsculas.",
+                "steps": [
+                    "Caso base: cadena vacía",
+                    "Comparar primer carácter con la letra buscada",
+                    "Llamada recursiva con el resto de la cadena",
+                    "Ejemplo: contar 'a' en 'banana' debe devolver 3"
+                ],
+                "example_solution": "def contar_letra(cadena, letra):\n    if len(cadena) == 0:\n        return 0\n    primer_caracter = cadena[0].lower()\n    resto = cadena[1:]\n    if primer_caracter == letra.lower():\n        return 1 + contar_letra(resto, letra)\n    else:\n        return contar_letra(resto, letra)"
+            }
+        },
+        {
+            "subtopic": "Aplicación en problemas reales",
+            "objective": "Aplicar algoritmos a situaciones cotidianas y estructuras de datos para resolver problemas prácticos.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Qué estructura de datos sería más adecuada para implementar un sistema de atención por turnos (primero en llegar, primero en ser atendido)?",
+                        "options": [
+                            "Pila",
+                            "Cola",
+                            "Árbol binario",
+                            "Grafo"
+                        ],
+                        "correctAnswer": 1
+                    },
+                    {
+                        "question": "¿Qué algoritmo de ordenamiento sería más eficiente para ordenar una lista de 10,000 elementos?",
+                        "options": [
+                            "Burbuja",
+                            "Inserción",
+                            "Selección",
+                            "Merge Sort"
+                        ],
+                        "correctAnswer": 3
+                    }
+                ]
+            },
+            "reflection": "Piensa en una situación de tu vida diaria donde se aplique algún concepto de algoritmos (búsqueda, ordenamiento, recursión, etc.). Describe cómo se relaciona.",
+            "practice": {
+                "question": "Diseña un sistema simple de inventario para una tienda que permita:",
+                "requirements": [
+                    "Agregar productos con nombre y precio",
+                    "Buscar productos por nombre (usando búsqueda binaria si la lista está ordenada)",
+                    "Mostrar todos los productos ordenados por precio",
+                    "Calcular el valor total del inventario"
+                ],
+                "hints": [
+                    "Usa un diccionario para almacenar productos (clave: nombre, valor: precio)",
+                    "Para ordenar por precio, puedes convertir el diccionario a una lista de tuplas y usar sorted()",
+                    "Para la búsqueda binaria, mantén una lista ordenada de nombres de productos"
+                ]
+            }
+        }
+    ],
+    "activity_descriptions": [
+        "Fundamentos de algoritmos",
+        "Búsqueda lineal y binaria",
+        "Algoritmos de ordenamiento",
+        "Recursividad en programación",
+        "Aplicación práctica de algoritmos"
+    ],
+    "activity_completion_message": "¡Gran trabajo! Has completado las actividades y reforzado tus conocimientos sobre algoritmos.",
+    "login_required_message": "Por favor inicia sesión para acceder a este módulo.",
+    "user_not_found_message": "Usuario no registrado en el sistema."
+}

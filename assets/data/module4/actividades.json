@@ -1,0 +1,149 @@
+{
+  "activities": {
+    "sectionDescription": "Evalúa tus conocimientos sobre paradigmas de programación, incluyendo programación estructurada, orientada a objetos, funcional y basada en eventos.",
+    "exercises": [
+      {
+        "id": 1,
+        "title": "Construye tu Paradigma",
+        "description": "Identifica el paradigma de programación adecuado para resolver los siguientes problemas y selecciona sus características principales.",
+        "quiz": [
+          {
+            "question": "Procesar datos de usuarios mayores de 18 años desde una base de datos. ¿Qué paradigma es el más adecuado?",
+            "options": ["Imperativa", "Declarativa", "Funcional", "Lógica"],
+            "correctAnswer": 1
+          },
+          {
+            "question": "Controlar un robot para que siga una secuencia de movimientos. ¿Qué paradigma es el más adecuado?",
+            "options": ["Imperativa", "Declarativa", "Funcional", "Lógica"],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Deducir relaciones familiares a partir de reglas y hechos. ¿Qué paradigma es el más adecuado?",
+            "options": ["Imperativa", "Declarativa", "Funcional", "Lógica"],
+            "correctAnswer": 3
+          }
+        ],
+        "relatedTopics": ["Paradigmas de Programación", "Programación Declarativa", "Programación Imperativa", "Programación Lógica"]
+      },
+      {
+        "id": 2,
+        "title": "Desafío de Código Estructurado",
+        "description": "Arrastra y suelta las líneas de código en el orden correcto para que el programa funcione correctamente.",
+        "quiz": [
+          {
+            "question": "Ordena este código para calcular el promedio de notas: \n1. printf('Promedio: %f\\n', suma / 5);\n2. for (int i = 0; i < 5; i++) {\n3. int suma = 0;\n4. suma += notas[i];\n5. }",
+            "correctAnswer": [2, 1, 3, 4, 0] 
+          },
+          {
+            "question": "Ordena este código para verificar la edad: \n1. if (edad >= 18) {\n2. printf('Ingresa tu edad: ');\n3. scanf('%d', &edad);\n4. int edad;\n5. printf('Eres mayor de edad\\n');\n6. } else {\n7. printf('Eres menor de edad\\n');\n8. }",
+            "correctAnswer": [3, 1, 2, 0, 4, 5, 6, 7]
+          }
+        ],
+        "relatedTopics": ["Programación Estructurada", "Secuencia", "Selección", "Repetición"]
+      },
+      {
+        "id": 3,
+        "title": "Crea tu Objeto - Principios de POO",
+        "description": "Responde preguntas sobre la de una clase, encapsulamiento e herencia en programación orientada a objetos.",
+        "quiz": [
+          {
+            "question": "¿Qué propiedades y métodos debería tener la clase Vehículo?",
+            "options": [
+              "Propiedades: marca, velocidad; Métodos: acelerar",
+              "Propiedades: color, tamaño; Métodos: dibujar",
+              "Propiedades: nombre, edad; Métodos: hablar",
+              "Propiedades: precio, stock; Métodos: vender"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "En la clase Vehículo, ¿la propiedad 'velocidad' debería ser privada?",
+            "options": ["Sí", "No"],
+            "correctAnswer": 0
+          },
+          {
+            "question": "Si Camión hereda de Vehículo, ¿qué método adicional debería tener?",
+            "options": ["acelerar", "frenar", "cargarMercancía", "detenerse"],
+            "correctAnswer": 2
+          }
+        ],
+        "relatedTopics": ["Programación Orientada a Objetos", "Encapsulamiento", "Herencia"]
+      },
+      {
+        "id": 4,
+        "title": "Reacciona al Evento",
+        "description": "Selecciona la acción correcta para manejar eventos en una interfaz gráfica simulada.",
+        "quiz": [
+          {
+            "question": "El usuario hace clic en un botón. ¿Qué acción debería ejecutarse?",
+            "options": [
+              "alert('¡Botón clicado!');",
+              "Actualizar texto a 'Hola, usuario'",
+              "Cambiar color de fondo"
+            ],
+            "correctAnswer": 0
+          },
+          {
+            "question": "El usuario escribe en un campo de texto. ¿Qué acción debería ejecutarse?",
+            "options": [
+              "alert('Texto cambiado');",
+              "Actualizar un mensaje que diga 'Hola, [texto]'",
+              "Cambiar color de fondo"
+            ],
+            "correctAnswer": 1
+          }
+        ],
+        "relatedTopics": ["Programación Basada en Eventos", "Manejadores de Eventos", "Interfaz Gráfica"]
+      },
+      {
+        "id": 5,
+        "title": "Transforma Datos con Funciones Puras",
+        "description": "Aplica conceptos de programación funcional para transformar datos sin modificar el estado original.",
+        "quiz": [
+          {
+            "question": "Dada la lista [1, 2, 3, 4, 5], ¿qué función map duplica los números?",
+            "options": [
+              "num => num + 1",
+              "num => num * 2",
+              "num => num * 3",
+              "num => num - 1"
+            ],
+            "correctAnswer": 1
+          },
+          {
+            "question": "Después de duplicar a [2, 4, 6, 8, 10], ¿qué función reduce suma los números?",
+            "options": [
+              "(acum, num) => acum * num",
+              "num => num + 1",
+              "(acum, num) => acum + num",
+              "num => num * 2"
+            ],
+            "correctAnswer": 2
+          },
+          {
+            "question": "¿Modificaste la lista original al aplicar map y reduce?",
+            "options": ["Sí", "No"],
+            "correctAnswer": 1
+          }
+        ],
+        "relatedTopics": ["Programación Funcional", "Funciones Puras", "Inmutabilidad"]
+      }
+    ],
+    "grading": {
+      "criteria": [
+        {"aspect": "Construye tu Paradigma", "weight": 0.34},
+        {"aspect": "Desafío de Código Estructurado", "weight": 0.17},
+        {"aspect": "Crea tu Objeto", "weight": 0.17},
+        {"aspect": "Reacciona al Evento", "weight": 0.17},
+        {"aspect": "Transforma Datos", "weight": 0.15}
+      ],
+      "scoreConversion": [
+        {"range": "90-100", "grade": "Excelente"},
+        {"range": "80-89", "grade": "Muy Bueno"},
+        {"range": "70-79", "grade": "Bueno"},
+        {"range": "50-69", "grade": "Regular"},
+        {"range": "0-49", "grade": "Insuficiente"}
+      ]
+    }
+  }
+}

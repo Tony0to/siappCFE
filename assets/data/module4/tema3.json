@@ -1,0 +1,120 @@
+{
+    "sectionTitle": "III. Programación orientada a objetos (POO)",
+    "sectionImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThhvyKOwSPTLwsbnPdFbydGY6Wdiv79kO5ng&s",
+    "introText": "La programación orientada a objetos (POO) es un paradigma de programación que organiza el código en objetos, que son instancias de clases. Este enfoque permite crear software modular, reutilizable y fácil de mantener. La POO se basa en conceptos clave como clases, objetos, herencia, polimorfismo, abstracción y encapsulamiento, que facilitan el desarrollo de aplicaciones complejas.",
+    "subsections": [
+      {
+        "title": "Conceptos fundamentales: clases, objetos, herencia, polimorfismo",
+        "content": "Una **clase** es una plantilla que define las propiedades y comportamientos de un objeto. Un **objeto** es una instancia de una clase. La **herencia** permite que una clase derive de otra, heredando sus características. El **polimorfismo** permite que objetos de diferentes clases respondan de manera diferente al mismo mensaje.",
+        "examples": [
+          {
+            "title": "Analogía",
+            "content": "Piensa en una clase como un molde de galletas y en los objetos como las galletas hechas con ese molde. Cada galleta puede tener diferentes decoraciones (datos), pero todas comparten la misma forma básica (clase)."
+          },
+          {
+            "title": "Dato curioso",
+            "content": "La mayoría de apps móviles, videojuegos y software de escritorio se diseñan usando POO.",
+            "color": "#4CAF50"
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Qué es una clase en POO?",
+            "options": [
+              "Una instancia de un objeto",
+              "Una plantilla para crear objetos",
+              "Un método de un objeto",
+              "Un tipo de datos primitivo"
+            ],
+            "correct": "Una plantilla para crear objetos"
+          }
+        ],
+        "video": {
+          "title": "Video: Introducción a los conceptos de POO",
+          "description": "Este video explica los conceptos fundamentales de la programación orientada a objetos, incluyendo clases, objetos, herencia y polimorfismo.",
+          "youtubeId": "I848HdWjLMo"
+        }
+      },
+      {
+        "title": "Abstracción y encapsulamiento",
+        "content": "La abstracción y el encapsulamiento son pilares clave de la POO que simplifican y protegen el diseño del software.",
+        "examples": [
+          {
+            "title": "Abstracción",
+            "content": "Nos enfocamos solo en lo necesario. Ocultamos los detalles internos que no importan.",
+            "code": "abstract class Animal {\n  void hacerSonido();\n}\n\nclass Perro extends Animal {\n  @override\n  void hacerSonido() {\n    print('Guau!');\n  }\n}",
+            "explanation": "Este código define una clase abstracta `Animal` con un método que las clases derivadas implementan."
+          },
+          {
+            "title": "Encapsulamiento",
+            "content": "Protege los datos internos para que no se modifiquen accidentalmente.",
+            "code": "class CuentaBancaria {\n  double _saldo = 0.0; // Privado\n\n  void depositar(double cantidad) {\n    if (cantidad > 0) _saldo += cantidad;\n  }\n\n  double get saldo => _saldo;\n}",
+            "explanation": "El `_saldo` es privado y solo se modifica a través de métodos controlados."
+          },
+          {
+            "title": "Analogía e Interacción",
+            "content": [
+              {
+                "subtitle": "Analogía",
+                "text": "Una lavadora: usas botones simples sin saber cómo funciona por dentro."
+              },
+              {
+                "subtitle": "Interacción",
+                "text": "Te permite modificar la parte interna sin que eso afecte cómo otros la usan."
+              }
+            ]
+          },
+          {
+            "title": "Dato curioso",
+            "content": "Este principio hace posible crear bibliotecas que puedes usar sin entender todo su código fuente.",
+            "color": "#4CAF50"
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Qué principio de POO protege los datos internos de un objeto?",
+            "options": [
+              "Abstracción",
+              "Encapsulamiento",
+              "Herencia",
+              "Polimorfismo"
+            ],
+            "correct": "Encapsulamiento"
+          }
+        ],
+        "video": {
+          "title": "Video: Abstracción y encapsulamiento en acción",
+          "description": "Este video muestra ejemplos prácticos de abstracción y encapsulamiento en la programación orientada a objetos.",
+          "youtubeId": "WhqmPWPDdVQ"
+        }
+      },
+      {
+        "title": "Ejemplo práctico en un lenguaje de POO",
+        "content": "A continuación, se muestra un ejemplo simple que ilustra cómo se aplican los conceptos de POO en un lenguaje como Dart.",
+        "examples": [
+          {
+            "title": "Ejemplo de clase Vehículo",
+            "code": "class Vehiculo {\n  String marca;\n  int velocidad = 0;\n\n  Vehiculo(this.marca);\n\n  void acelerar(int incremento) {\n    velocidad += incremento;\n    print('$marca ahora va a $velocidad km/h');\n  }\n}\n\nvoid main() {\n  var coche = Vehiculo('Toyota');\n  coche.acelerar(50);\n}",
+            "explanation": "Este código muestra cómo crear un objeto (`coche`) a partir de una clase (`Vehiculo`) y usar sus métodos."
+          }
+        ],
+        "questions": [
+          {
+            "text": "En el ejemplo práctico, ¿qué hace el método `acelerar` de la clase `Vehiculo`?",
+            "options": [
+              "Reduce la velocidad del vehículo",
+              "Imprime la marca del vehículo",
+              "Aumenta la velocidad del vehículo",
+              "Crea un nuevo vehículo"
+            ],
+            "correct": "Aumenta la velocidad del vehículo"
+          }
+        ]
+      }
+    ],
+    "video": {
+      "title": "Video: Resumen de Programación Orientada a Objetos",
+      "description": "Este video ofrece un resumen de los conceptos clave de la programación orientada a objetos.",
+      "youtubeId": "SI7O81GMG2A"
+    }
+  }

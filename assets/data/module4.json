@@ -1,0 +1,158 @@
+{
+    "module_title": "Módulo 4: Paradigmas de Programación",
+    "id": "module4",
+    "image": "https://cdn-icons-png.flaticon.com/512/2103/2103633.png",
+    "subtitle": "Explora diferentes enfoques de programación",
+    "content": {
+        "tema1": {
+            "title": "Paradigmas de programación y su clasificación",
+            "description": "Explora los diferentes paradigmas de programación y cómo se clasifican según sus enfoques y características.",
+            "items": [
+                "Programación imperativa",
+                "Programación declarativa",
+                "Programación funcional",
+                "Programación lógica"
+            ],
+            "sections": [
+                {
+                    "title": "Introducción",
+                    "content": "Los paradigmas de programación son enfoques o estilos fundamentales para estructurar y resolver problemas computacionales..."
+                },
+                {
+                    "title": "Clasificación",
+                    "content": "Los paradigmas se dividen en categorías como imperativos, declarativos, funcionales y lógicos..."
+                }
+            ]
+        },
+        "tema2": {
+            "title": "Programación estructurada",
+            "description": "Fundamentos de la programación estructurada con ejemplos prácticos en diversos lenguajes.",
+            "items": [
+                "Principios básicos",
+                "Modularidad y reutilización de código",
+                "Ejemplo de aplicación en C, Python, Java"
+            ],
+            "sections": [
+                {
+                    "title": "Introducción",
+                    "content": "La programación estructurada se centra en la claridad y estructura del código..."
+                },
+                {
+                    "title": "Estructuras de control",
+                    "content": "Uso de secuencias, selecciones e iteraciones..."
+                }
+            ]
+        },
+        "tema3": {
+            "title": "Programación orientada a objetos (POO)",
+            "description": "Domina los conceptos clave de POO y su aplicación en el desarrollo moderno.",
+            "items": [
+                "Conceptos fundamentales: clases, objetos, herencia, polimorfismo",
+                "Abstracción y encapsulamiento",
+                "Ejemplo práctico en un lenguaje de POO"
+            ],
+            "sections": [
+                {
+                    "title": "Conceptos básicos",
+                    "content": "Las clases como plantillas para crear objetos..."
+                },
+                {
+                    "title": "Principios SOLID",
+                    "content": "Los cinco principios del diseño orientado a objetos..."
+                }
+            ]
+        },
+        "tema4": {
+            "title": "Otros paradigmas y su aplicación",
+            "description": "Descubre paradigmas alternativos como la programación funcional y basada en eventos, y sus aplicaciones prácticas.",
+            "items": [
+                "Programación funcional (Ejemplo en Lisp o Haskell)",
+                "Programación basada en eventos",
+                "Aplicaciones modernas y comparación entre paradigmas"
+            ],
+            "sections": [
+                {
+                    "title": "Programación funcional",
+                    "content": "La programación funcional trata la computación como evaluaciones de funciones..."
+                },
+                {
+                    "title": "Programación basada en eventos",
+                    "content": "Este paradigma se centra en responder a eventos, como en interfaces de usuario..."
+                }
+            ]
+        }
+    },
+    "welcome": {
+        "title": "¡Bienvenido al Módulo 4!",
+        "description": "En este módulo exploraremos los diferentes paradigmas de programación que han dado forma a la forma en que construimos software. Comprender estos enfoques te permitirá seleccionar las herramientas adecuadas para cada problema y ampliará significativamente tu perspectiva como desarrollador."
+    },
+    "syllabus": {
+        "title": "Temario completo:",
+        "sections": [
+            {
+                "title": "I. Paradigmas de programación y su clasificación",
+                "items": [
+                    "Programación imperativa",
+                    "Programación declarativa",
+                    "Programación funcional",
+                    "Programación lógica"
+                ]
+            },
+            {
+                "title": "II. Programación estructurada",
+                "items": [
+                    "Principios básicos",
+                    "Modularidad y reutilización de código",
+                    "Ejemplo de aplicación en C, Python, Java"
+                ]
+            },
+            {
+                "title": "III. Programación orientada a objetos (POO)",
+                "items": [
+                    "Conceptos fundamentales: clases, objetos, herencia, polimorfismo",
+                    "Abstracción y encapsulamiento",
+                    "Ejemplo práctico en un lenguaje de POO"
+                ]
+            },
+            {
+                "title": "IV. Otros paradigmas y su aplicación",
+                "items": [
+                    "Programación funcional (Ejemplo en Lisp o Haskell)",
+                    "Programación basada en eventos",
+                    "Aplicaciones modernas y comparación entre paradigmas"
+                ]
+            }
+        ]
+    },
+    "learning_points": {
+        "title": "En este módulo aprenderás:",
+        "points": [
+            {
+                "icon": "compare_arrows",
+                "title": "Diversidad de enfoques",
+                "description": "Identificarás y comprenderás los principales paradigmas de programación y sus diferencias fundamentales."
+            },
+            {
+                "icon": "architecture",
+                "title": "POO en profundidad",
+                "description": "Dominarás los conceptos clave de la programación orientada a objetos y cómo aplicarlos eficientemente."
+            },
+            {
+                "icon": "functions",
+                "title": "Pensamiento funcional",
+                "description": "Aprenderás los principios de la programación funcional y cómo afecta a la estructura de tus programas."
+            },
+            {
+                "icon": "merge_type",
+                "title": "Selección de paradigmas",
+                "description": "Desarrollarás criterio para elegir el paradigma más adecuado según el problema a resolver."
+            }
+        ]
+    },
+    "motivation": {
+        "text": "Un buen programador no se limita a un solo paradigma, sino que sabe elegir la mejor herramienta para cada desafío.",
+        "icon": "auto_awesome"
+    },
+    "button_text": "Comenzar Módulo",
+    "practice_button_text": "Actividades Prácticas"
+}

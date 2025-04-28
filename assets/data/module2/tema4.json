@@ -1,0 +1,123 @@
+{
+  "introduccion": {
+    "titulo": "Estructuras de Control Avanzadas",
+    "contenido": "Exploraremos problemas más complejos con estructuras de control anidadas y bucles especializados.\n\n• **Patrones numéricos**: Uso de bucles para generar secuencias.\n• **Validación de entrada**: Estructuras de decisión para inputs.\n• **Procesamiento de strings**: Manipulación de cadenas con bucles.\n\n[Ejemplo: for (int i = 1; i <= 5; i++) { print('*' * i); }]"
+  },
+  "subtema1": {
+    "titulo": "Patrones Numéricos",
+    "contenido": "Los bucles pueden generar patrones mediante anidamiento y condiciones.\n\n• **Pirámides numéricas**: Combinación de bucles y contadores.\n• **Secuencias matemáticas**: Cálculo de valores en tiempo real.\n• **Formatos personalizados**: Ajuste de espacios y saltos de línea.\n\n[Ejemplo pirámide: for (int i = 1; i <= 3; i++) { print(' '.repeat(3-i) + '*'.repeat(2*i-1)); }]",
+    "nota": {
+      "contenido": "Usa variables temporales para almacenar valores intermedios en patrones complejos.",
+      "color": "blue"
+    }
+  },
+  "subtema2": {
+    "titulo": "Validación de Entrada",
+    "contenido": "Las estructuras de decisión garantizan que los datos ingresados cumplan requisitos.\n\n• **Rangos numéricos**: Verificar que un número esté entre mínimo y máximo.\n• **Formato de strings**: Validar longitud o caracteres permitidos.\n• **Bucles con validación**: Repetir hasta obtener un input válido.\n\n[Ejemplo: do { edad = leerInput(); } while (edad < 0 || edad > 120);]",
+    "nota": {
+      "contenido": "Siempre proporciona mensajes claros al usuario cuando el input sea inválido.",
+      "color": "orange"
+    }
+  },
+  "subtema3": {
+    "titulo": "Procesamiento de Cadenas",
+    "contenido": "Los strings pueden analizarse carácter por carácter usando bucles.\n\n• **Conteo de vocales**: Uso de switch-case dentro de bucles.\n• **Inversión de cadena**: Acceso a índices en orden inverso.\n• **Búsqueda de subcadenas**: Comparaciones parciales con anidamiento.\n\n[Ejemplo: for (int i = texto.length-1; i >= 0; i--) { invertido += texto[i]; }]",
+    "nota": {
+      "contenido": "Los strings son inmutables en muchos lenguajes. Considera usar StringBuilder para manipulación frecuente.",
+      "color": "green"
+    },
+    "quizzes": [
+      {
+        "titulo": "Ejercicio 1: Generador de Triángulo Numérico",
+        "tipo": "flowchart",
+        "enunciado": "Un programa genera un triángulo numérico donde cada fila muestra una secuencia ascendente hasta el número de fila actual. Para N=3:\n1\n1 2\n1 2 3",
+        "algoritmo": [
+          "Leer número N (filas).",
+          "Para i desde 1 hasta N:",
+          "  Para j desde 1 hasta i:",
+          "    Imprimir j seguido de espacio.",
+          "  Imprimir salto de línea."
+        ],
+        "diagrama_flujo": {
+          "id": "triangulo_numerico",
+          "descripcion": "El diagrama muestra dos bucles anidados: el externo controla las filas y el interno los números por fila.",
+          "pseudocodigo": "INICIO\nLeer N\nPARA i = 1 HASTA N HACER\n  PARA j = 1 HASTA i HACER\n    IMPRIMIR j + ' '\n  FIN PARA\n  IMPRIMIR '\\n'\nFIN PARA\nFIN"
+        },
+        "analisis": "Este algoritmo usa complejidad O(N²) por los bucles anidados. Es eficiente para N pequeños pero consume más recursos con N grandes.",
+        "pregunta": {
+          "texto": "¿Qué imprime el algoritmo para N=2?",
+          "opciones": [
+            "1\n2",
+            "1\n1 2",
+            "1 2\n1 2",
+            "1\n2 3"
+          ],
+          "respuesta_correcta": "1\n1 2",
+          "explicacion": "Para N=2, la primera fila imprime '1' y la segunda '1 2', siguiendo el patrón de incremento por fila."
+        }
+      },
+      {
+        "titulo": "Ejercicio 2: Validador de Contraseña",
+        "tipo": "flowchart",
+        "enunciado": "Un programa valida que una contraseña tenga:\n- Al menos 8 caracteres\n- Al menos 1 mayúscula\n- Al menos 1 número",
+        "algoritmo": [
+          "Leer contraseña.",
+          "Si longitud < 8: mostrar 'Inválida' y terminar.",
+          "Inicializar flags: tieneMayus = falso, tieneNum = falso.",
+          "Para cada carácter en contraseña:",
+          "  Si es mayúscula: tieneMayus = verdadero.",
+          "  Si es número: tieneNum = verdadero.",
+          "Si tieneMayus y tieneNum: mostrar 'Válida'.",
+          "Si no: mostrar 'Inválida'."
+        ],
+        "diagrama_flujo": {
+          "id": "validador_password",
+          "descripcion": "El diagrama incluye una decisión inicial para longitud, un bucle para verificar caracteres y flags booleanos.",
+          "pseudocodigo": "INICIO\nLeer password\nSI longitud(password) < 8 ENTONCES\n  IMPRIMIR 'Inválida'\nSINO\ntieneMayus = FALSO\ntieneNum = FALSO\nPARA cada c EN password HACER\n  SI c ES MAYÚSCULA ENTONCES\n    tieneMayus = VERDADERO\n  FIN SI\n  SI c ES NÚMERO ENTONCES\n    tieneNum = VERDADERO\n  FIN SI\nFIN PARA\nSI tieneMayus Y tieneNum ENTONCES\n  IMPRIMIR 'Válida'\nSINO\n  IMPRIMIR 'Inválida'\nFIN SI\nFIN"
+        },
+        "analisis": "El algoritmo tiene complejidad O(n) donde n es la longitud de la contraseña. Es óptimo para validaciones simples.",
+        "pregunta": {
+          "texto": "¿Cuál contraseña sería válida según el algoritmo?",
+          "opciones": [
+            "abc123",
+            "Password1",
+            "PASSWORD",
+            "12345678"
+          ],
+          "respuesta_correcta": "Password1",
+          "explicacion": "'Password1' cumple con los 3 requisitos: 8+ caracteres, al menos 1 mayúscula (P) y 1 número (1)."
+        }
+      },
+      {
+        "titulo": "Ejercicio 3: Contador de Vocales",
+        "tipo": "flowchart",
+        "enunciado": "Un programa cuenta cuántas vocales (a,e,i,o,u) hay en un texto, ignorando mayúsculas/minúsculas.",
+        "algoritmo": [
+          "Leer texto.",
+          "Convertir texto a minúsculas.",
+          "Inicializar contador = 0.",
+          "Para cada carácter en texto:",
+          "  Si es vocal: incrementar contador.",
+          "Mostrar contador."
+        ],
+        "diagrama_flujo": {
+          "id": "contador_vocales",
+          "descripcion": "El diagrama muestra un bucle que recorre el texto y un switch-case para identificar vocales.",
+          "pseudocodigo": "INICIO\nLeer texto\ntexto = texto.minusculas()\ncontador = 0\nPARA cada c EN texto HACER\n  SI c EN {'a','e','i','o','u'} ENTONCES\n    contador = contador + 1\n  FIN SI\nFIN PARA\nIMPRIMIR contador\nFIN"
+        },
+        "analisis": "La conversión a minúsculas simplifica las comparaciones. Complejidad O(n) donde n es la longitud del texto.",
+        "pregunta": {
+          "texto": "¿Qué devuelve el algoritmo para 'Flutter'?",
+          "opciones": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "respuesta_correcta": "2",
+          "explicacion": "'Flutter' en minúsculas es 'flutter' y contiene 2 vocales: 'u' y 'e'."
+        }
+      }
+    ]
+  }
+}

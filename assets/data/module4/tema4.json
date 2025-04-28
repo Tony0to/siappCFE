@@ -1,0 +1,284 @@
+{
+    "sectionTitle": "IV. Otros paradigmas y su aplicación",
+    "sectionImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyNBIhwpBXeXWmFI9nY8LV30uEbACnT4Hjyg&s",
+    "introText": "",
+    "video": "",
+    "subsections": [
+      {
+        "title": "1. Programación funcional (profundización)",
+        "content": "Aunque ya exploramos este paradigma en la sección de paradigmas clásicos, vale la pena profundizar, porque muchos lenguajes modernos (como JavaScript, Python, Kotlin o Java) han adoptado características funcionales sin ser lenguajes funcionales puros.",
+        "examples": [
+          {
+            "title": "Funciones puras",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "Definición:",
+                "text": "Una función pura es aquella que, dados los mismos valores de entrada, siempre devuelve los mismos valores de salida, sin modificar el estado global ni depender de variables externas."
+              },
+              {
+                "subtitle": "Ventajas:",
+                "text": "• Fácil de testear y depurar.\n• Comportamiento predecible.\n• Evita efectos colaterales."
+              }
+            ]
+          },
+          {
+            "title": "Ejemplo de función pura",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "Considera una función que suma dos números:"
+              }
+            ],
+            "code": "const suma = (a, b) => a + b;\nconsole.log(suma(2, 3)); // Siempre devuelve 5",
+            "explanation": "Esta función es pura porque:\n• No depende de variables externas.\n• No modifica ningún estado.\n• Dados los mismos parámetros (2 y 3), siempre devuelve 5."
+          },
+          {
+            "title": "Inmutabilidad",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "Definición:",
+                "text": "Los datos no cambian una vez que se asignan. En lugar de modificar una variable, se crea una nueva."
+              }
+            ]
+          },
+          {
+            "title": "Ejemplo de inmutabilidad en Haskell",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "En Haskell, las variables son inmutables por defecto:"
+              }
+            ],
+            "code": "let x = 5 in x + 1",
+            "explanation": "Aquí, 'x' se define como 5 y no puede cambiar. En lugar de modificar 'x', se crea un nuevo valor (x + 1), que es 6. Esto evita efectos colaterales y hace que el comportamiento sea más predecible."
+          },
+          {
+            "title": "Funciones de orden superior",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "Son funciones que pueden recibir otras funciones como argumentos o devolver funciones como resultado. Esto permite construir programas muy abstractos y potentes."
+              }
+            ]
+          },
+          {
+            "title": "Ejemplo de función de orden superior",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "En JavaScript, un ejemplo común es el método 'map':"
+              }
+            ],
+            "code": "const numeros = [1, 2, 3];\nconst duplicados = numeros.map(num => num * 2);\nconsole.log(duplicados); // [2, 4, 6]",
+            "explanation": "Aquí, 'map' es una función de orden superior que toma otra función (num => num * 2) como argumento y la aplica a cada elemento del array. Esto permite transformar datos de forma declarativa y reutilizable."
+          },
+          {
+            "title": "Aplicaciones actuales",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "• Análisis y transformación de grandes volúmenes de datos (big data).\n• Sistemas financieros que requieren exactitud matemática.\n• Backend reactivo y procesamiento en tiempo real."
+              }
+            ]
+          },
+          {
+            "title": "Dato curioso",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "Muchas librerías modernas de JavaScript, como Redux y React, usan conceptos funcionales como inmutabilidad, composición y funciones puras para gestionar la lógica de estado y las interfaces."
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Qué característica de la programación funcional asegura que una función siempre devuelva el mismo resultado para las mismas entradas?",
+            "options": ["Inmutabilidad", "Funciones puras", "Event loop", "Encapsulamiento"],
+            "correct": "Funciones puras"
+          }
+        ]
+      },
+      {
+        "title": "2. Programación basada en eventos",
+        "content": "La programación basada en eventos es un paradigma en el cual el flujo del programa se determina por eventos externos, como clics del usuario, mensajes del sistema, sensores o entradas de red. En lugar de ejecutarse de forma lineal, el programa 'reacciona' a lo que sucede.",
+        "examples": [
+          {
+            "title": "Forma de pensar",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "“Espera a que algo suceda, y luego responde.”"
+              }
+            ]
+          },
+          {
+            "title": "Analogía",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "Un mesero en un restaurante no actúa hasta que un cliente lo llama. Cada vez que recibe una señal (evento), él ejecuta una acción específica."
+              }
+            ]
+          },
+          {
+            "title": "Estructura común",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "• Eventos: acciones que ocurren (clic, cambio, entrada de texto).\n• Manejadores de eventos: funciones que se ejecutan cuando ocurre el evento.\n• Ciclo de eventos (event loop): sistema que gestiona y despacha eventos cuando ocurren."
+              }
+            ]
+          },
+          {
+            "title": "Ejemplo de programación basada en eventos",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "En JavaScript, un ejemplo típico es manejar un clic en un botón:"
+              }
+            ],
+            "code": "document.getElementById('miBoton').addEventListener('click', () => {\n  alert('¡Botón clicado!');\n});",
+            "explanation": "Aquí, el evento es el 'click' en un botón con ID 'miBoton'. Cuando ocurre el evento, se ejecuta la función manejadora, que muestra una alerta. El programa no hace nada hasta que el usuario interactúa."
+          },
+          {
+            "title": "Aplicaciones modernas",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "• Interfaces gráficas interactivas.\n• Juegos.\n• Aplicaciones móviles.\n• Sistemas de monitoreo (como alarmas o sensores IoT).\n• Chatbots y asistentes virtuales."
+              }
+            ]
+          },
+          {
+            "title": "Dato curioso",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "El motor de eventos es el corazón de tecnologías como Node.js, que permite ejecutar miles de operaciones simultáneas de forma eficiente."
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "text": "En la programación basada en eventos, ¿qué componente gestiona y despacha los eventos cuando ocurren?",
+            "options": ["Manejador de eventos", "Ciclo de eventos (event loop)", "Función pura", "Clase"],
+            "correct": "Ciclo de eventos (event loop)"
+          }
+        ]
+      },
+      {
+        "title": "3. Aplicaciones modernas y combinación de paradigmas",
+        "content": "En el desarrollo real de software, rara vez se usa un único paradigma. La mayoría de los lenguajes y frameworks modernos permiten combinar paradigmas según las necesidades del proyecto.",
+        "examples": [
+          {
+            "title": "Ejemplo de combinación",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "Una aplicación web moderna puede incluir:\n• Interfaz gráfica construida con eventos (React, Vue).\n• Lógica del backend en POO (Java, Python).\n• Consultas a bases de datos usando declarativo (SQL).\n• Procesamiento de datos con técnicas funcionales (map, reduce).\n• Reglas del negocio expresadas con lógica declarativa o basada en reglas."
+              }
+            ]
+          },
+          {
+            "title": "Ventajas de combinar paradigmas",
+            "color": "#4F46E5",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "• Mayor flexibilidad.\n• Mejores herramientas para distintos tipos de problemas.\n• Código más expresivo y robusto."
+              }
+            ]
+          },
+          {
+            "title": "Comparación de paradigmas",
+            "color": "#1E3A8A",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "A continuación, una tabla comparativa de los paradigmas de programación:"
+              }
+            ],
+            "table": [
+              {
+                "paradigma": "Programación funcional",
+                "como_piensa": "Evaluar expresiones matemáticas puras",
+                "enfocado_en": "Inmutabilidad, funciones puras",
+                "lenguajes_comunes": "Haskell, Scala, Clojure",
+                "aplicaciones_tipicas": "Big data, sistemas financieros"
+              },
+              {
+                "paradigma": "Programación basada en eventos",
+                "como_piensa": "Esperar eventos y reaccionar a ellos",
+                "enfocado_en": "Flujo basado en eventos",
+                "lenguajes_comunes": "JavaScript, Node.js",
+                "aplicaciones_tipicas": "Interfaces gráficas, juegos, IoT"
+              },
+              {
+                "paradigma": "Programación orientada a objetos",
+                "como_piensa": "Modelar el mundo con objetos y clases",
+                "enfocado_en": "Encapsulamiento, herencia",
+                "lenguajes_comunes": "Java, Python, C#",
+                "aplicaciones_tipicas": "Aplicaciones empresariales, frameworks"
+              },
+              {
+                "paradigma": "Programación lógica",
+                "como_piensa": "Definir reglas y dejar que el sistema infiera",
+                "enfocado_en": "Lógica formal y reglas",
+                "lenguajes_comunes": "Prolog, Mercury",
+                "aplicaciones_tipicas": "Inteligencia artificial, sistemas expertos"
+              },
+              {
+                "paradigma": "Programación declarativa",
+                "como_piensa": "Describir el qué, no el cómo",
+                "enfocado_en": "Resultados esperados",
+                "lenguajes_comunes": "SQL, HTML, CSS",
+                "aplicaciones_tipicas": "Bases de datos, diseño web"
+              }
+            ]
+          },
+          {
+            "title": "🧠 Reflexión final",
+            "color": "#DC2626",
+            "content": [
+              {
+                "subtitle": "",
+                "text": "Comprender los paradigmas de programación va mucho más allá de saber sintaxis o escribir líneas de código. Se trata de desarrollar la capacidad de elegir el enfoque más adecuado para resolver un problema, dependiendo del contexto, los requisitos y los recursos disponibles."
+              },
+              {
+                "subtitle": "🎯 ¿Qué me permite un paradigma?",
+                "text": "• Cambiar la forma en que pienso.\n• Entender otras soluciones más allá de la mía.\n• Crear programas más elegantes, mantenibles y eficientes."
+              },
+              {
+                "subtitle": "",
+                "text": "💡 En el mundo real, los proyectos exitosos combinan lo mejor de cada paradigma. Aprenderlos no es solo un requisito académico: es una inversión para tu futuro como programador."
+              }
+            ]
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Cuál es una ventaja de combinar paradigmas en un proyecto de software?",
+            "options": ["Menor flexibilidad", "Código más expresivo y robusto", "Limitar las herramientas disponibles", "Aumentar la complejidad sin beneficios"],
+            "correct": "Código más expresivo y robusto"
+          }
+        ]
+      }
+    ]
+  }

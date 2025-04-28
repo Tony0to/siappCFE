@@ -1,0 +1,140 @@
+{
+    "sectionImage": "https://www.tecnologia-informatica.com/wp-content/uploads/2022/02/programacion-estructurada.jpg",
+    "sectionTitle": "II. PROGRAMACIÓN ESTRUCTURADA",
+    "introText": "La programación estructurada es un paradigma que organiza el código en bloques lógicos utilizando estructuras de control como secuencias, condicionales y bucles. Fue creada para mejorar la claridad y la mantenibilidad del código, evitando prácticas caóticas como el uso excesivo del comando goto. Este enfoque es fundamental para entender cómo escribir programas claros y eficientes, y sirve como base para muchos lenguajes de programación modernos.",
+    "subsections": [
+      {
+        "title": "1. Principios Básicos",
+        "content": "La programación estructurada se basa en dividir el código en bloques lógicos y bien definidos, usando estructuras de control como secuencias, condicionales y bucles. Surgió como una solución al caos del uso indiscriminado del comando goto en los primeros lenguajes.\n\nEste paradigma promueve la claridad, la legibilidad y la facilidad para depurar y mantener el código, siendo la base de muchos otros paradigmas actuales.",
+        "examples": [
+          {
+            "title": "Forma de pensar",
+            "content": "“Divide y vencerás”. Organiza tu código como si construyeras con bloques de LEGO: cada pieza encaja perfectamente y tiene una función clara."
+          },
+          {
+            "title": "Analogía",
+            "content": "Construir un edificio con planos bien definidos. No puedes poner el techo antes que los muros, y cada sección debe seguir una lógica estructural."
+          },
+          {
+            "title": "Estructuras principales",
+            "content": [
+              {
+                "subtitle": "Secuencia",
+                "text": "Instrucciones que se ejecutan una tras otra."
+              },
+              {
+                "subtitle": "Selección",
+                "text": "Decisiones (if, else, switch)."
+              },
+              {
+                "subtitle": "Repetición",
+                "text": "Bucles (for, while)."
+              }
+            ]
+          },
+          {
+            "title": "Ejemplo",
+            "code": "int main() {\n    int edad;\n    printf(\"Ingresa tu edad: \");\n    scanf(\"%d\", &edad);\n    if (edad >= 18) {\n        printf(\"Eres mayor de edad\\n\");\n    } else {\n        printf(\"Eres menor de edad\\n\");\n    }\n    return 0;\n}",
+            "explanation": "Este código en C verifica si una persona es mayor de edad. Vamos a explicarlo paso a paso de manera sencilla:\n\n1. **int main() {** Esto es como el inicio del programa, el lugar donde todo comienza.\n2. **int edad;** Creamos una caja llamada 'edad' donde guardaremos un número (la edad que nos dé el usuario).\n3. **printf(\"Ingresa tu edad: \");** Mostramos un mensaje en la pantalla que dice 'Ingresa tu edad: ' para pedirle al usuario que escriba su edad.\n4. **scanf(\"%d\", &edad);** Aquí esperamos que el usuario escriba un número y lo guardamos en la caja 'edad'. El '%d' significa que esperamos un número entero.\n5. **if (edad >= 18) {** Preguntamos: '¿Es la edad mayor o igual a 18?'. Si sí, hacemos lo que está dentro de las llaves { }.\n6. **printf(\"Eres mayor de edad\\n\");** Si la edad es 18 o más, mostramos en pantalla 'Eres mayor de edad'.\n7. **else {** Si la edad no es mayor o igual a 18, entonces hacemos lo que está dentro de este 'else'.\n8. **printf(\"Eres menor de edad\\n\");** Mostramos 'Eres menor de edad' porque la edad es menor a 18.\n9. **return 0;** Esto le dice al programa que terminamos correctamente.\n\nEste código usa programación estructurada porque sigue un orden claro (secuencia), toma una decisión (selección con if/else), y no usa cosas confusas como el 'goto'. Es fácil de seguir y entender."
+          },
+          {
+            "title": "Ventajas",
+            "content": "Mejora la comprensión del código.\nFacilita el mantenimiento y depuración.\nBase sólida para aprender otros paradigmas."
+          },
+          {
+            "title": "Desventajas",
+            "content": "No siempre es suficiente para grandes sistemas.\nNo separa responsabilidades como la POO."
+          },
+          {
+            "title": "Aplicaciones comunes",
+            "content": "Programación educativa.\nScripts sencillos.\nAutomatización de tareas repetitivas."
+          },
+          {
+            "title": "Dato Curioso",
+            "content": "Este paradigma fue propuesto por Edsger Dijkstra, quien defendía que “el goto debía ser eliminado del lenguaje de programación”.",
+            "color": "#10B981",
+            "opacity": 0.3
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Cuál de las siguientes es una estructura principal de la programación estructurada?",
+            "options": ["Herencia", "Selección", "Encapsulamiento", "Polimorfismo"],
+            "correct": "Selección"
+          }
+        ]
+      },
+      {
+        "title": "2. Modularidad y Reutilización de Código",
+        "content": "La modularidad consiste en dividir un programa en partes o módulos que cumplen tareas específicas. Cada módulo debe ser independiente y reutilizable. Esto permite trabajar más ordenadamente y favorece la colaboración en equipo.",
+        "examples": [
+          {
+            "title": "Forma de pensar",
+            "content": "\"Divide tu programa en piezas pequeñas, útiles y reutilizables.\""
+          },
+          {
+            "title": "Analogía",
+            "content": "Un automóvil está hecho de partes intercambiables (motor, llantas, puertas). Si una parte se daña, no necesitas reconstruir todo el coche."
+          },
+          {
+            "title": "Características de un buen módulo",
+            "content": "Tiene una única responsabilidad.\nSe puede reutilizar en otros programas.\nEs fácil de mantener y mejorar."
+          },
+          {
+            "title": "Ejemplo",
+            "code": "#include <stdio.h>\n\nfloat calcularPromedio(int numeros[], int tamano) {\n    float suma = 0;\n    for (int i = 0; i < tamano; i++) {\n        suma += numeros[i];\n    }\n    return suma / tamano;\n}\n\nint main() {\n    int notas[5] = {85, 90, 78, 92, 88};\n    float promedio = calcularPromedio(notas, 5);\n    printf(\"El promedio es: %.2f\\n\", promedio);\n    return 0;\n}",
+            "explanation": "Este código en C calcula el promedio de unas notas y usa modularidad. Vamos a explicarlo de forma sencilla:\n\n1. **float calcularPromedio(int numeros[], int tamano) {** Creamos un módulo (una función) llamada 'calcularPromedio'. Recibe una lista de números ('numeros[]') y cuántos números hay ('tamano'). La palabra 'float' significa que la función dará un resultado con decimales.\n2. **float suma = 0;** Creamos una caja llamada 'suma' donde iremos sumando los números, empezando en 0.\n3. **for (int i = 0; i < tamano; i++) {** Esto es un bucle que cuenta desde 0 hasta 'tamano' (en este caso, 5). La variable 'i' va tomando los valores 0, 1, 2, 3, 4.\n4. **suma += numeros[i];** Cada vez que el bucle da una vuelta, sumamos el número que está en la posición 'i' de la lista a la caja 'suma'. Por ejemplo, si 'i' es 0, sumamos el primer número (85).\n5. **return suma / tamano;** Al final, dividimos la suma total entre el número de elementos (5) para obtener el promedio, y lo devolvemos.\n6. **int main() {** Aquí empieza el programa principal.\n7. **int notas[5] = {85, 90, 78, 92, 88};** Creamos una lista con 5 notas de un estudiante: 85, 90, 78, 92, 88.\n8. **float promedio = calcularPromedio(notas, 5);** Usamos el módulo 'calcularPromedio' que creamos antes. Le pasamos la lista de notas y el número 5 (porque hay 5 notas). La función calcula el promedio y lo guarda en 'promedio'.\n9. **printf(\"El promedio es: %.2f\\n\", promedio);** Mostramos el promedio en pantalla. El '%.2f' significa que queremos solo 2 decimales. El resultado será 86.60 (porque 85 + 90 + 78 + 92 + 88 = 433, y 433 / 5 = 86.60).\n10. **return 0;** Terminamos el programa.\n\nEste código es modular porque la función 'calcularPromedio' es una pieza independiente que podemos usar en otros programas para calcular promedios de cualquier lista de números. No está todo mezclado en el 'main', lo que hace el código más claro y reusable."
+          },
+          {
+            "title": "Ventajas",
+            "content": "Reducción de código duplicado.\nMejora la legibilidad y mantenibilidad.\nFacilita el trabajo en equipo."
+          },
+          {
+            "title": "Dato Curioso",
+            "content": "Este principio es el origen de las bibliotecas y frameworks modernos como jQuery, NumPy, React o Bootstrap, que usamos en millones de aplicaciones.",
+            "color": "#10B981",
+            "opacity": 0.3
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Cuál es una característica clave de un buen módulo?",
+            "options": ["Tiene múltiples responsabilidades", "Es difícil de mantener", "Se puede reutilizar", "No es independiente"],
+            "correct": "Se puede reutilizar"
+          }
+        ]
+      },
+      {
+        "title": "3. Ejemplos de Aplicación en C, Python, Java",
+        "content": "A continuación, exploraremos ejemplos más complejos que aplican la programación estructurada en diferentes lenguajes, mostrando cómo se organizan los bloques lógicos y las estructuras de control.",
+        "examples": [
+          {
+            "title": "Ejemplo en C: Sistema de Calificaciones",
+            "code": "#include <stdio.h>\n#define TAMANO 5\n\nint main() {\n    int calificaciones[TAMANO];\n    int aprobados = 0, reprobados = 0;\n    printf(\"Ingresa las %d calificaciones:\\n\", TAMANO);\n    for (int i = 0; i < TAMANO; i++) {\n        printf(\"Calificación %d: \", i + 1);\n        scanf(\"%d\", &calificaciones[i]);\n        if (calificaciones[i] >= 60) {\n            aprobados++;\n        } else {\n            reprobados++;\n        }\n    }\n    printf(\"\\nResultados:\\n\");\n    printf(\"Aprobados: %d\\n\", aprobados);\n    printf(\"Reprobados: %d\\n\", reprobados);\n    for (int i = 0; i < TAMANO; i++) {\n        printf(\"Calificación %d: %d - %s\\n\", i + 1, calificaciones[i],\n               calificaciones[i] >= 60 ? \"Aprobado\" : \"Reprobado\");\n    }\n    return 0;\n}",
+            "explanation": "Este programa en C registra calificaciones de 5 estudiantes y cuenta cuántos aprobaron y reprobaron. Vamos a explicarlo de forma sencilla:\n\n1. **#include <stdio.h>** Esto nos permite usar funciones como 'printf' para mostrar texto y 'scanf' para leer datos.\n2. **#define TAMANO 5** Definimos que vamos a trabajar con 5 calificaciones.\n3. **int main() {** Aquí empieza el programa.\n4. **int calificaciones[TAMANO];** Creamos una lista vacía para guardar las 5 calificaciones.\n5. **int aprobados = 0, reprobados = 0;** Creamos dos contadores: uno para los que aprueban y otro para los que reprueban, ambos empiezan en 0.\n6. **printf(\"Ingresa las %d calificaciones:\\n\", TAMANO);** Mostramos un mensaje pidiendo las calificaciones.\n7. **for (int i = 0; i < TAMANO; i++) {** Este bucle se repite 5 veces (de i=0 a i=4), para pedir cada calificación.\n8. **printf(\"Calificación %d: \", i + 1); scanf(\"%d\", &calificaciones[i]);** Pedimos al usuario que ingrese una calificación y la guardamos en la lista 'calificaciones' en la posición 'i'.\n9. **if (calificaciones[i] >= 60) { aprobados++; } else { reprobados++; }** Revisamos si la calificación es mayor o igual a 60 (nota para aprobar). Si sí, sumamos 1 a 'aprobados'; si no, sumamos 1 a 'reprobados'.\n10. **printf(\"\\nResultados:\\n\");** Mostramos una línea vacía y el título 'Resultados:'.\n11. **printf(\"Aprobados: %d\\n\", aprobados); printf(\"Reprobados: %d\\n\", reprobados);** Mostramos cuántos aprobaron y cuántos reprobaron.\n12. **for (int i = 0; i < TAMANO; i++) {** Otro bucle para mostrar cada calificación.\n13. **printf(\"Calificación %d: %d - %s\\n\", i + 1, calificaciones[i], calificaciones[i] >= 60 ? \"Aprobado\" : \"Reprobado\");** Para cada calificación, mostramos el número de la calificación, su valor, y si aprobó o reprobó.\n14. **return 0;** Terminamos el programa.\n\nEste programa usa programación estructurada porque tiene un flujo claro: pide datos (secuencia), decide si aprobaron (selección), repite para cada estudiante (repetición), y muestra resultados."
+          },
+          {
+            "title": "Ejemplo en Python: Generador de Tablas de Multiplicar",
+            "code": "numero = int(input(\"Ingresa un número para la tabla de multiplicar: \"))\nprint(f\"Tabla del {numero}:\")\nfor i in range(1, 11):\n    resultado = numero * i\n    print(f\"{numero} x {i} = {resultado}\")\n    if resultado % 2 == 0:\n        print(\"   (Este resultado es par)\")\n    else:\n        print(\"   (Este resultado es impar)\")\n",
+            "explanation": "Este programa en Python crea una tabla de multiplicar y dice si cada resultado es par o impar. Vamos a explicarlo paso a paso:\n\n1. **numero = int(input(\"Ingresa un número para la tabla de multiplicar: \"))** Pedimos al usuario que ingrese un número (por ejemplo, 4) y lo guardamos en 'numero'. El 'int()' convierte lo que escribe el usuario en un número entero.\n2. **print(f\"Tabla del {numero}:\")** Mostramos un mensaje como 'Tabla del 4:' para indicar qué tabla vamos a mostrar.\n3. **for i in range(1, 11):** Este bucle cuenta del 1 al 10 (range(1, 11) significa 1, 2, 3, ..., 10). Vamos a multiplicar el número por cada uno de estos valores.\n4. **resultado = numero * i** Calculamos el resultado de multiplicar el número por 'i'. Si 'numero' es 4 y 'i' es 3, entonces 'resultado' será 4 * 3 = 12.\n5. **print(f\"{numero} x {i} = {resultado}\")** Mostramos la multiplicación, por ejemplo, '4 x 3 = 12'.\n6. **if resultado % 2 == 0:** Preguntamos si el resultado es par. El operador '%' nos da el resto de dividir 'resultado' entre 2. Si el resto es 0, el número es par.\n7. **print(\"   (Este resultado es par)\")** Si el resultado es par (como 12), mostramos este mensaje.\n8. **else: print(\"   (Este resultado es impar)\")** Si el resultado no es par (como 14), mostramos que es impar.\n\nPor ejemplo, si el usuario ingresa 4, el programa mostrará:\nTabla del 4:\n4 x 1 = 4\n   (Este resultado es par)\n4 x 2 = 8\n   (Este resultado es par)\n...\n4 x 10 = 40\n   (Este resultado es par)\n\nEste programa usa programación estructurada porque sigue un orden (secuencia), repite operaciones (bucle for), y toma decisiones (if/else para par/impar)."
+          },
+          {
+            "title": "Ejemplo en Java: Cálculo de Factorial",
+            "code": "import java.util.Scanner;\n\npublic class Factorial {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        System.out.print(\"Ingresa un número para calcular su factorial: \");\n        int numero = scanner.nextInt();\n        if (numero < 0) {\n            System.out.println(\"El factorial no se puede calcular para números negativos.\");\n        } else {\n            long factorial = 1;\n            for (int i = 1; i <= numero; i++) {\n                factorial *= i;\n            }\n            System.out.printf(\"El factorial de %d es: %d%n\", numero, factorial);\n        }\n        scanner.close();\n    }\n}",
+            "explanation": "Este programa en Java calcula el factorial de un número (por ejemplo, el factorial de 5 es 5 * 4 * 3 * 2 * 1 = 120). Vamos a explicarlo de forma sencilla:\n\n1. **import java.util.Scanner;** Esto nos permite usar la clase 'Scanner' para leer lo que el usuario escribe.\n2. **public class Factorial {** Definimos el programa con el nombre 'Factorial'.\n3. **public static void main(String[] args) {** Aquí comienza el programa.\n4. **Scanner scanner = new Scanner(System.in);** Creamos un 'Scanner' para leer datos del usuario.\n5. **System.out.print(\"Ingresa un número para calcular su factorial: \");** Mostramos un mensaje pidiendo un número.\n6. **int numero = scanner.nextInt();** Leemos el número que el usuario escribe y lo guardamos en 'numero'.\n7. **if (numero < 0) {** Preguntamos si el número es menor que 0, porque el factorial no se puede calcular para números negativos.\n8. **System.out.println(\"El factorial no se puede calcular para números negativos.\");** Si el número es negativo, mostramos este mensaje.\n9. **else {** Si el número no es negativo, hacemos lo siguiente.\n10. **long factorial = 1;** Creamos una variable 'factorial' para guardar el resultado, empezando en 1. Usamos 'long' porque el factorial puede ser un número muy grande.\n11. **for (int i = 1; i <= numero; i++) {** Este bucle cuenta desde 1 hasta el número que ingresó el usuario. Por ejemplo, si 'numero' es 5, cuenta 1, 2, 3, 4, 5.\n12. **factorial *= i;** En cada vuelta, multiplicamos 'factorial' por 'i'. Si 'i' es 1, factorial = 1 * 1; si 'i' es 2, factorial = 1 * 2; si 'i' es 3, factorial = 2 * 3, y así hasta llegar a 5.\n13. **System.out.printf(\"El factorial de %d es: %d%n\", numero, factorial);** Mostramos el resultado, por ejemplo, 'El factorial de 5 es: 120'.\n14. **scanner.close();** Cerramos el 'Scanner' porque ya no lo necesitamos.\n\nEste programa usa programación estructurada porque tiene un flujo claro: pide datos (secuencia), verifica condiciones (selección con if/else), y repite cálculos (bucle for)."
+          }
+        ],
+        "questions": [
+          {
+            "text": "¿Qué lenguaje de los ejemplos anteriores usa un bucle for para calcular el factorial de un número?",
+            "options": ["C", "Python", "Java", "Ninguno"],
+            "correct": "Java"
+          }
+        ]
+      }
+    ],
+    "video": {
+      "title": "Video Explicativo",
+      "description": "Este video proporciona una introducción a la programación estructurada y la modularidad."
+    }
+  }

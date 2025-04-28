@@ -1,0 +1,370 @@
+{
+    "module_title": "Módulo 1: Introducción a la Programación",
+    "welcome": {
+        "title": "¡Bienvenido al mundo de la programación!",
+        "description": "\n¡Bienvenido al Módulo 1!\nEn este primer módulo, vamos a explorar conceptos clave fundamentales de la programación antes de sumergirnos en la escritura de código. Comprender qué es un lenguaje de programación, así como la diferencia entre software y hardware, te proporcionará una base sólida para tu aprendizaje futuro. También clasificaremos los distintos tipos de lenguajes de programación en categorías de bajo y alto nivel.\nA medida que avances, descubrirás que estos conceptos no solo te ayudarán a programar de manera efectiva, sino que también te enseñarán a pensar lógicamente y a resolver problemas como un verdadero programador. Al finalizar este módulo, estarás mejor preparado para enfrentar desafíos más complejos, adquiriendo las habilidades necesarias para crear aplicaciones móviles innovadoras y funcionales. \n¡Comencemos!\n"
+    },
+    "syllabus": {
+        "title": "Temario completo:",
+        "sections": [
+            {
+                "title": "I. Conceptos clave antes de escribir código",
+                "items": [
+                    "¿Qué es un lenguaje de programación?",
+                    "Diferencia entre software y hardware",
+                    "Tipos de lenguajes: Bajo nivel vs. Alto nivel"
+                ]
+            },
+            {
+                "title": "II. Pensamiento lógico y resolución de problemas",
+                "items": [
+                    "Descomposición de problemas en pasos simples",
+                    "Identificación de patrones",
+                    "Toma de decisiones"
+                ]
+            },
+            {
+                "title": "III. Introducción a los diagramas de flujo",
+                "items": [
+                    "¿Qué es y para qué sirve?",
+                    "Símbolos básicos y su significado",
+                    "Representación de procesos"
+                ]
+            },
+            {
+                "title": "IV. Conceptos clave en diagramas de flujo",
+                "items": [
+                    "Entrada de datos",
+                    "Procesos y decisiones",
+                    "Tipos de operadores",
+                    "Salida de resultados"
+                ]
+            }
+        ]
+    },
+    "learning_points": {
+        "title": "En este módulo aprenderás:",
+        "points": [
+            {
+                "icon": "computer",
+                "title": "Conceptos clave antes de escribir código",
+                "description": "Entenderás la diferencia fundamental entre hardware y software, los componentes básicos de una computadora y cómo interactúan con los programas."
+            },
+            {
+                "icon": "psychology",
+                "title": "Pensamiento lógico y resolución de problemas",
+                "description": "Desarrollarás la capacidad de dividir problemas complejos en pasos más pequeños que una computadora pueda entender y resolver."
+            },
+            {
+                "icon": "account_tree",
+                "title": "Introducción a los diagramas de flujo",
+                "description": "Aprenderás a representar visualmente procesos y algoritmos antes de escribir código, una habilidad esencial para cualquier programador."
+            },
+            {
+                "icon": "account_tree",
+                "title": "Conceptos clave en diagramas de flujo",
+                "description": "Profundizarás en los elementos clave de los diagramas de flujo y cómo representar procesos complejos con decisiones y operadores."
+            }
+        ]
+    },
+    "motivation": {
+        "text": "No te preocupes si al principio algunos conceptos parecen difíciles. Todos los grandes programadores comenzaron exactamente donde tú estás ahora. ¡Lo importante es dar el primer paso!",
+        "icon": "lightbulb_outline"
+    },
+    "button_text": "Comenzar módulo",
+    "content": {
+        "section_1": {
+            "title": "I. Conceptos clave antes de escribir código",
+            "subsections": [
+                {
+                    "title": "¿Qué es un lenguaje de programación?",
+                    "content": "Un lenguaje de programación es una herramienta esencial que permite a los programadores comunicarse con las computadoras para ejecutar instrucciones y resolver problemas. Tal como lo mencionan expertos como Brian Kernighan y Bjarne Stroustrup, los lenguajes de programación no solo permiten escribir instrucciones que la computadora entiende, sino que también facilitan la expresión de soluciones eficientes a problemas complejos.\n\nDado que la programación es un proceso que requiere pensamiento lógico, el uso de un lenguaje de programación adecuado facilita la descomposición de problemas en pasos más simples y la identificación de patrones para tomar decisiones informadas. El pensamiento lógico se manifiesta al escribir código que es claro, organizado y estructurado, lo cual es crucial tanto para resolver problemas como para crear soluciones eficaces."
+                },
+                {
+                    "title": "Clasificación de los lenguajes de programación",
+                    "content": "Existen diferentes formas de clasificar los lenguajes de programación, y cada una tiene un impacto significativo en cómo los programadores abordan la resolución de problemas. La clasificación de los lenguajes de programación según su nivel de abstracción y los paradigmas que siguen es un aspecto relevante para los programadores, ya que cada tipo de lenguaje tiene ventajas que pueden ser aprovechadas dependiendo del tipo de problema que se desea resolver.\n\nLos lenguajes de alto nivel (como Python y Java) están diseñados para que los programadores puedan centrarse en la lógica del problema sin preocuparse demasiado por los detalles técnicos del hardware.\n\nLos lenguajes de bajo nivel (como C o Ensamblador) requieren un control más detallado del hardware, lo que puede ser útil en situaciones donde se necesita optimización de recursos o una ejecución extremadamente eficiente.\n\nMás adelante nos centraremos en la definición, características y ventajas de cada uno de estos. Entender cómo se clasifica y estructura un lenguaje de programación no solo ayuda a elegir el más adecuado para una tarea, sino que también permite aplicar el pensamiento lógico de manera más efectiva al resolver problemas."
+                },
+                {
+                    "title": "Diferencia entre software y hardware",
+                    "content": "En este contexto es fundamental conocer las diferencias entre el software y hardware. Si no estas familiarizado con estos conceptos se definirá cada uno de ellos, ya que son esenciales para una computadora.\n\n¿Qué es el hardware?\n\nEl hardware es el conjunto de componentes físicos y tangibles de un sistema informático, es decir, todo aquello que podemos ver y tocar de un dispositivo tecnológico, tanto en su interior como en su exterior.\n\nAlgunos ejemplos de hardware dentro del contexto informático son:\n\n• Procesador (CPU)\n• Memoria RAM\n• Disco duro o SSD\n• Teclado y ratón\n• Monitor\n\n¿Qué es el software?\n\nEl software es el conjunto de instrucciones, programas y datos que permiten el funcionalidad de una computadora y la realización de tareas específicas. En contraste con el hardware, el software no es tangible, pero es igualmente esencial para el sistema.\n\nAlgunos ejemplos de software son:\n\n• Sistemas operativos (Windows, macOS, Linux)\n• Navegadores web (Google Chrome, Mozilla Firefox)\n• Procesadores de texto (Microsoft Word)\n• Aplicaciones móviles (WhatsApp, Spotify)",
+                    "highlight": {
+                        "text": "Un sistema operativo es el software que gestiona los recursos de una computadora o dispositivo, que permite la ejecución de programas y facilita la interacción entre el usuario y el hardware.",
+                        "color": "blue"
+                    }
+                },
+                {
+                    "title": "Relación entre hardware y software",
+                    "content": "El hardware y el software trabajan en conjunto para que una computadora o dispositivo funcione correctamente. Mientras el hardware proporciona los recursos físicos, el software dicta las instrucciones que permiten su uso eficiente.\n\nSu integración impacta directamente en el rendimiento, la productividad y la experiencia del usuario, ya que un hardware potente sin un software optimizado, o viceversa, puede limitar el desempeño del sistema. Sin software, el hardware no puede ejecutar tareas, y sin hardware, el software no puede funcionar.\n\nLa evolución tanto del hardware como del software ha permitido el desarrollo de nuevas tecnologías y una mejora continua en la eficiencia de los sistemas. Mientras el hardware avanza en términos de potencia y capacidad, el software se optimiza para aprovechar esos avances."
+                },
+                {
+                    "title": "Tipos de lenguajes: Bajo nivel vs. Alto nivel",
+                    "content": "En el mundo de la programación, los lenguajes de programación se clasifican principalmente en dos grupos: lenguajes de bajo nivel y lenguajes de alto nivel. Con esto se busca reflejar el grado en que un lenguaje oculta detalles complejos del hardware, facilitando la escritura y comprensión del código para el programador.\n\nLos lenguajes de bajo nivel están más cerca del hardware y permiten un control detallado sobre los recursos del sistema, aunque su uso suele ser más complejo. En cambio, los lenguajes de alto nivel están diseñados para ser más fáciles de aprender y utilizar, lo que los convierte en los más comunes. Sin embargo, estos sacrifican algo de control sobre el hardware a cambio de mayor flexibilidad y portabilidad.\n\nEntender la diferencia entre estos tipos de lenguajes es crucial para elegir la herramienta adecuada a la hora de desarrollar un proyecto, según el tipo de aplicación, el rendimiento y el nivel de interacción con el hardware requerido."
+                },
+                {
+                    "title": "Lenguajes de bajo nivel",
+                    "content": "Como se mencionó anteriormente, los lenguajes de bajo nivel están diseñados para interactuar de manera directa con el hardware de la computadora. Ofrecen un control preciso sobre los recursos del sistema, permitiendo a los programadores gestionar aspectos específicos del funcionamiento del procesador, la memoria y otros componentes. Aunque proporcionan un alto grado de control, su uso suele ser más complejo y requiere un conocimiento más profundo de la arquitectura del sistema.\n\nDefinición:\n\nUn lenguaje de bajo nivel es aquel que está más cercano al lenguaje de la máquina y a la arquitectura específica de un hardware. Se utiliza para programar directamente sobre el hardware, lo que permite un control detallado sobre los recursos del sistema.",
+                    "highlight": {
+                        "text": "Nota:\n\nLa definición y descripción se basan en principios ampliamente aceptados en la literatura de la informática, como los expuestos por autores como Andrew S. Tanenbaum en \"Structured Computer Organization\" y Donald E. Knuth en \"The Art of Computer Programming\". Estos textos son fundamentales para comprender la relación entre los lenguajes de programación y la arquitectura de hardware.",
+                        "color": "green"
+                    },
+                    "additional_content": "Los lenguajes de bajo nivel permiten un control preciso sobre los recursos del sistema, lo que facilita la optimización del rendimiento. Sin embargo, esta capacidad de control viene acompañada de una mayor complejidad, ya que el programador debe gestionar aspectos específicos del hardware y poseer un conocimiento técnico más profundo.\n\nOtro aspecto importante es que los lenguajes de bajo nivel son dependientes de la arquitectura específica del hardware, lo que limita su portabilidad entre diferentes sistemas. A pesar de esta limitación, son particularmente útiles en áreas como sistemas embebidos, controladores de hardware y aplicaciones donde el rendimiento y la eficiencia son cruciales.\n\nLas ventajas de estos lenguajes son claras. En primer lugar, ofrecen un control directo sobre el hardware, lo que permite optimizar el rendimiento y la eficiencia. Los programas pueden ejecutarse de manera más rápida y hacer un uso más efectivo de los recursos del sistema. Además, son ideales para el desarrollo de sistemas específicos, como controladores y firmware, que requieren un alto nivel de interacción con el hardware. Aunque limitados en términos de portabilidad, los lenguajes de bajo nivel permiten a los programadores hacer ajustes precisos y personalizados según las necesidades del proyecto."
+                },
+                {
+                    "title": "Lenguajes de alto nivel",
+                    "content": "Los lenguajes de alto nivel están diseñados para ser más abstractos y fáciles de usar en comparación con los lenguajes de bajo nivel. Estos lenguajes están más alejados de la máquina y están orientados a facilitar la programación para los seres humanos, permitiendo escribir código que sea comprensible y menos propenso a errores. Debido a su enfoque en la simplicidad, los lenguajes de alto nivel permiten a los programadores concentrarse en la lógica y funcionalidad de la aplicación sin tener que preocuparse por los detalles del hardware.\n\nDefinición:\n\nUn lenguaje de alto nivel es aquel que está diseñado para ser fácilmente comprendido por los programadores. Utiliza una sintaxis más cercana al lenguaje humano y abstrae los detalles del hardware, permitiendo escribir código más intuitivo y eficiente.",
+                    "highlight": {
+                        "text": "Nota:\n\nLos lenguajes de alto nivel han acelerado el desarrollo de software al ofrecer una sintaxis comprensible, permitiendo a los desarrolladores escribir código más rápido y de forma más eficiente. Esto ha sido clave en proyectos de gran escala, como aplicaciones móviles, juegos y sistemas de información, donde la colaboración entre equipos grandes es esencial.",
+                        "color": "green"
+                    },
+                    "additional_content": "Los lenguajes de alto nivel simplifican la programación al abstraer los complejos detalles del hardware, lo que facilita su aprendizaje y uso. Esto permite a los programadores enfocarse en resolver problemas sin tener que preocuparse por la gestión de recursos del sistema. Aunque este nivel de abstracción puede conllevar una menor eficiencia en comparación con los lenguajes de bajo nivel, los lenguajes de alto nivel son esenciales para el desarrollo de aplicaciones grandes y complejas, donde la facilidad de mantenimiento y la productividad del programador son más importantes que la eficiencia absoluta.\n\nUna ventaja clave de los lenguajes de alto nivel es su portabilidad. Estos lenguajes permiten que el mismo código funcione en diferentes plataformas, lo que facilita su desarrollo y distribución. A diferencia de los lenguajes de bajo nivel, que dependen de la arquitectura específica del hardware, los lenguajes de alto nivel pueden ejecutarse en diversos sistemas sin requerir modificaciones significativas.\n\nEn general, los lenguajes de alto nivel permiten un desarrollo rápido de software y son ampliamente utilizados en la programación de aplicaciones, sistemas operativos, videojuegos, aplicaciones web y móviles, entre otros. Además, su sintaxis más cercana al lenguaje humano y su amplia disponibilidad de herramientas y bibliotecas hacen que sean los lenguajes más populares y accesibles para la mayoría de los programadores."
+                }
+            ]
+        },
+        "section_2": {
+            "title": "II. Pensamiento lógico y resolución de problemas",
+            "subsections": [
+                {
+                    "title": "Subtema 2. Pensamiento lógico y resolución de problemas",
+                    "content": "El pensamiento lógico es la capacidad de analizar, organizar y estructurar información de manera coherente, lo que facilita la identificación de relaciones y la resolución eficiente de problemas. Este tipo de pensamiento no solo es esencial para programadores e ingenieros, sino que también juega un papel clave en situaciones cotidianas, donde la toma de decisiones claras y fundamentadas es crucial.\n\nEn el contexto de la programación, el pensamiento lógico es fundamental, ya que permite a los desarrolladores descomponer problemas complejos en pasos más simples, identificar patrones de solución y tomar decisiones informadas sobre el enfoque más adecuado. Esta habilidad es clave para escribir código eficiente y desarrollar soluciones efectivas a los desafíos tecnológicos que enfrentan los programadores.\n\nUn aspecto esencial del pensamiento lógico es el proceso de resolución de problemas, que nos permite abordar los retos de manera sistemática y directa. Este proceso se puede dividir en varias etapas:\n\n1. Entender el Problema: Antes de comenzar a buscar soluciones, es fundamental comprender todos los aspectos del problema en cuestión. Esto implica analizarlo desde diferentes ángulos para asegurarse de que se tiene una visión completa del desafío.\n\n2. Descomposición: Una vez entendido el problema, el siguiente paso es dividirlo en partes más pequeñas y manejables. Esta descomposición permite abordar cada componente de manera independiente, simplificando su resolución.\n\n3. Búsqueda de Soluciones: Tras descomponer el problema, se deben explorar diferentes enfoques y estrategias posibles para resolverlo. Esto puede incluir investigar soluciones previas, pensar en alternativas innovadoras o consultar con otros expertos.\n\n4. Implementación: Después de elegir la solución más adecuada, se procede a implementarla. Esta etapa involucra aplicar las estrategias seleccionadas y ponerlas en práctica, asegurándose de que sean efectivas.\n\n5. Evaluación y Ajustes: Finalmente, es crucial evaluar si la solución realmente resuelve el problema y funciona como se esperaba. Si es necesario, se deben hacer ajustes o modificaciones para mejorar la solución y garantizar que cumpla con los objetivos planteados.\n\nEste proceso de resolución de problemas es clave para ser más efectivos en la toma de decisiones y en la creación de soluciones claras y viables."
+                },
+                {
+                    "title": "Descomposición de problemas en pasos simples",
+                    "content": "Una de las estrategias más poderosas en la resolución de problemas es la descomposición, que consiste en dividir un problema complejo en partes más pequeñas y manejables. Este enfoque facilita la comprensión del problema y permite encontrar soluciones más fácilmente. La descomposición no siempre implica tratar cada subproblema de manera independiente, sino reducir la complejidad general dividiendo las tareas en unidades más simples. Es una técnica que recuerda al principio de \"divide y vencerás\", utilizado tanto en programación como en otros campos, para resolver problemas de forma ordenada y eficiente.\n\nAmbas buscan descomponer un problema en partes más pequeñas, pero en \"divide y vencerás\" el problema se divide en subproblemas más fáciles de resolver, los cuales se resuelven de manera independiente y luego se combinan las soluciones para obtener la solución final. En este sentido, ambas técnicas comparten el objetivo de hacer que el problema sea más fácil de resolver al descomponerlo en elementos más simples.\n\nEn la programación, el dominar esta técnica es crucial para hacer que el código sea más legible, mantenible y organizado. Los problemas más grandes se resuelven mejor cuando se dividen en funciones o bloques más pequeños que realizan tareas específicas, permitiendo la reutilización de código en procesos iguales o similares. Además, en proyectos más grandes o colaborativos, la descomposición permite dividir el trabajo entre varios miembros del equipo, facilitando la colaboración y la eficiencia.\n\nEjemplo de Descomposición:\nImagina que tienes que organizar una fiesta. El problema general es organizar la fiesta, pero lo puedes descomponer en tareas más pequeñas:\n\n- Elegir el lugar de la fiesta.\n- Definir el tema o tipo de fiesta.\n- Hacer una lista de invitados.\n- Comprar comida y bebida.\n- Decorar el lugar.\n- Preparar juegos o actividades.\n\nCada una de estas tareas también se puede dividir en subtareas más pequeñas. Por ejemplo, \"Comprar comida y bebida\" se puede descomponer en:\n\n- Hacer una lista de alimentos.\n- Investigar precios en tiendas cercanas.\n- Hacer las compras en el supermercado.\n\nLa descomposición es una técnica que no solo se utiliza dentro de la programación, sino que también es esencial en la vida diaria. Permite abordar problemas de manera efectiva y organizada, reduciendo la carga cognitiva y mejorando el enfoque al momento de resolverlos. De este modo, aumenta la probabilidad de éxito en la resolución del problema."
+                },
+                {
+                    "title": "Identificación de Patrones y Toma de Decisiones",
+                    "content": "Al haber descompuesto el problema en pasos más simples, el siguiente paso importante es identificar patrones y tomar decisiones fundamentadas. Reconocer patrones en los problemas o en los datos es crucial, ya que nos permite prever resultados y tomar decisiones más acertadas.\n\nAntes de profundizar en la toma de decisiones, es necesario entender qué son los patrones. Los patrones son secuencias que se repiten de manera regular o predecible en un conjunto de datos o situaciones específicas. Al programar o resolver un problema, identificar estos patrones ayuda a prever lo que podría ocurrir después de un período de tiempo determinado, lo que permite tomar decisiones informadas.\n\nAl reconocer patrones en diferentes contextos, no solo facilitamos la toma de decisiones informadas, sino que también optimizamos procesos, ya sea en la programación, en la vida diaria o incluso en el análisis de datos complejos. Además, los patrones nos permiten prever resultados y aplicar soluciones previamente exitosas a problemas similares.\n\nTipos de Patrones:\n\n- Patrones Numéricos: Secuencias de números que siguen una regla específica. Ejemplo: la secuencia de Fibonacci $(0,1,1,2,3,5,8,13, \\ldots)$.\n- Patrones de Comportamiento: En situaciones cotidianas o en programación, ciertos comportamientos o procesos se repiten de manera constante. Identificar estos patrones permite ahorrar tiempo y recursos al tomar decisiones.\n\nComo se puede ver, los patrones no solo se encuentran en secuencias numéricas o datos, sino también en situaciones cotidianas, en proceso o incluso en el comportamiento humano. Además de estos, también están los patrones visuales, que son mucho más fáciles de identificar, son aquellos en los que hay una repetición de formas o colores en un diseño (como en la arquitectura o en el arte).\n\nUna vez que hemos podido identificar un patrón, al momento de resolver un problema podremos tomar decisiones más rápidamente.\n\nEjemplos de Patrones:\n\n- Patrón Numérico: Si tienes la secuencia 3, 6, 9, 12, ¿cuál es el siguiente número? El patrón es una progresión en la que se suman 3 unidades, por lo que el siguiente número es 15.\n- Patrón en Decisiones: Si siempre compras manzanas rojas porque son más dulces que las verdes, identificas un patrón que te ayudará a tomar decisiones más rápidas la próxima vez que vayas al mercado.\n\nEn base a esto, podemos concluir que la descomposición y la identificación de patrones se complementan entre sí y nos ayudan a resolver problemas de manera mucho más organizada y eficiente. Mientras que la descomposición nos permite entender las partes de un problema, la identificar patrones nos ayuda a prever soluciones y tomar decisiones más informadas. Por ejemplo, en un problema de programación, si una tarea se repite en varias partes del proceso, reconocer el patrón de repetición puede permitirnos resolverla de manera más eficiente, utilizando funciones o métodos reutilizables.\n\nTanto la descomposición de problemas como la identificación de patrones son fundamentales para escribir programas eficientes y bien estructurados. Ayudan a los programadores a crear soluciones claras y tomar decisiones fundamentadas en sus enfoques."
+                }
+            ]
+        },
+        "section_3": {
+            "title": "III. Introducción a los diagramas de flujo",
+            "subsections": [
+                {
+                    "title": "¿Qué es y para qué sirve?",
+                    "content": "Un diagrama de flujo es una representación gráfica de un proceso o algoritmo. Muestra los pasos como bloques de diferentes tipos conectados con flechas que indican el flujo del proceso.\n\nEstos diagramas son especialmente útiles en programación porque permiten visualizar la lógica de un programa antes de escribir el código, facilitando la detección de errores y la comunicación entre miembros del equipo."
+                },
+                {
+                    "title": "Símbolos básicos y su significado",
+                    "content": "Los diagramas de flujo utilizan símbolos estandarizados para representar diferentes elementos:\n\n• Óvalo: Indica el inicio o fin del proceso\n• Rectángulo: Representa una operación o proceso\n• Rombo: Señala una decisión o condición (normalmente contiene una pregunta)\n• Paralelogramo: Indica entrada o salida de datos\n• Flechas: Muestran la dirección del flujo del proceso",
+                    "highlight": {
+                        "text": "Consejo: Al crear diagramas de flujo, es importante mantener la consistencia en el uso de los símbolos para que sean fácilmente comprensibles por otros programadores.",
+                        "color": "blue"
+                    }
+                },
+                {
+                    "title": "Representación de procesos",
+                    "content": "Los diagramas de flujo pueden representar diferentes tipos de estructuras de programación:\n\n1. Secuenciales: Pasos que se ejecutan uno tras otro\n2. Condicionales: Decisiones que dividen el flujo (if/else)\n3. Repetitivas: Bucles que repiten procesos (while, for)\n\nCada tipo de estructura tiene una representación particular en el diagrama, manteniendo siempre la claridad y lógica del proceso."
+                },
+                {
+                    "title": "Cómo representar procesos con diagramas",
+                    "content": "Para construir un diagrama de flujo efectivo, es esencial seguir una serie de pasos que nos permitan organizar y representar adecuadamente el algoritmo o proceso que deseamos ilustrar. A continuación, te detallamos los pasos clave para construir un diagrama de flujo:\n\n- Identificar el objetivo del algoritmo.\n- Desglosar el proceso en pasos simples.\n- Seleccionar los símbolos apropiados.\n- Conectar los símbolos con flechas.\n- Verificar el flujo del diagrama.\n\nAntes de crear un diagrama de flujo, es fundamental definir el objetivo del proceso que se desea representar. Este objetivo debe ser claro y reflejar lo que el algoritmo intenta lograr. Una vez que el objetivo esté establecido, el siguiente paso es desglosar el proceso en una serie de acciones o decisiones individuales, asegurándose de que cada uno de estos pasos esté claramente definido y sin ambigüedades. Cada acción o decisión se representará utilizando un símbolo específico dentro del diagrama.\n\nLuego, es esencial seleccionar los símbolos correctos para representar cada acción o decisión. Los símbolos deben ser los adecuados para asegurar que el diagrama sea fácil de entender y siga los estándares convencionales. Las flechas también juegan un papel clave, ya que indican el flujo del proceso, conectando los símbolos en el orden lógico de ejecución. El flujo del diagrama generalmente comienza con el símbolo de \"Inicio\" y termina en \"Fin\", pasando por las diversas acciones y decisiones intermedias.\n\nUna vez que el diagrama esté completo, es importante realizar una revisión para asegurar que el flujo sea lógico y que no falte ningún paso crucial. También se debe verificar que todas las acciones y decisiones estén correctamente conectadas para evitar confusiones o errores en el proceso representado.\n\nEjemplo: Algoritmo para sumar dos números.\nSupongamos que queremos representar un algoritmo sencillo que sume dos números introducidos por el usuario. Los pasos del algoritmo serían los siguientes:\n\n- Inicio\n- Leer el primer número (Entrada)\n- Leer el segundo número (Entrada)\n- Sumar los dos números (Proceso)\n- Mostrar el resultado (Salida)\n- Fin\n\nEl diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\n- Inicio: Representado por un óvalo.\n- Leer el primer número: Representado por un paralelogramo para indicar que es una entrada.\n- Leer el segundo número: Otro paralelogramo para la segunda entrada.\n- Sumar los dos números: Representado por un rectángulo para indicar un proceso.\n- Mostrar el resultado: Representado por un paralelogramo para la salida.\n- Fin: Representado por un óvalo.\n\nLas flechas conectarán cada paso en el orden correcto, comenzando con el Inicio y terminando con Fin. Este sería un diagrama de flujo simple pero efectivo para ilustrar el proceso de sumar dos números."
+                }
+            ]
+        },
+        "section_4": {
+            "title": "IV. Conceptos clave en diagramas de flujo",
+            "subsections": [
+                {
+                    "title": "Entrada de datos",
+                    "content": "La entrada de datos en un diagrama de flujo se representa con un paralelogramo y muestra cuando el sistema recibe información del usuario o de otra fuente externa.\n\nEjemplos comunes:\n• Ingresar usuario y contraseña\n• Introducir valores para un cálculo\n• Cargar datos desde un archivo"
+                },
+                {
+                    "title": "Procesos y decisiones",
+                    "content": "Los procesos (rectángulos) representan transformaciones o cálculos que se realizan con los datos. Las decisiones (rombos) son puntos donde el flujo puede bifurcarse según una condición.\n\nEjemplo típico:\n[Proceso] Calcular promedio → [Decisión] ¿Promedio >= 7? → Si: Aprobado / No: Reprobado",
+                    "highlight": {
+                        "text": "Buena práctica: Las preguntas en los rombos deben formularse para responderse con Sí/No, haciendo el flujo más claro.",
+                        "color": "green"
+                    }
+                },
+                {
+                    "title": "Tipos de operadores",
+                    "content": "En los diagramas de flujo se utilizan diferentes tipos de operadores:\n\n• Aritméticos: +, -, *, / para cálculos\n• Relacionales: >, <, ==, != para comparaciones\n• Lógicos: AND, OR, NOT para combinar condiciones\n\nEstos operadores permiten construir expresiones complejas en las decisiones y procesos."
+                },
+                {
+                    "title": "Salida de resultados",
+                    "content": "La salida de datos, también representada con paralelogramos, muestra cuando el sistema presenta información al usuario o la envía a otro sistema.\n\nEjemplos:\n• Mostrar \"Login correcto\"\n• Imprimir un reporte\n• Guardar resultados en un archivo\n• Mostrar gráficos o visualizaciones"
+                }
+            ]
+        }
+    },
+    "activities": [
+        {
+            "subtopic": "Conceptos clave antes de escribir código",
+            "objective": "Ayudar a los estudiantes a comprender los términos clave como software, hardware, compilación y lenguaje de programación, relacionándolos correctamente con sus definiciones.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Qué diferencia hay entre software y hardware?",
+                        "options": [
+                            "El software es el conjunto de piezas físicas de la computadora, y el hardware es el conjunto de programas.",
+                            "El software se refiere a los programas y aplicaciones, y el hardware a los componentes físicos.",
+                            "El software y el hardware son lo mismo, no hay diferencia.",
+                            "Ninguna de las anteriores."
+                        ],
+                        "correctAnswer": 1
+                    },
+                    {
+                        "question": "¿Cuál de las siguientes afirmaciones sobre los lenguajes de programación es correcta?",
+                        "options": [
+                            "Los lenguajes de bajo nivel son más fáciles de entender para los humanos.",
+                            "Los lenguajes de alto nivel están diseñados para ser más comprensibles y manejables.",
+                            "No existe diferencia entre lenguajes de bajo y alto nivel.",
+                            "Los lenguajes de programación solo pueden ejecutarse en un tipo de computadora."
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "¿Cómo puede el entendimiento de la relación entre software y hardware mejorar tu capacidad para desarrollar aplicaciones eficientes?",
+            "practice": {
+                "question": "Clasifica los siguientes elementos en Software o Hardware.",
+                "elements": [
+                    "Teclado",
+                    "Monitor",
+                    "Procesador",
+                    "Memoria RAM",
+                    "Impresora",
+                    "Tarjeta de video",
+                    "Windows",
+                    "Antivirus",
+                    "Navegador web",
+                    "Sistema operativo"
+                ],
+                "answers": {
+                    "Hardware": [
+                        "Teclado",
+                        "Monitor",
+                        "Procesador",
+                        "Memoria RAM",
+                        "Impresora",
+                        "Tarjeta de video"
+                    ],
+                    "Software": [
+                        "Windows",
+                        "Antivirus",
+                        "Navegador web",
+                        "Sistema operativo"
+                    ]
+                }
+            }
+        },
+        {
+            "subtopic": "Pensamiento lógico y resolución de problemas",
+            "objective": "Desarrollar la habilidad de dividir problemas complejos en pasos más simples y comprensibles, facilitando su resolución mediante algoritmos estructurados.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál es la principal ventaja de descomponer un problema en pasos simples?",
+                        "options": [
+                            "Hace que el problema se resuelva solo.",
+                            "Permite analizar y resolver cada parte de manera estructurada.",
+                            "No tiene ventajas, solo complica el proceso.",
+                            "Solo es útil en problemas matemáticos."
+                        ],
+                        "correctAnswer": 1
+                    },
+                    {
+                        "question": "¿Cuál de las siguientes situaciones representa una correcta descomposición de un problema?",
+                        "options": [
+                            "Dividir la tarea de hacer un pastel en pasos como: conseguir ingredientes, mezclar, hornear y decorar.",
+                            "Escribir todo el código de un programa sin planificarlo previamente.",
+                            "Resolver un problema sin organizar los pasos.",
+                            "Buscar una solución sin considerar cada parte del problema."
+                        ],
+                        "correctAnswer": 0
+                    }
+                ]
+            },
+            "reflection": "Piensa en una actividad cotidiana, como hacer una llamada telefónica o preparar café. ¿Cómo podrías dividir esta tarea en pasos más pequeños para que otra persona la siga sin problemas?",
+            "practice": {
+                "question": "Elige uno de los siguientes problemas cotidianos y divídelo en 7 pasos simples en el orden correcto.",
+                "options": [
+                    "Hacer una reserva en un restaurante",
+                    "Enviar un paquete por correo",
+                    "Registrarse en una plataforma en línea"
+                ],
+                "examples": {
+                    "Hacer una reserva en un restaurante": [
+                        "Elegir el restaurante.",
+                        "Verificar disponibilidad de mesas.",
+                        "Contactar al restaurante.",
+                        "Proporcionar información necesaria.",
+                        "Confirmar detalles de la reserva.",
+                        "Guardar la confirmación.",
+                        "Asistir al restaurante."
+                    ]
+                }
+            }
+        },
+        {
+            "subtopic": "Introducción a los diagramas de flujo",
+            "objective": "Comprender qué es un diagrama de flujo, sus símbolos básicos y cómo se representan procesos mediante el uso de operadores aritméticos, lógicos y relacionales.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál es la principal función de un diagrama de flujo?",
+                        "options": [
+                            "Representar visualmente la estructura de una base de datos.",
+                            "Crear gráficos para presentaciones.",
+                            "Representar la secuencia lógica de un proceso o algoritmo.",
+                            "Sustituir la necesidad de programar."
+                        ],
+                        "correctAnswer": 2
+                    }
+                ]
+            },
+            "reflection": "¿Por qué crees que los diagramas de flujo son útiles antes de escribir código?",
+            "practice": {
+                "question": "Crea un diagrama de flujo para sumar dos números y evaluar el resultado.",
+                "steps": [
+                    "Inicio",
+                    "Solicitar dos números al usuario",
+                    "Sumar ambos números",
+                    "Si el resultado es mayor a 10, mostrar 'El resultado es alto'",
+                    "Si el resultado es menor o igual a 10, mostrar 'El resultado es bajo'",
+                    "Fin"
+                ]
+            }
+        },
+        {
+            "subtopic": "Conceptos clave en diagramas de flujo",
+            "objective": "Aplicar los conceptos de entrada, proceso, decisión y salida en la creación de diagramas de flujo para resolver problemas sencillos.",
+            "theory": {
+                "questions": [
+                    {
+                        "question": "¿Cuál símbolo representa una decisión en un diagrama de flujo?",
+                        "options": [
+                            "Rectángulo",
+                            "Rombo",
+                            "Óvalo",
+                            "Flecha"
+                        ],
+                        "correctAnswer": 1
+                    }
+                ]
+            },
+            "reflection": "Describe la importancia de las decisiones (condicionales) en la creación de algoritmos.",
+            "practice": {
+                "question": "Crea un diagrama de flujo para determinar si un estudiante aprueba o reprueba un curso.",
+                "steps": [
+                    "Inicio",
+                    "Solicitar calificación del estudiante",
+                    "Si la calificación es mayor o igual a 70, mostrar 'Estudiante aprobado'",
+                    "Si la calificación es menor a 70, mostrar 'Estudiante reprobado'",
+                    "Fin"
+                ]
+            }
+        }
+    ],
+    "activity_descriptions": [
+        "Fundamentos de lenguajes de programación",
+        "Diferencias entre software y hardware",
+        "Pensamiento algorítmico y resolución de problemas",
+        "Creación y comprensión de diagramas de flujo",
+        "Elementos avanzados de diagramas de flujo"
+    ],
+    "activity_completion_message": "Actividad completada y progreso guardado",
+    "login_required_message": "Debes iniciar sesión primero.",
+    "user_not_found_message": "Usuario no encontrado en la base de datos."
+}

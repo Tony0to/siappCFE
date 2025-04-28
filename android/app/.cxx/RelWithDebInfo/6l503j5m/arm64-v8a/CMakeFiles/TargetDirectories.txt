@@ -1,0 +1,2 @@
+C:/Users/ANGELFLOD/Desktop/siappCFE/android/app/.cxx/RelWithDebInfo/6l503j5m/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/ANGELFLOD/Desktop/siappCFE/android/app/.cxx/RelWithDebInfo/6l503j5m/arm64-v8a/CMakeFiles/rebuild_cache.dir
