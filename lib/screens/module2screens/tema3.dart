@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:siapp/screens/module2screens/tema4.dart'; // Adjust import as needed
+import 'package:siapp/screens/module2screens/tema4.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
 
 class Tema3 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -150,35 +152,89 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
   }
 
   Widget _buildCodeBox(String code, String language) {
+    // Map user-friendly language names to flutter_highlighter language IDs
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'java':
+        highlightLanguage = 'java';
+        break;
+      case 'c++':
+        highlightLanguage = 'cpp';
+        break;
+      case 'ejemplo genérico':
+        highlightLanguage = 'text';
+        break;
+      default:
+        highlightLanguage = 'text';
+    }
+
     return Container(
-      padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        color: Color.fromRGBO(10, 36, 99, 0.25),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Color.fromRGBO(62, 146, 204, 0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            language,
-            style: GoogleFonts.robotoMono(
-              fontSize: 12,
-              color: Colors.white70,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3E92CC),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              'Ejemplo de Código',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SelectableText(
-              code,
-              style: GoogleFonts.robotoMono(
-                fontSize: 14,
-                color: Colors.white,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: HighlightView(
+                  code,
+                  language: highlightLanguage,
+                  theme: githubTheme,
+                  padding: const EdgeInsets.all(12),
+                  textStyle: GoogleFonts.sourceCodePro(
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
               ),
             ),
           ),
@@ -495,7 +551,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Introducción
                 if (_contentData?['introduccion'] != null)
                   Column(
@@ -511,7 +567,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 24),
                     ],
                   ),
-                
+
                 // Características
                 if (_contentData?['caracteristicas'] != null)
                   Card(
@@ -539,9 +595,9 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Subtema 1: Secuenciales
                 if (_contentData?['subtema1'] != null)
                   Column(
@@ -558,7 +614,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 12),
                       ..._formatContent(_contentData!['subtema1']['contenido']),
                       const SizedBox(height: 16),
-                      
+
                       // Ejemplo de código
                       Card(
                         elevation: 4,
@@ -607,7 +663,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 24),
                     ],
                   ),
-                
+
                 // Subtema 2: Condicionales
                 if (_contentData?['subtema2'] != null)
                   Column(
@@ -624,19 +680,30 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 12),
                       ..._formatContent(_contentData!['subtema2']['contenido']),
                       const SizedBox(height: 16),
-                      
+
                       // Lista de condicionales
                       ..._contentData!['subtema2']['condicionales'].map<Widget>((condicional) {
                         Color color;
                         switch (condicional['color']) {
-                          case 'blue': color = Colors.blue; break;
-                          case 'purple': color = Colors.purple; break;
-                          case 'indigo': color = Colors.indigo; break;
-                          case 'teal': color = Colors.teal; break;
-                          case 'cyan': color = Colors.cyan; break;
-                          default: color = Colors.blue;
+                          case 'blue':
+                            color = Colors.blue;
+                            break;
+                          case 'purple':
+                            color = Colors.purple;
+                            break;
+                          case 'indigo':
+                            color = Colors.indigo;
+                            break;
+                          case 'teal':
+                            color = Colors.teal;
+                            break;
+                          case 'cyan':
+                            color = Colors.cyan;
+                            break;
+                          default:
+                            color = Colors.blue;
                         }
-                        
+
                         return Card(
                           elevation: 4,
                           margin: const EdgeInsets.only(bottom: 16),
@@ -668,16 +735,16 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                                 const SizedBox(height: 12),
                                 _buildCodeBox(
                                   condicional['ejemplo'],
-                                  condicional['tipo'] == 'switch' || condicional['tipo'] == 'switch sin break' 
-                                    ? "JavaScript" 
-                                    : "Ejemplo genérico",
+                                  condicional['tipo'] == 'switch' || condicional['tipo'] == 'switch sin break'
+                                      ? "JavaScript"
+                                      : "Ejemplo genérico",
                                 ),
                               ],
                             ),
                           ),
                         );
                       }).toList(),
-                      
+
                       // Nota importante
                       _buildHighlightBox(
                         _contentData!['subtema2']['nota_importante']['text'],
@@ -685,7 +752,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                         title: "Importante",
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Cuándo usar switch
                       Card(
                         elevation: 4,
@@ -724,7 +791,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 24),
                     ],
                   ),
-                
+
                 // Subtema 3: Bucles
                 if (_contentData?['subtema3'] != null)
                   Column(
@@ -741,17 +808,24 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 12),
                       ..._formatContent(_contentData!['subtema3']['contenido']),
                       const SizedBox(height: 16),
-                      
+
                       // Lista de bucles
                       ..._contentData!['subtema3']['bucles'].map<Widget>((bucle) {
                         Color color;
                         switch (bucle['color']) {
-                          case 'orange': color = Colors.orange; break;
-                          case 'purple': color = Colors.purple; break;
-                          case 'indigo': color = Colors.indigo; break;
-                          default: color = Colors.orange;
+                          case 'orange':
+                            color = Colors.orange;
+                            break;
+                          case 'purple':
+                            color = Colors.purple;
+                            break;
+                          case 'indigo':
+                            color = Colors.indigo;
+                            break;
+                          default:
+                            color = Colors.orange;
                         }
-                        
+
                         return Card(
                           elevation: 4,
                           margin: const EdgeInsets.only(bottom: 24),
@@ -824,7 +898,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                
+
                                 // Ejemplos de código
                                 Column(
                                   children: bucle['ejemplos'].map<Widget>((ejemplo) {
@@ -832,12 +906,12 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                                       padding: const EdgeInsets.only(bottom: 12),
                                       child: _buildCodeBox(
                                         ejemplo['codigo'],
-                                        "${ejemplo['lenguaje']}",
+                                        ejemplo['lenguaje'],
                                       ),
                                     );
                                   }).toList(),
                                 ),
-                                
+
                                 const SizedBox(height: 12),
                                 Text(
                                   "¿Cuándo utilizarlo?",
@@ -862,7 +936,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                           ),
                         );
                       }).toList(),
-                      
+
                       // Nota importante final
                       _buildHighlightBox(
                         _contentData!['subtema3']['nota_importante']['text'],
@@ -872,7 +946,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       const SizedBox(height: 24),
                     ],
                   ),
-                
+
                 // Quiz Section
                 _buildQuizSection(),
               ],

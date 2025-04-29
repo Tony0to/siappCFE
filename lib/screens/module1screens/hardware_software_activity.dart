@@ -25,57 +25,58 @@ class _HardwareSoftwareActivityScreenState extends State<HardwareSoftwareActivit
   late AnimationController _animationController;
 
   final List<Map<String, dynamic>> _images = [
-    {
-      'url': 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware',
-      'description': 'Procesador (CPU)',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1591799264316-4564e8e69d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware',
-      'description': 'Memoria RAM',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware',
-      'description': 'Disco duro (HDD)',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware',
-      'description': 'Teclado',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Hardware',
-      'description': 'Placa base',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1547088886-8d8c7a9e5f6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software',
-      'description': 'Editor de código (VS Code)',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software',
-      'description': 'Sistema operativo Windows',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software',
-      'description': 'Interfaz de base de datos',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a0a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software',
-      'description': 'Aplicación de diseño gráfico',
-    },
-    {
-      'url': 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-      'correctAnswer': 'Software',
-      'description': 'Entorno de desarrollo (IDE)',
-    },
-  ];
+  {
+    'url': 'https://media.istockphoto.com/id/1196702694/photo/designers-drawing-website-ux-app-development.jpg?s=1024x1024&w=is&k=20&c=qHoUFxILcwXARVEhiLICF1exRIKwg4y-nd0kXJn_8nI=',
+    'correctAnswer': 'Software',
+    'description': 'Aplicación de diseño gráfico',
+  },
+  {
+    'url': 'https://cdn.pixabay.com/photo/2015/06/24/15/45/code-820275_1280.jpg',
+    'correctAnswer': 'Software',
+    'description': 'Editor de código (VS Code)',
+  },
+  {
+    'url': 'https://cdn.pixabay.com/photo/2014/08/26/21/27/service-428540_1280.jpg',
+    'correctAnswer': 'Hardware',
+    'description': 'Placa base',
+  },
+  {
+    'url': 'https://cdn.pixabay.com/photo/2020/09/26/11/36/laptop-5603790_1280.jpg',
+    'correctAnswer': 'Software',
+    'description': 'Sistema operativo Windows',
+  },
+  {
+    'url': 'https://media.istockphoto.com/id/1691499727/photo/hard-and-solid-disks-drives.jpg?s=1024x1024&w=is&k=20&c=2v6ULfheyObZf4SXjaRKXMWZLltCrtfJjve8eahRbU8=',
+    'correctAnswer': 'Hardware',
+    'description': 'Disco duro (HDD)',
+  },
+  {
+    'url': 'https://images.unsplash.com/photo-1649180564403-db28d5673f48?q=80&w=2062&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'correctAnswer': 'Software',
+    'description': 'Entorno de desarrollo (IDE)',
+  },
+  {
+    'url': 'https://media.istockphoto.com/id/1279667350/es/foto/ingeniero-electr%C3%B3nico-de-tecnolog%C3%ADa-inform%C3%A1tica-actualizaci%C3%B3n-de-hardware-de-la-computadora-de.jpg?s=1024x1024&w=is&k=20&c=ZyeOk2NjzOZe3UTRW3ORuvi17fL-T3cGaeCi4JJWwao=',
+    'correctAnswer': 'Hardware',
+    'description': 'Memoria RAM',
+  },
+  {
+    'url': 'https://media.istockphoto.com/id/1326283378/photo/programming-code-keyboard-colors-computer.jpg?s=1024x1024&w=is&k=20&c=6NiB410DZywlAgbU4zESoczAFvJU5SBCrEKFzhYjrtk=',
+    'correctAnswer': 'Hardware',
+    'description': 'Teclado',
+  },
+  {
+    'url': 'https://cdn.pixabay.com/photo/2019/08/08/16/54/cpu-4393376_1280.jpg',
+    'correctAnswer': 'Hardware',
+    'description': 'Procesador (CPU)',
+  },
+  {
+    'url': 'https://media.istockphoto.com/id/1195604855/photo/flow-chart-of-control-panel-of-a-web-site-relational-database-table.jpg?s=1024x1024&w=is&k=20&c=yRI26TGwLjz0N-F2ducLsfQRjIxgJAMG7TrCC9leul0=',
+    'correctAnswer': 'Software',
+    'description': 'Interfaz de base de datos',
+  },
+];
+
 
   @override
   void initState() {

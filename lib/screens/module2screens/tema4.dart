@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:siapp/screens/module2screens/flowcharts2.dart';
 import 'package:siapp/screens/module2.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
 
 class Tema4 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -77,6 +79,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
         }
       });
     } catch (e) {
+      debugPrint('Error loading JSON: $e');
       setState(() {
         _contentData = {};
       });
@@ -139,17 +142,11 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
           ],
         );
       } else if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        textWidget = Container(
-          padding: const EdgeInsets.all(12),
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            trimmed.substring(1, trimmed.length - 1),
-            style: GoogleFonts.robotoMono(fontSize: 14, color: Colors.white),
-          ),
+        // Handle inline code snippets
+        final code = trimmed.substring(1, trimmed.length - 1);
+        textWidget = _buildCodeBox(
+          code,
+          language: 'dart', // Adjust based on context; assuming Dart for examples
         );
       } else {
         textWidget = Text(
@@ -193,6 +190,109 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildCodeBox(String code, {String language = 'plaintext'}) {
+    if (code.isEmpty) {
+      return const Text(
+        'Código no disponible',
+        style: TextStyle(color: Colors.white70),
+      );
+    }
+
+    // Map language to flutter_highlighter language IDs
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'java':
+        highlightLanguage = 'java';
+        break;
+      case 'c++':
+        highlightLanguage = 'cpp';
+        break;
+      case 'dart':
+        highlightLanguage = 'dart';
+        break;
+      case 'pseudocode':
+      case 'plaintext':
+        highlightLanguage = 'plaintext';
+        break;
+      default:
+        highlightLanguage = 'plaintext';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A2463).withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF3E92CC).withOpacity(0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3E92CC),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              language.toLowerCase() == 'pseudocode' ? 'Pseudocódigo' : 'Código',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: HighlightView(
+                  code,
+                  language: highlightLanguage,
+                  theme: githubTheme,
+                  padding: const EdgeInsets.all(12),
+                  textStyle: GoogleFonts.sourceCodePro(
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Color _getHighlightColor(String? colorName) {
     switch (colorName?.toLowerCase()) {
       case 'blue':
@@ -218,9 +318,9 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     final showFeedback = _showFeedback[quizIndex] ?? false;
 
     final controller = _transformationControllers[quizIndex] ?? TransformationController();
-    final containerWidth = MediaQuery.of(context).size.width * 0.95; // Responsive width
-    const containerHeight = 600.0; // Increased height
-    const initialScale = 0.6; // Zoomed out for better visibility
+    final containerWidth = MediaQuery.of(context).size.width * 0.95;
+    const containerHeight = 600.0;
+    const initialScale = 0.6;
 
     void zoomIn() {
       final currentScale = controller.value.getMaxScaleOnAxis();
@@ -236,6 +336,11 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
 
     void resetZoom() {
       controller.value = Matrix4.identity()..scale(initialScale);
+    }
+
+    // Debug pseudocode rendering
+    if (quiz['diagrama_flujo']?['pseudocodigo'] != null) {
+      debugPrint('Rendering pseudocode for quiz $quizIndex: ${quiz['diagrama_flujo']['pseudocodigo']}');
     }
 
     return Card(
@@ -295,6 +400,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 ],
               ),
               ExpansionTile(
+                initiallyExpanded: true, // Expand by default for visibility
                 title: Text(
                   'Diagrama de Flujo',
                   style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
@@ -322,7 +428,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                                   minScale: 0.3,
                                   maxScale: 4.0,
                                   boundaryMargin: const EdgeInsets.all(20),
-                                  constrained: false, // Allow content to exceed bounds
+                                  constrained: false,
                                   onInteractionStart: (_) {
                                     if (controller.value.getMaxScaleOnAxis() == 1.0) {
                                       controller.value = Matrix4.identity()..scale(initialScale);
@@ -386,11 +492,21 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                       ),
                     ),
                   if (quiz['diagrama_flujo']?['pseudocodigo'] != null)
-                    _buildHighlightBox({
-                      'title': 'Pseudocódigo',
-                      'text': quiz['diagrama_flujo']['pseudocodigo'] as String,
-                      'color': 'orange',
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: _buildCodeBox(
+                        quiz['diagrama_flujo']['pseudocodigo'] as String,
+                        language: quiz['diagrama_flujo']['lenguaje']?.toString() ?? 'pseudocode',
+                      ),
+                    )
+                  else
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Pseudocódigo no disponible',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ),
                 ],
               ),
               ExpansionTile(
