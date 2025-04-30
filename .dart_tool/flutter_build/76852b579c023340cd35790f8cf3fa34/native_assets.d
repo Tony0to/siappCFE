@@ -1,0 +1,1 @@
+ C:\\Users\\nenuk\\dev\\projects\\siapp\\.dart_tool\\flutter_build\\76852b579c023340cd35790f8cf3fa34\\native_assets.yaml: 
