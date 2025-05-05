@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,7 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:siapp/screens/home_screen.dart';
 import 'package:siapp/screens/login_screen.dart';
 import 'package:siapp/screens/progress_screen.dart';
-import 'package:siapp/screens/home_screen.dart'; // Import HomeScreen
+import '../theme/app_colors.dart'; // Import AppColors
 import 'module1.dart';
 import 'module2.dart';
 import 'module3.dart';
@@ -69,8 +70,8 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
     )..repeat(reverse: true);
     
     _gradientAnimation = ColorTween(
-      begin: Colors.blueAccent[400],
-      end: Colors.lightBlue[700],
+      begin: AppColors.backgroundGradientTop,
+      end: AppColors.backgroundGradientBottom,
     ).animate(_controller);
   }
 
@@ -89,7 +90,6 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
     }
 
     try {
-      // Verificar si el usuario tiene documento en Firestore
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -100,7 +100,6 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
         return;
       }
 
-      // Crear o actualizar progreso del módulo usando transacción
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         final progressRef = FirebaseFirestore.instance
             .collection('progress')
@@ -131,7 +130,7 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red[400],
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -169,15 +168,8 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
         return Scaffold(
           extendBody: true,
           body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gradientAnimation.value!,
-                  _gradientAnimation.value!.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundDynamic,
             ),
             child: SafeArea(
               child: CustomScrollView(
@@ -191,7 +183,7 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                           Align(
                             alignment: Alignment.centerLeft,
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                               onPressed: () {
                                 Navigator.pushReplacement(
                                   context,
@@ -206,14 +198,14 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                             height: 150,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white,
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.4),
+                                color: AppColors.glassmorphicBorder,
                                 width: 2,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: AppColors.shadowColor,
                                   blurRadius: 10,
                                   spreadRadius: 3,
                                 ),
@@ -226,7 +218,7 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                                 errorBuilder: (context, error, stackTrace) => const Icon(
                                   Icons.school,
                                   size: 50,
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -235,7 +227,7 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                           const Text(
                             'Módulos de Estudio',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                               shadows: [
@@ -271,47 +263,54 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
               ),
             ),
           ),
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gradientAnimation.value!,
-                  _gradientAnimation.value!.withOpacity(0.9),
-                ],
-              ),
-            ),
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() => _currentIndex = index);
-                if (index == 1) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ProgressScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
+          bottomNavigationBar: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                  );
-                }
-              },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white70,
-              selectedIconTheme: const IconThemeData(size: 28),
-              unselectedIconTheme: const IconThemeData(size: 24),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Inicio',
+                  ],
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.bar_chart),
-                  label: 'Progreso',
+                child: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  onTap: (index) {
+                    setState(() => _currentIndex = index);
+                    if (index == 1) {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => ProgressScreen(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(opacity: animation, child: child);
+                          },
+                        ),
+                      );
+                    }
+                  },
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  selectedItemColor: AppColors.textPrimary,
+                  unselectedItemColor: AppColors.textSecondary,
+                  selectedIconTheme: const IconThemeData(size: 28),
+                  unselectedIconTheme: const IconThemeData(size: 24),
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: 'Inicio',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.bar_chart),
+                      label: 'Progreso',
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -385,13 +384,13 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
         animation: _expandController,
         builder: (context, child) {
           return Material(
-            color: Colors.white.withOpacity(0.15),
+            color: AppColors.glassmorphicBackground,
             borderRadius: BorderRadius.circular(20),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: _toggleExpanded,
               child: Container(
-                constraints: BoxConstraints(
+                constraints: const BoxConstraints(
                   minHeight: 120,
                 ),
                 child: Column(
@@ -410,7 +409,7 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.4),
+                                  color: AppColors.glassmorphicBorder,
                                   width: 2,
                                 ),
                               ),
@@ -419,9 +418,13 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                   imageUrl: widget.module['image'],
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(),
+                                    child: CircularProgressIndicator(color: AppColors.progressActive),
                                   ),
-                                  errorWidget: (context, url, error) => const Icon(Icons.menu_book, size: 40),
+                                  errorWidget: (context, url, error) => const Icon(
+                                    Icons.menu_book,
+                                    size: 40,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ),
                             ),
@@ -434,7 +437,7 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                 Text(
                                   widget.module['title'],
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
                                   ),
@@ -443,8 +446,8 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                 const SizedBox(height: 4),
                                 Text(
                                   widget.module['subtitle'],
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
                                     fontSize: 14,
                                   ),
                                   maxLines: 1,
@@ -452,12 +455,16 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    const Icon(Icons.assignment, size: 16, color: Colors.white70),
+                                    const Icon(
+                                      Icons.assignment,
+                                      size: 16,
+                                      color: AppColors.textSecondary,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       '${widget.module['activities']} actividades',
                                       style: const TextStyle(
-                                        color: Colors.white70,
+                                        color: AppColors.textSecondary,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -468,12 +475,11 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                           ),
                           Icon(
                             _isExpanded ? Icons.expand_less : Icons.expand_more,
-                            color: Colors.white70,
+                            color: AppColors.textSecondary,
                           ),
                         ],
                       ),
                     ),
-
                     SizeTransition(
                       sizeFactor: _expandController,
                       axisAlignment: 1.0,
@@ -492,21 +498,27 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(
-                                    color: Colors.grey[800],
+                                    color: AppColors.neutralCard,
                                     height: 120,
-                                    child: const Center(child: CircularProgressIndicator()),
+                                    child: const Center(
+                                      child: CircularProgressIndicator(color: AppColors.progressActive),
+                                    ),
                                   ),
                                   errorWidget: (context, url, error) => Container(
-                                    color: Colors.grey[800],
+                                    color: AppColors.neutralCard,
                                     height: 120,
-                                    child: const Icon(Icons.menu_book, size: 50),
+                                    child: const Icon(
+                                      Icons.menu_book,
+                                      size: 50,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 12),
                               Text(
                                 widget.module['summary'],
-                                style: const TextStyle(color: Colors.white70),
+                                style: const TextStyle(color: AppColors.textSecondary),
                               ),
                               const SizedBox(height: 16),
                               Align(
@@ -514,8 +526,8 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                 child: ElevatedButton(
                                   onPressed: widget.onNavigate,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.blue[800],
+                                    backgroundColor: AppColors.primaryButton,
+                                    foregroundColor: AppColors.buttonText,
                                   ),
                                   child: const Text('Iniciar Módulo'),
                                 ),

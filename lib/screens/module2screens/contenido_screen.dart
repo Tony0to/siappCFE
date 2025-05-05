@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:siapp/screens/loading_screen.dart';
 import 'package:siapp/screens/module2screens/tema1.dart';
 import 'package:siapp/screens/module2screens/tema2.dart';
 import 'package:siapp/screens/module2screens/tema3.dart';
@@ -11,7 +13,7 @@ import 'package:siapp/screens/module2screens/tema4.dart';
 class ContenidoScreen extends StatefulWidget {
   final Map<String, dynamic> moduleData;
 
-  const ContenidoScreen({Key? key, required this.moduleData}) : super(key: key);
+  const ContenidoScreen({super.key, required this.moduleData});
 
   @override
   _ContenidoScreenState createState() => _ContenidoScreenState();
@@ -22,13 +24,13 @@ class _ContenidoScreenState extends State<ContenidoScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Color?> _colorAnimation;
-  late Animation<double> _scaleAnimation;
   late Animation<double> _progressAnimation;
   final List<AnimationController> _progressControllers = [];
   double _progress = 0.0;
   bool _isLoading = true;
   String? _errorMessage;
   final ScrollController _scrollController = ScrollController();
+  final Map<int, bool> _completedSections = {};
 
   @override
   bool get wantKeepAlive => true;
@@ -48,13 +50,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.95, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.3, 1.0, curve: Curves.easeOutBack),
-      ),
-    );
-
     _colorAnimation = ColorTween(
       begin: const Color(0xFF0D47A1),
       end: const Color(0xFF1976D2),
@@ -70,15 +65,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       ),
     );
 
-    _loadModuleProgress().then((_) {
-      _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Curves.easeOutQuart,
-        ),
-      );
-      _animationController.forward();
-    });
+    _loadContentWithDelay();
   }
 
   @override
@@ -92,20 +79,42 @@ class _ContenidoScreenState extends State<ContenidoScreen>
     super.dispose();
   }
 
-  Future<void> _loadModuleProgress() async {
+  Future<void> _loadContentWithDelay() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
+      await Future.wait([
+        _loadModuleProgress(),
+        Future.delayed(const Duration(seconds: 1)),
+      ]);
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Curves.easeOutQuart,
+        ),
+      );
+      _animationController.forward();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar el contenido: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadModuleProgress() async {
+    try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        setState(() {
-          _errorMessage = 'Usuario no autenticado.';
-          _isLoading = false;
-        });
-        return;
+        throw Exception('Usuario no autenticado.');
       }
 
       final progressDoc = await FirebaseFirestore.instance
@@ -118,21 +127,20 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       if (progressDoc.exists) {
         final data = progressDoc.data();
         final savedProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
+        final completedSections = (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
         setState(() {
           _progress = savedProgress / 100;
-          _isLoading = false;
+          completedSections.forEach((key, value) {
+            _completedSections[int.parse(key)] = value as bool;
+          });
         });
       } else {
         setState(() {
           _progress = 0.0;
-          _isLoading = false;
         });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Error al cargar el progreso: $e';
-        _isLoading = false;
-      });
+      throw Exception('Error al cargar el progreso: $e');
     }
   }
 
@@ -155,65 +163,24 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       }
       return false;
     } catch (e) {
-      print('Error checking module progress: $e');
+      debugPrint('Error checking module progress: $e');
       return false;
     }
   }
 
-  Future<void> _resetModuleProgress() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module2')
-          .set({
-        'porcentaje': 0.0,
-        'last_updated': FieldValue.serverTimestamp(),
-        'module_id': widget.moduleData['id'] ?? 'module2',
-        'module_title': widget.moduleData['module_title'] ?? 'Módulo',
-        'completed': false,
-      }, SetOptions(merge: true));
-
-      setState(() {
-        _progress = 0.0;
-        _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: 0.0)
-            .animate(CurvedAnimation(
-              parent: _animationController,
-              curve: Curves.easeOutQuart,
-            ));
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al reiniciar el progreso: $e'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Future<void> _updateModuleProgress(double newProgress) async {
-    // Check if the current progress is already 100%
-    final hasCompleted = await _hasCompletedModule();
-    if (hasCompleted) {
-      // If the module is already completed, skip Firestore update
-      return;
-    }
+  Future<void> _updateModuleProgress(int sectionIndex) async {
+    if (_completedSections[sectionIndex] == true) return;
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception('Usuario no autenticado');
       }
+
+      _completedSections[sectionIndex] = true;
+      final totalSections = widget.moduleData['content']?.length ?? 4;
+      final completedSections = _completedSections.values.where((completed) => completed).length;
+      final newProgress = (completedSections * 25.0) / 100.0; // 25% por sección
 
       await FirebaseFirestore.instance
           .collection('progress')
@@ -226,6 +193,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
             'module_id': widget.moduleData['id'] ?? 'module2',
             'module_title': widget.moduleData['module_title'] ?? 'Módulo',
             'completed': newProgress >= 1.0,
+            'completed_sections': _completedSections.map((key, value) => MapEntry(key.toString(), value)),
           }, SetOptions(merge: true));
 
       final progressController = AnimationController(
@@ -253,29 +221,35 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         }
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar el progreso: $e'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar el progreso: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 2),
           ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+        );
+      }
     }
-  }
-
-  void _updateProgress(int completedSections, int totalSections) {
-    final newProgress = completedSections / totalSections;
-    _updateModuleProgress(newProgress);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (_isLoading || _errorMessage != null) {
+      return Scaffold(
+        body: LoadingScreen(
+          message: _errorMessage ?? 'Cargando contenido...',
+        ),
+      );
+    }
+
     final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
+    final syllabusSections = (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
     final moduleImage = widget.moduleData['image'] as String? ??
         'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
 
@@ -316,7 +290,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                 padding: const EdgeInsets.only(right: 16.0),
                 child: IconButton(
                   icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _loadModuleProgress,
+                  onPressed: _loadContentWithDelay,
                   tooltip: 'Actualizar progreso',
                 ),
               ),
@@ -327,136 +301,134 @@ class _ContenidoScreenState extends State<ContenidoScreen>
               gradient: LinearGradient(
                 colors: [
                   _colorAnimation.value!,
-                  _colorAnimation.value!.withOpacity(0.8),
+                  Color.fromRGBO(
+                      _colorAnimation.value!.red,
+                      _colorAnimation.value!.green,
+                      _colorAnimation.value!.blue,
+                      0.8),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
-            child: _isLoading || _errorMessage != null
-                ? _buildLoadingOrError()
-                : ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: content.isEmpty
-                        ? _buildEmptyContent()
-                        : CustomScrollView(
-                            controller: _scrollController,
-                            physics: const BouncingScrollPhysics(),
-                            slivers: [
-                              SliverToBoxAdapter(
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 80),
-                                    _buildModuleHeader(moduleImage),
-                                    const SizedBox(height: 20),
-                                    _buildProgressIndicator(),
-                                    const SizedBox(height: 30),
-                                  ],
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                sliver: SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      final sectionKey = content.keys.elementAt(index);
-                                      final section = content[sectionKey];
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 16.0),
-                                        child: SectionCard(
-                                          index: index,
-                                          title: section['title'] ?? 'Sección',
-                                          description: section['description'] ?? '',
-                                          onTap: () async {
-                                            final hasCompleted = await _hasCompletedModule();
-                                            if (!hasCompleted) {
-                                              await _resetModuleProgress();
-                                            }
-                                            Widget targetScreen;
-                                            switch (index) {
-                                              case 0:
-                                                targetScreen = Tema1(
-                                                  section: section,
-                                                  sectionTitle: section['title'] ?? 'Sección',
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              case 1:
-                                                targetScreen = Tema2(
-                                                  section: section,
-                                                  sectionTitle: section['title'] ?? 'Sección',
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              case 2:
-                                                targetScreen = Tema3(
-                                                  section: section,
-                                                  sectionTitle: section['title'] ?? 'Sección',
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              case 3:
-                                                targetScreen = Tema4(
-                                                  section: section,
-                                                  sectionTitle: section['title'] ?? 'Sección',
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              default:
-                                                return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              PageRouteBuilder(
-                                                pageBuilder: (context, animation, secondaryAnimation) =>
-                                                    targetScreen,
-                                                transitionsBuilder:
-                                                    (context, animation, secondaryAnimation, child) {
-                                                  return FadeTransition(
-                                                    opacity: animation,
-                                                    child: child,
-                                                  );
-                                                },
-                                                transitionDuration: const Duration(milliseconds: 300),
-                                              ),
-                                            );
+            child: content.isEmpty
+                ? _buildEmptyContent()
+                : CustomScrollView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 80),
+                            _buildModuleHeader(moduleImage),
+                            const SizedBox(height: 20),
+                            _buildProgressIndicator(),
+                            const SizedBox(height: 30),
+                          ],
+                        ),
+                      ),
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final sectionKey = content.keys.elementAt(index);
+                              final section = content[sectionKey];
+                              final syllabusTitle = syllabusSections[index]['title'] as String;
+                              final cleanedTitle = syllabusTitle.replaceFirst(RegExp(r'^[IVXLC]+\.\s'), '');
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16.0),
+                                child: SectionCard(
+                                  index: index,
+                                  title: cleanedTitle,
+                                  description: section['description'] ?? '',
+                                  onTap: () {
+                                    if (!mounted) return;
+                                    Widget targetScreen;
+                                    switch (index) {
+                                      case 0:
+                                        targetScreen = Tema1(
+                                          section: section,
+                                          sectionTitle: cleanedTitle,
+                                          sectionIndex: index,
+                                          totalSections: content.length,
+                                          content: content,
+                                          moduleData: widget.moduleData,
+                                          onComplete: (index) {
+                                            _updateModuleProgress(index);
                                           },
-                                        ),
-                                      );
-                                    },
-                                    childCount: content.length,
-                                  ),
+                                        );
+                                        break;
+                                      case 1:
+                                        targetScreen = Tema2(
+                                          section: section,
+                                          sectionTitle: cleanedTitle,
+                                          sectionIndex: index,
+                                          totalSections: content.length,
+                                          content: content,
+                                          moduleData: widget.moduleData,
+                                          onComplete: (index) {
+                                            _updateModuleProgress(index);
+                                          },
+                                        );
+                                        break;
+                                      case 2:
+                                        targetScreen = Tema3(
+                                          section: section,
+                                          sectionTitle: cleanedTitle,
+                                          sectionIndex: index,
+                                          totalSections: content.length,
+                                          content: content,
+                                          moduleData: widget.moduleData,
+                                          onComplete: (index) {
+                                            _updateModuleProgress(index);
+                                          },
+                                        );
+                                        break;
+                                      case 3:
+                                        targetScreen = Tema4(
+                                          section: section,
+                                          sectionTitle: cleanedTitle,
+                                          sectionIndex: index,
+                                          totalSections: content.length,
+                                          content: content,
+                                          moduleData: widget.moduleData,
+                                          onComplete: (index) {
+                                            _updateModuleProgress(index);
+                                          },
+                                        );
+                                        break;
+                                      default:
+                                        return;
+                                    }
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, animation, secondaryAnimation) =>
+                                            targetScreen,
+                                        transitionsBuilder:
+                                            (context, animation, secondaryAnimation, child) {
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: child,
+                                          );
+                                        },
+                                        transitionDuration: const Duration(milliseconds: 300),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ),
-                              const SliverToBoxAdapter(
-                                child: SizedBox(height: 30),
-                              ),
-                            ],
+                              );
+                            },
+                            childCount: content.length,
                           ),
+                        ),
+                      ),
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: 30),
+                      ),
+                    ],
                   ),
           ),
         );
@@ -493,7 +465,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Color.fromRGBO(255, 255, 255, 0.1),
                       child: const Center(
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -501,7 +473,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Color.fromRGBO(255, 255, 255, 0.1),
                       child: const Icon(Icons.menu_book, size: 50, color: Colors.white),
                     ),
                   ),
@@ -537,7 +509,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                             widget.moduleData['subtitle'],
                             style: GoogleFonts.poppins(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Color.fromRGBO(255, 255, 255, 0.9),
                             ),
                           ),
                       ],
@@ -567,7 +539,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                     'Tu progreso',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Color.fromRGBO(255, 255, 255, 0.9),
                     ),
                   ),
                   Text(
@@ -586,7 +558,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                   Container(
                     height: 10,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Color.fromRGBO(255, 255, 255, 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -639,14 +611,14 @@ class _ContenidoScreenState extends State<ContenidoScreen>
             Icon(
               Icons.menu_book_rounded,
               size: 60,
-              color: Colors.white.withOpacity(0.5),
+              color: Color.fromRGBO(255, 255, 255, 0.5),
             ),
             const SizedBox(height: 20),
             Text(
               'No hay contenido disponible',
               style: GoogleFonts.poppins(
                 fontSize: 18,
-                color: Colors.white70,
+                color: Color.fromRGBO(255, 255, 255, 0.7),
               ),
             ),
             const SizedBox(height: 20),
@@ -667,66 +639,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingOrError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (_isLoading) ...[
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 3,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Cargando contenido...',
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-            ] else ...[
-              Icon(
-                Icons.error_outline_rounded,
-                size: 50,
-                color: Colors.red[200],
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.poppins(
-                  color: Colors.red[200],
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _loadModuleProgress,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blue[800],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                ),
-                child: Text(
-                  'Reintentar',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

@@ -7,6 +7,9 @@ import 'package:flutter/animation.dart';
 import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'package:siapp/screens/module2screens/actividades.dart';
 import 'package:siapp/screens/ModulesScreen.dart';
+import 'package:siapp/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class Module2Content {
   static Map<String, dynamic>? _content;
@@ -47,9 +50,7 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<Color?> _colorAnimation;
 
-  // URL de la imagen que puedes cambiar fácilmente
   final String moduleImageUrl = 'https://www.dongee.com/tutoriales/content/images/2024/04/image-47.png';
 
   @override
@@ -72,14 +73,9 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.3, 1.0, curve: Curves.elasticOut),
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOutBack),
       ),
     );
-
-    _colorAnimation = ColorTween(
-      begin: Colors.blueAccent[400],
-      end: Colors.lightBlue[700],
-    ).animate(_controller);
 
     _controller.forward();
   }
@@ -97,9 +93,27 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.backgroundDynamic,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: AppColors.progressActive,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Cargando módulo...',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -107,11 +121,55 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
 
         if (snapshot.hasError) {
           return Scaffold(
-            body: Center(
-              child: Text(
-                'Error: ${snapshot.error.toString()}',
-                style: const TextStyle(fontSize: 16, color: Colors.red),
-                textAlign: TextAlign.center,
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.backgroundDynamic,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 50,
+                      color: AppColors.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error: ${snapshot.error.toString()}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.error,
+                        textStyle: const TextStyle(height: 1.5),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _loadContentFuture = Module2Content.initialize();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryButton,
+                        foregroundColor: AppColors.buttonText,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: Text(
+                        'Reintentar',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.buttonText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -123,28 +181,25 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
           animation: _controller,
           builder: (context, child) {
             return Scaffold(
-              floatingActionButton: FloatingActionButton(
-                mini: true,
-                backgroundColor: Colors.white.withOpacity(0.2),
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ModulesScreen()),
-                    (route) => route.isFirst || route.settings.name == '/modules',
-                  );
-                },
-                child: const Icon(Icons.arrow_back, color: Colors.white),
+              floatingActionButton: ScaleTransition(
+                scale: _scaleAnimation,
+                child: FloatingActionButton(
+                  mini: true,
+                  backgroundColor: AppColors.primaryButton,
+                  foregroundColor: AppColors.buttonText,
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ModulesScreen()),
+                      (route) => route.isFirst || route.settings.name == '/modules',
+                    );
+                  },
+                  child: Icon(Icons.arrow_back, color: AppColors.buttonText),
+                ),
               ),
               body: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _colorAnimation.value!,
-                      _colorAnimation.value!.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                decoration: const BoxDecoration(
+                  gradient: AppColors.backgroundDynamic,
                 ),
                 child: Stack(
                   children: [
@@ -152,74 +207,80 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                       physics: const BouncingScrollPhysics(),
                       child: Column(
                         children: [
-                          // Header Section (Integrated)
                           Container(
                             padding: const EdgeInsets.only(top: 70, bottom: 20),
                             child: FadeTransition(
                               opacity: _fadeAnimation,
                               child: Text(
                                 moduleContent['module_title'] ?? 'Módulo 2',
-                                style: const TextStyle(
+                                style: GoogleFonts.poppins(
                                   fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
                           ),
-                          
-                          // Hero Image with Animation
                           ScaleTransition(
                             scale: _scaleAnimation,
                             child: Container(
                               height: 220,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(moduleImageUrl),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                    colors: [
-                                      Colors.blueAccent.withOpacity(0.7),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                                child: Center(
-                                  child: FadeTransition(
-                                    opacity: _fadeAnimation,
-                                    child: Text(
-                                      moduleContent['welcome']?['title'] ?? 'Lógica de Programación',
-                                      style: const TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        shadows: [
-                                          Shadow(
-                                            blurRadius: 10,
-                                            color: Colors.black45,
-                                            offset: Offset(2, 2),
-                                      )],
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    CachedNetworkImage(
+                                      imageUrl: moduleImageUrl,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        color: AppColors.cardBackground,
+                                        child: Center(
+                                          child: CircularProgressIndicator(color: AppColors.progressActive),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => Container(
+                                        color: AppColors.cardBackground,
+                                        child: Icon(Icons.image_not_supported, size: 50, color: AppColors.textSecondary),
                                       ),
                                     ),
-                                  ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: AppColors.headerSection,
+                                      ),
+                                    ),
+                                    Center(
+                                      child: FadeTransition(
+                                        opacity: _fadeAnimation,
+                                        child: Text(
+                                          moduleContent['welcome']?['title'] ?? 'Lógica de Programación',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.textPrimary,
+                                            shadows: [
+                                              Shadow(
+                                                blurRadius: 10,
+                                                color: AppColors.shadowColor,
+                                                offset: const Offset(2, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                          
-                          // Main Content
                           Padding(
                             padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Welcome Section
                                 FadeTransition(
                                   opacity: _fadeAnimation,
                                   child: SlideTransition(
@@ -233,77 +294,76 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                                     child: Text(
                                       moduleContent['welcome']?['description'] ?? 
                                       'Domina los fundamentos de la lógica de programación para resolver problemas complejos',
-                                      style: const TextStyle(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 16, 
                                         height: 1.6,
-                                        color: Colors.white,
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                                   ),
                                 ),
-                                
                                 const SizedBox(height: 30),
-                                
-                                // Syllabus Section
                                 ScaleTransition(
                                   scale: _scaleAnimation,
                                   child: Card(
-                                    elevation: 6,
+                                    elevation: 8,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
-                                    color: Colors.white.withOpacity(0.15),
-                                    shadowColor: Colors.blueAccent.withOpacity(0.3),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.list_alt,
-                                                color: Colors.white,
-                                                size: 28,
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Text(
-                                                moduleContent['syllabus']?['title'] ?? 'Temario',
-                                                style: const TextStyle(
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
+                                    color: AppColors.cardBackground,
+                                    shadowColor: AppColors.shadowColor,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: AppColors.glassmorphicBorder),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.list_alt,
+                                                  color: AppColors.progressBrightBlue,
+                                                  size: 28,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 15),
-                                          ...List<Map<String, dynamic>>.from(
-                                              moduleContent['syllabus']?['sections'] ?? [])
-                                              .map((section) => _buildSyllabusSection(section))
-                                              .toList(),
-                                        ],
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  moduleContent['syllabus']?['title'] ?? 'Temario',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textPrimary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 15),
+                                            ...List<Map<String, dynamic>>.from(
+                                                moduleContent['syllabus']?['sections'] ?? [])
+                                                .map((section) => _buildSyllabusSection(section))
+                                                .toList(),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                                
                                 const SizedBox(height: 30),
-                                
-                                // Learning Points
                                 FadeTransition(
                                   opacity: _fadeAnimation,
-                                  child: const Text(
+                                  child: Text(
                                     'Lo que aprenderás',
-                                    style: TextStyle(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 15),
-                                
                                 ...List<Map<String, dynamic>>.from(
                                     moduleContent['learning_points']?['points'] ?? [])
                                     .map((point) => _buildLearningPoint(
@@ -312,69 +372,62 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                                           description: point['description'] ?? 'Sin descripción',
                                         ))
                                     .toList(),
-                                
                                 const SizedBox(height: 30),
-                                
-                                // Motivation Card
                                 ScaleTransition(
                                   scale: _scaleAnimation,
                                   child: Card(
-                                    elevation: 6,
-                                    color: Colors.white.withOpacity(0.2),
+                                    elevation: 8,
+                                    color: AppColors.cardBackground,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            _getIcon(moduleContent['motivation']?['icon'] ?? 'emoji_objects'),
-                                            size: 50,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(height: 15),
-                                          Text(
-                                            moduleContent['motivation']?['text'] ?? 
-                                            '¡Domina la lógica y abre un mundo de posibilidades en programación!',
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontStyle: FontStyle.italic,
-                                              color: Colors.white,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: AppColors.glassmorphicBorder),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              _getIcon(moduleContent['motivation']?['icon'] ?? 'emoji_objects'),
+                                              size: 50,
+                                              color: AppColors.progressBrightBlue,
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 15),
+                                            Text(
+                                              moduleContent['motivation']?['text'] ?? 
+                                              '¡Domina la lógica y abre un mundo de posibilidades en programación!',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 16,
+                                                fontStyle: FontStyle.italic,
+                                                color: AppColors.textSecondary,
+                                                height: 1.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                                
                                 const SizedBox(height: 40),
-                                
-                                // Action Buttons
                                 Center(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      // Start Module Button
                                       ScaleTransition(
                                         scale: _scaleAnimation,
                                         child: Container(
                                           width: MediaQuery.of(context).size.width * 0.8,
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(30),
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.blueAccent,
-                                                Colors.lightBlue[700]!,
-                                              ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
+                                            borderRadius: BorderRadius.circular(12),
+                                            gradient: AppColors.primaryGradient,
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.blue.withOpacity(0.4),
+                                                color: AppColors.shadowColor,
                                                 blurRadius: 10,
                                                 spreadRadius: 2,
                                                 offset: const Offset(0, 4),
@@ -385,31 +438,39 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                                             onPressed: () {
                                               Navigator.push(
                                                 context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => ContenidoScreen(moduleData: moduleContent),
+                                                PageRouteBuilder(
+                                                  pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(moduleData: moduleContent),
+                                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                    return FadeTransition(
+                                                      opacity: animation,
+                                                      child: child,
+                                                    );
+                                                  },
+                                                  transitionDuration: const Duration(milliseconds: 300),
                                                 ),
                                               );
                                             },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: Colors.transparent,
+                                              foregroundColor: AppColors.buttonText,
                                               shadowColor: Colors.transparent,
                                               padding: const EdgeInsets.symmetric(vertical: 16),
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(30),
+                                                borderRadius: BorderRadius.circular(12),
                                               ),
                                               elevation: 0,
                                             ),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                const Icon(Icons.play_arrow, color: Colors.white, size: 24),
+                                                Icon(Icons.play_arrow, color: AppColors.buttonText, size: 24),
                                                 const SizedBox(width: 10),
                                                 Text(
                                                   moduleContent['button_text'] ?? 'Comenzar Módulo',
-                                                  style: const TextStyle(
+                                                  style: GoogleFonts.poppins(
                                                     fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.buttonText,
                                                   ),
                                                 ),
                                               ],
@@ -417,23 +478,20 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                                           ),
                                         ),
                                       ),
-                                      
                                       const SizedBox(height: 20),
-                                      
-                                      // Activities Button
                                       FadeTransition(
                                         opacity: _fadeAnimation,
                                         child: Container(
                                           width: MediaQuery.of(context).size.width * 0.8,
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(30),
+                                            borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
-                                              color: Colors.white.withOpacity(0.5),
-                                              width: 2,
+                                              color: AppColors.glassmorphicBorder,
+                                              width: 1.5,
                                             ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.blue.withOpacity(0.2),
+                                                color: AppColors.shadowColor,
                                                 blurRadius: 10,
                                                 spreadRadius: 2,
                                                 offset: const Offset(0, 4),
@@ -444,29 +502,38 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                                             onPressed: () {
                                               Navigator.push(
                                                 context,
-                                                MaterialPageRoute(
-                                              builder: (context) => ActividadesScreen(actividadesData: moduleContent),                                                ),
+                                                PageRouteBuilder(
+                                                  pageBuilder: (context, animation, secondaryAnimation) => ActividadesScreen(actividadesData: moduleContent),
+                                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                    return FadeTransition(
+                                                      opacity: animation,
+                                                      child: child,
+                                                    );
+                                                  },
+                                                  transitionDuration: const Duration(milliseconds: 300),
+                                                ),
                                               );
                                             },
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.white.withOpacity(0.15),
+                                              backgroundColor: AppColors.cardBackground,
+                                              foregroundColor: AppColors.textPrimary,
                                               padding: const EdgeInsets.symmetric(vertical: 16),
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(30),
+                                                borderRadius: BorderRadius.circular(12),
                                               ),
                                               elevation: 0,
                                             ),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.assignment, color: Colors.white.withOpacity(0.9), size: 24),
+                                                Icon(Icons.assignment, color: AppColors.progressBrightBlue, size: 24),
                                                 const SizedBox(width: 10),
-                                                const Text(
+                                                Text(
                                                   'Actividades Prácticas',
-                                                  style: TextStyle(
+                                                  style: GoogleFonts.poppins(
                                                     fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ],
@@ -477,7 +544,7 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 80),
                               ],
                             ),
                           ),
@@ -502,10 +569,10 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
         children: [
           Text(
             section['title'] ?? 'Sección sin título',
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -515,19 +582,19 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.circle,
                           size: 8,
-                          color: Colors.white,
+                          color: AppColors.progressBrightBlue,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             item,
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 15,
                               height: 1.4,
-                              color: Colors.white70,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ),
@@ -548,50 +615,57 @@ class _Module2IntroScreenState extends State<Module2IntroScreen>
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Card(
-        elevation: 3,
-        color: Colors.white.withOpacity(0.1),
+        elevation: 8,
+        color: AppColors.cardBackground,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.glassmorphicBorder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.progressBrightBlue.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.progressBrightBlue, width: 1.5),
+                  ),
+                  child: Icon(icon, size: 24, color: AppColors.progressBrightBlue),
                 ),
-                child: Icon(icon, size: 24, color: Colors.white),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white.withOpacity(0.8),
-                        height: 1.4,
+                      const SizedBox(height: 5),
+                      Text(
+                        description,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:siapp/screens/module2screens/tema2.dart';
-import 'package:siapp/screens/module2screens/flowcharts.dart';
+import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 
 class Tema1 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -34,11 +34,15 @@ class Tema1 extends StatefulWidget {
 class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
   late AnimationController _controller;
   String? _selectedAnswer;
-  String? _correctAnswer;
-  late YoutubePlayerController _youtubeController;
+  YoutubePlayerController? _youtubeController;
   bool _videoError = false;
+  bool _showVideo = false;
   final _scrollController = ScrollController();
   Map<String, dynamic>? _contentData;
+  String? _errorMessage;
+  bool _quizAnswered = false;
+  final _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -49,54 +53,74 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     )..forward();
 
     _loadJsonContent();
-
-    try {
-      _youtubeController = YoutubePlayerController(
-        initialVideoId: 'u6fusP6JLgg',
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: true,
-          disableDragSeek: false,
-          loop: false,
-          enableCaption: true,
-          hideThumbnail: false,
-        ),
-      )..addListener(() {
-          if (_youtubeController.value.hasError && !_videoError) {
-            setState(() {
-              _videoError = true;
-            });
-          }
-        });
-    } catch (e) {
-      setState(() {
-        _videoError = true;
-      });
-    }
   }
 
   Future<void> _loadJsonContent() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/data/module2/tema1.json');
+      final String jsonString = await rootBundle
+          .loadString('assets/data/module2/tema1.json')
+          .timeout(const Duration(seconds: 5));
       final data = json.decode(jsonString);
       setState(() {
         _contentData = data;
       });
     } catch (e) {
       debugPrint('Error loading JSON: $e');
+      setState(() {
+        _errorMessage = 'No se pudo cargar el contenido: $e';
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar el contenido: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+  }
+
+  void _initializeVideo() {
+    setState(() {
+      _showVideo = true;
+      try {
+        _youtubeController = YoutubePlayerController(
+          initialVideoId: 'u6fusP6JLgg',
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: true,
+            disableDragSeek: false,
+            loop: false,
+            enableCaption: true,
+            hideThumbnail: false,
+          ),
+        )..addListener(() {
+            if (_youtubeController!.value.hasError && !_videoError) {
+              setState(() {
+                _videoError = true;
+              });
+            }
+          });
+      } catch (e) {
+        setState(() {
+          _videoError = true;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _youtubeController.dispose();
+    _youtubeController?.pause();
+    _youtubeController?.dispose();
     _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
-  Widget _buildSectionImage() {
-    final imageUrl = _contentData?['sectionImage'] as String?;
+  Widget buildSectionImage() {
+    final imageUrl = _contentData?['sectionImage'];
     return Container(
       height: 220,
       decoration: BoxDecoration(
@@ -118,7 +142,36 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                 ),
                 errorWidget: (context, url, error) => Container(
                   color: const Color(0xFF1E40AF),
-                  child: const Icon(Icons.image_not_supported, size: 50, color: Colors.white),
+                  child: Center(
+                    child: Text(
+                      'Error al cargar la imagen',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: null,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              color: const Color(0xFF1E40AF),
+              height: 220,
+              width: double.infinity,
+              child: Center(
+                child: Text(
+                  'Imagen no disponible',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: null,
                 ),
               ),
             ),
@@ -140,6 +193,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
             bottom: 20,
             left: 20,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -151,18 +205,22 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                     shadows: [
                       Shadow(
                         blurRadius: 10,
-                        color: Colors.black.withOpacity(0.5),
+                        color: Color.fromRGBO(0, 0, 0, 0.5),
                         offset: const Offset(2, 2),
                       ),
                     ],
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
                 Text(
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Color.fromRGBO(255, 255, 255, 0.9),
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ],
             ),
@@ -172,7 +230,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  List<Widget> _formatContent(String? content, {bool isIntro = false}) {
+  List<Widget> formatContent(String? content, {bool isIntro = false}) {
     if (content == null || content.isEmpty) return [const SizedBox.shrink()];
     
     return content.split('\n').map((paragraph) {
@@ -184,88 +242,66 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           trimmed,
           style: GoogleFonts.poppins(
             fontSize: isIntro ? 16 : 15,
-            color: isIntro ? Colors.white : Colors.white.withOpacity(0.9),
+            color: isIntro ? Colors.white : Color.fromRGBO(255, 255, 255, 0.9),
             fontWeight: isIntro ? FontWeight.w500 : FontWeight.normal,
             height: 1.5,
           ),
+          maxLines: null,
+          overflow: TextOverflow.visible,
         ),
       );
     }).toList();
   }
 
-  Widget _buildFlowchart(String? flowchartId) {
-    if (flowchartId == null) return const SizedBox.shrink();
-
-    final flowchartConfig = {
-      'rectangulo': {'scale': 0.65, 'height': 350.0},
-      'par_impar': {'scale': 0.6, 'height': 400.0},
-      'bucle': {'scale': 0.6, 'height': 400.0},
-      'condicional_multiple': {'scale': 0.5, 'height': 450.0},
-      'rango_numeros': {'scale': 0.6, 'height': 400.0},
-      'aprobacion_estudiante': {'scale': 0.6, 'height': 450.0},
-    };
-
-    final config = flowchartConfig[flowchartId] ?? {'scale': 0.7, 'height': 350.0};
+  Widget buildDiagramImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 350,
+        color: const Color(0xFF1E3A8A),
+        child: Center(
+          child: Text(
+            'Diagrama no disponible',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: null,
+          ),
+        ),
+      );
+    }
 
     return Container(
-      height: (config['height'] as double?) ?? 350.0,
-      padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Diagrama de Flujo',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: InteractiveViewer(
-              boundaryMargin: const EdgeInsets.all(20),
-              minScale: 0.1,
-              maxScale: 4.0,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Transform.scale(
-                    scale: (config['scale'] as double?) ?? 0.7,
-                    alignment: Alignment.topCenter,
-                    child: FlowCharts.getFlowChart(flowchartId),
-                  ),
-                ),
+      child: Image.asset(
+        imagePath,
+        fit: BoxFit.contain,
+        height: 350,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) => Container(
+          height: 350,
+          color: const Color(0xFF1E3A8A),
+          child: Center(
+            child: Text(
+              'Error al cargar el diagrama: $imagePath',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
+              textAlign: TextAlign.center,
+              maxLines: null,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Pellizca para hacer zoom • Desliza para mover',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.white70,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildQuiz(Map<String, dynamic>? question) {
+  Widget buildQuiz(Map<String, dynamic>? question) {
     if (question == null) return const SizedBox.shrink();
 
     return Container(
@@ -282,12 +318,16 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
             children: [
               const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 24),
               const SizedBox(width: 8),
-              Text(
-                'Evaluación de conocimiento',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+              Expanded(
+                child: Text(
+                  'Evaluación de conocimiento',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
             ],
@@ -306,6 +346,8 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                 color: const Color(0xFFBFDBFE),
                 fontStyle: FontStyle.italic,
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ),
           const SizedBox(height: 12),
@@ -316,8 +358,27 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
+            maxLines: null,
+            overflow: TextOverflow.visible,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          if (_selectedAnswer != null) ...[
+            Text(
+              _selectedAnswer == question['correct']
+                  ? '¡Correcto!'
+                  : 'Incorrecto, la respuesta correcta es ${question['correct']}',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: _selectedAnswer == question['correct']
+                    ? Colors.green
+                    : Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
+            ),
+            const SizedBox(height: 12),
+          ],
           ...(question['options'] as List<dynamic>? ?? []).map((option) {
             final optionText = option?.toString() ?? '';
             final isSelected = _selectedAnswer == optionText;
@@ -346,30 +407,14 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(bottom: 8),
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  setState(() {
-                    _selectedAnswer = optionText;
-                    _correctAnswer = question['correct']?.toString();
-                    if (optionText == _correctAnswer) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('¡Correcto!', style: GoogleFonts.poppins()),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Incorrecto, la respuesta correcta es ${question['correct']}',
-                            style: GoogleFonts.poppins(),
-                          ),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  });
-                },
+                onTap: _quizAnswered
+                    ? null
+                    : () {
+                        setState(() {
+                          _selectedAnswer = optionText;
+                          _quizAnswered = true;
+                        });
+                      },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
@@ -402,6 +447,8 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                             fontSize: 15,
                             color: textColor,
                           ),
+                          maxLines: null,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                     ],
@@ -415,7 +462,23 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildVideoPlayer() {
+  Widget buildVideoPlayer() {
+    if (!_showVideo) {
+      return GestureDetector(
+        onTap: _initializeVideo,
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+          ),
+        ),
+      );
+    }
+
     if (_videoError) {
       return Column(
         children: [
@@ -426,13 +489,16 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 40),
                 const SizedBox(height: 8),
                 Text(
                   'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.7)),
                   textAlign: TextAlign.center,
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ],
             ),
@@ -444,7 +510,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: YoutubePlayer(
-        controller: _youtubeController,
+        controller: _youtubeController!,
         showVideoProgressIndicator: true,
         progressIndicatorColor: Colors.blueAccent,
         progressColors: const ProgressBarColors(
@@ -452,31 +518,22 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           handleColor: Colors.blueAccent,
         ),
         onReady: () {
-          _youtubeController.unMute();
+          _youtubeController!.unMute();
         },
         onEnded: (metaData) {
-          _youtubeController.pause();
+          _youtubeController!.pause();
         },
       ),
     );
   }
 
-  void _navigateNext() {
+  void navigateNext() {
     widget.onComplete(widget.sectionIndex);
-    final nextIndex = widget.sectionIndex + 1;
-    final nextSectionKey = widget.content.keys.elementAt(nextIndex);
-    final nextSection = widget.content[nextSectionKey];
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => Tema2(
-          section: nextSection,
-          sectionTitle: nextSection['title'] ?? 'Sección ${nextIndex + 1}',
-          sectionIndex: nextIndex,
-          totalSections: widget.totalSections,
-          content: widget.content,
+        pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(
           moduleData: widget.moduleData,
-          onComplete: widget.onComplete,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -486,7 +543,31 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSectionHeader(String? title) {
+  Future<bool> navigateBack() async {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return false; // Prevent default pop
+    } else {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(
+            moduleData: widget.moduleData,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+      return true; // Allow pop to proceed
+    }
+  }
+
+  Widget buildSectionHeader(String? title) {
     if (title == null || title.isEmpty) return const SizedBox.shrink();
     
     return Padding(
@@ -499,7 +580,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
             color: const Color(0xFF93C5FD),
           ),
           const SizedBox(width: 12),
-          Flexible(
+          Expanded(
             child: Text(
               title,
               style: GoogleFonts.poppins(
@@ -507,6 +588,8 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ),
         ],
@@ -514,7 +597,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildExampleCard(Map<String, dynamic>? example) {
+  Widget buildExampleCard(Map<String, dynamic>? example) {
     if (example == null) return const SizedBox.shrink();
 
     return Container(
@@ -527,23 +610,28 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (example['title'] != null)
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      example['title']?.toString() ?? 'Ejemplo',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        example['title']?.toString() ?? 'Ejemplo',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                        maxLines: null,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ),
@@ -558,22 +646,23 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
+                maxLines: null,
+                overflow: TextOverflow.visible,
               ),
             ],
             const SizedBox(height: 10),
-            ..._formatContent(example['logic']?.toString()),
+            ...formatContent(example['logic']?.toString()),
+            if (example['diagram'] != null)
+              buildDiagramImage(example['diagram']?.toString()),
             const SizedBox(height: 10),
-            if (example['flowchartId'] != null)
-              _buildFlowchart(example['flowchartId']?.toString()),
-            const SizedBox(height: 10),
-            ..._formatContent(example['explanation']?.toString()),
+            ...formatContent(example['explanation']?.toString()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNoteCard(String? content, {Color? color, String? title}) {
+  Widget buildNoteCard(String? content, {Color? color, String? title}) {
     if (content == null || content.isEmpty) return const SizedBox.shrink();
     
     return Container(
@@ -585,6 +674,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (title != null && title.isNotEmpty)
@@ -597,26 +687,28 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
-            ..._formatContent(content),
+            ...formatContent(content),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNoteCardFromJson(Map<String, dynamic>? note) {
+  Widget buildNoteCardFromJson(Map<String, dynamic>? note) {
     if (note == null) return const SizedBox.shrink();
 
     final colorString = note['color']?.toString();
     final color = colorString != null && colorString.isNotEmpty
-      ? Color(int.parse(colorString.replaceAll('#', '0xFF')))
-      : const Color(0xFF1E40AF);
+        ? Color(int.parse(colorString.replaceAll('#', '0xFF')))
+        : const Color(0xFF1E40AF);
     
-    final opacity = note['opacity']?.toDouble() ?? 0.3;
+    final opacity = (note['opacity']?.toDouble() ?? 0.3).clamp(0.0, 1.0);
 
-    return _buildNoteCard(
+    return buildNoteCard(
       note['content']?.toString(),
       color: Color.fromRGBO(
         color.red,
@@ -628,8 +720,161 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
+  Widget buildSubsectionPage(Map<String, dynamic>? sectionData, int index, int totalPages) {
+    if (sectionData == null) {
+      return Center(
+        child: Text(
+          'No hay datos disponibles para esta sección',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: null,
+          overflow: TextOverflow.visible,
+        ),
+      );
+    }
+
+    final examples = sectionData['examples'] as List<dynamic>? ?? [];
+    final finalNote = sectionData['finalNote'] as Map<String, dynamic>?;
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (index == 0) ...[
+            FadeTransition(
+              opacity: Tween<double>(begin: 0, end: 1).animate(
+                CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
+              ),
+              child: buildSectionImage(),
+            ),
+            const SizedBox(height: 24),
+            FadeTransition(
+              opacity: Tween<double>(begin: 0, end: 1).animate(
+                CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
+              ),
+              child: buildNoteCard(
+                _contentData?['welcomeText']?.toString(),
+                color: Color.fromRGBO(30, 64, 175, 0.3),
+              ),
+            ),
+            const SizedBox(height: 16),
+            buildNoteCard(
+              _contentData?['introText1']?.toString(),
+              color: Color.fromRGBO(30, 64, 175, 0.3),
+            ),
+            const SizedBox(height: 16),
+            buildNoteCard(
+              _contentData?['introText2']?.toString(),
+              color: const Color(0xFF065F46).withOpacity(0.3),
+            ),
+          ],
+          buildSectionHeader(sectionData['title']?.toString()),
+          buildNoteCard(sectionData['content']?.toString()),
+          const SizedBox(height: 8),
+          ...examples.map((example) {
+            final exampleData = example as Map<String, dynamic>?;
+            if (exampleData == null) return const SizedBox.shrink();
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildExampleCard(exampleData),
+                if (exampleData['quiz'] != null)
+                  buildQuiz(exampleData['quiz'] as Map<String, dynamic>?),
+                ...(exampleData['notes'] as List<dynamic>? ?? []).map((note) {
+                  return buildNoteCardFromJson(note as Map<String, dynamic>?);
+                }),
+              ],
+            );
+          }),
+          if (finalNote != null)
+            buildNoteCardFromJson(finalNote),
+          if (index == totalPages - 1) ...[
+            const SizedBox(height: 16),
+            buildSectionHeader(_contentData?['video']?['title']?.toString()),
+            Text(
+              _contentData?['video']?['description']?.toString() ?? '',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Color.fromRGBO(255, 255, 255, 0.9),
+              ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
+            ),
+            const SizedBox(height: 12),
+            buildVideoPlayer(),
+          ],
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  void _handleContinue() {
+    if (_currentPage < (_contentData?['subsections']?.length ?? 0) - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      navigateNext();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_errorMessage != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1E40AF),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 50,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: null,
+                overflow: TextOverflow.visible,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF1E40AF),
+                ),
+                child: Text(
+                  'Volver',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (_contentData == null) {
       return const Scaffold(
         backgroundColor: Color(0xFF1E40AF),
@@ -639,128 +884,71 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
       );
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E40AF),
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          widget.sectionTitle,
-          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                '${widget.sectionIndex + 1}/${widget.totalSections}',
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white.withOpacity(0.9)),
+    final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
+    final totalPages = subsections.length;
+
+    return WillPopScope(
+      onWillPop: navigateBack,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF1E40AF),
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: Text(
+            widget.sectionTitle,
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () async {
+              await navigateBack();
+            },
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: Text(
+                  '${widget.sectionIndex + 1}/${widget.totalSections}',
+                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.9)),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateNext,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E40AF),
-        icon: const Icon(Icons.arrow_forward),
-        label: Text(
-          'Siguiente tema',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ],
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FadeTransition(
-                opacity: Tween<double>(begin: 0, end: 1).animate(
-                  CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
-                ),
-                child: _buildSectionImage(),
-              ),
-              const SizedBox(height: 24),
-              FadeTransition(
-                opacity: Tween<double>(begin: 0, end: 1).animate(
-                  CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
-                ),
-                child: _buildNoteCard(
-                  _contentData?['introText']?.toString(),
-                  color: Color.fromRGBO(30, 64, 175, 0.3),
-                ),
-              ),
-              
-              // Construir cada subsección del JSON
-              ...(_contentData?['subsections'] as List<dynamic>? ?? []).map((section) {
-                final sectionData = section as Map<String, dynamic>?;
-                if (sectionData == null) return const SizedBox.shrink();
-
-                final examples = sectionData['examples'] as List<dynamic>? ?? [];
-                final notes = sectionData['notes'] as List<dynamic>? ?? [];
-                final finalNote = sectionData['finalNote'] as Map<String, dynamic>?;
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    _buildSectionHeader(sectionData['title']?.toString()),
-                    _buildNoteCard(sectionData['content']?.toString()),
-                    const SizedBox(height: 8),
-                    
-                    // Construir ejemplos
-                    ...examples.map((example) {
-                      final exampleData = example as Map<String, dynamic>?;
-                      if (exampleData == null) return const SizedBox.shrink();
-
-                      return Column(
-                        children: [
-                          _buildExampleCard(exampleData),
-                          
-                          // Mostrar quiz si existe
-                          if (exampleData['quiz'] != null)
-                            _buildQuiz(exampleData['quiz'] as Map<String, dynamic>?),
-                          
-                          // Mostrar notas si existen
-                          ...(exampleData['notes'] as List<dynamic>? ?? []).map((note) {
-                            return _buildNoteCardFromJson(note as Map<String, dynamic>?);
-                          }),
-                        ],
-                      );
-                    }),
-                    
-                    // Mostrar nota final si existe
-                    if (finalNote != null)
-                      _buildNoteCardFromJson(finalNote),
-                  ],
-                );
-              }),
-              
-              // Video explicativo
-              const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader(_contentData?['video']?['title']?.toString()),
-                  Text(
-                    _contentData?['video']?['description']?.toString() ?? '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildVideoPlayer(),
-                ],
-              ),
-              
-              const SizedBox(height: 80),
-            ],
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _handleContinue,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1E40AF),
+          icon: const Icon(Icons.arrow_forward),
+          label: Text(
+            _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+        body: SafeArea(
+          child: PageView.builder(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+                _quizAnswered = false;
+                _selectedAnswer = null;
+              });
+            },
+            itemCount: totalPages,
+            itemBuilder: (context, index) {
+              final sectionData = subsections[index] as Map<String, dynamic>?;
+              return buildSubsectionPage(sectionData, index, totalPages);
+            },
           ),
         ),
       ),

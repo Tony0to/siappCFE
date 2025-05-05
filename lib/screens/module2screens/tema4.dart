@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:siapp/screens/module2screens/flowcharts2.dart';
 import 'package:siapp/screens/module2.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
@@ -28,14 +29,21 @@ class Tema4 extends StatefulWidget {
   });
 
   @override
-  State<Tema4> createState() => _Tema4State();
+  State<Tema4> createState() => Tema4State();
 }
 
-class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
+class Tema4State extends State<Tema4> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
   Map<String, dynamic>? _contentData;
+  YoutubePlayerController? _youtubeController;
+  bool _videoError = false;
+  bool _showVideo = false;
+  final _scrollController = ScrollController();
+  final _pageController = PageController();
+  int _currentPage = 0;
   final Map<int, String?> _selectedAnswers = {};
   final Map<int, bool> _showFeedback = {};
   final Map<int, TransformationController> _transformationControllers = {};
@@ -54,6 +62,9 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
       begin: const Offset(0, 0.1),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.8, curve: Curves.easeInOut)),
+    );
     _loadContentData();
     _controller.forward();
   }
@@ -61,6 +72,10 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
   @override
   void dispose() {
     _controller.dispose();
+    _youtubeController?.pause();
+    _youtubeController?.dispose();
+    _scrollController.dispose();
+    _pageController.dispose();
     for (var controller in _transformationControllers.values) {
       controller.dispose();
     }
@@ -86,8 +101,39 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildSectionImage() {
-    const imageUrl = 'https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg';
+  void initializeVideo() {
+    setState(() {
+      _showVideo = true;
+      try {
+        _youtubeController = YoutubePlayerController(
+          initialVideoId: _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: true,
+            disableDragSeek: false,
+            loop: false,
+            enableCaption: true,
+            hideThumbnail: false,
+          ),
+        )..addListener(() {
+            if (_youtubeController!.value.hasError && !_videoError) {
+              setState(() {
+                _videoError = true;
+              });
+            }
+          });
+      } catch (e) {
+        debugPrint('Error initializing video: $e');
+        setState(() {
+          _videoError = true;
+        });
+      }
+    });
+  }
+
+  Widget buildSectionImage() {
+    final imageUrl = _contentData?['sectionImage']?.toString() ??
+        'https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg';
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Stack(
@@ -121,7 +167,139 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     );
   }
 
-  List<Widget> _formatContent(String content) {
+  Widget buildVideoPlayer() {
+    if (!_showVideo) {
+      return ScaleTransition(
+        scale: _scaleAnimation,
+        child: GestureDetector(
+          onTap: initializeVideo,
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_videoError) {
+      return ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 10,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 40),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'No se pudo cargar el video',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'Por favor, intenta de nuevo más tarde.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: initializeVideo,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Reintentar',
+                  style: GoogleFonts.poppins(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 15,
+                spreadRadius: 2,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: YoutubePlayer(
+            controller: _youtubeController!,
+            showVideoProgressIndicator: true,
+            progressIndicatorColor: Colors.blue,
+            progressColors: ProgressBarColors(
+              playedColor: Colors.blue,
+              handleColor: Colors.blue,
+              bufferedColor: Colors.blue.withValues(alpha: 0.3),
+              backgroundColor: Colors.blue.withValues(alpha: 0.1),
+            ),
+            onReady: () {
+              _youtubeController!.unMute();
+            },
+            onEnded: (metaData) {
+              _youtubeController!.pause();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> formatContent(String content) {
     return content.split('\n').map((paragraph) {
       final trimmed = paragraph.trim();
       if (trimmed.isEmpty) return const SizedBox(height: 12);
@@ -142,11 +320,10 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
           ],
         );
       } else if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        // Handle inline code snippets
         final code = trimmed.substring(1, trimmed.length - 1);
-        textWidget = _buildCodeBox(
+        textWidget = buildCodeBox(
           code,
-          language: 'dart', // Adjust based on context; assuming Dart for examples
+          language: 'dart',
         );
       } else {
         textWidget = Text(
@@ -162,12 +339,12 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     }).toList();
   }
 
-  Widget _buildHighlightBox(Map<String, dynamic> highlight) {
+  Widget buildHighlightBox(Map<String, dynamic> highlight) {
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: _getHighlightColor(highlight['color'] as String?),
+        color: getHighlightColor(highlight['color'] as String?),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
@@ -184,13 +361,13 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
               ),
             ),
           if (highlight['title'] != null) const SizedBox(height: 8),
-          ..._formatContent(highlight['text'] as String),
+          ...formatContent(highlight['text'] as String),
         ],
       ),
     );
   }
 
-  Widget _buildCodeBox(String code, {String language = 'plaintext'}) {
+  Widget buildCodeBox(String code, {String language = 'plaintext'}) {
     if (code.isEmpty) {
       return const Text(
         'Código no disponible',
@@ -198,7 +375,6 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
       );
     }
 
-    // Map language to flutter_highlighter language IDs
     String highlightLanguage;
     switch (language.toLowerCase()) {
       case 'javascript':
@@ -228,12 +404,12 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A2463).withOpacity(0.7),
+        color: const Color(0xFF0A2463).withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF3E92CC).withOpacity(0.4)),
+        border: Border.all(color: const Color(0xFF3E92CC).withValues(alpha: 0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -265,7 +441,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -293,22 +469,22 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     );
   }
 
-  Color _getHighlightColor(String? colorName) {
+  Color getHighlightColor(String? colorName) {
     switch (colorName?.toLowerCase()) {
       case 'blue':
-        return const Color(0x2127AE60);
+        return Colors.blue.withValues(alpha: 0.2);
       case 'green':
-        return const Color(0x214CAF50);
+        return Colors.green.withValues(alpha: 0.2);
       case 'lightgreen':
-        return const Color(0x218BC34A);
+        return Colors.lightGreen.withValues(alpha: 0.2);
       case 'orange':
-        return const Color(0x21FF9800);
+        return Colors.orange.withValues(alpha: 0.2);
       default:
-        return const Color(0x1AFFFFFF);
+        return Colors.white.withValues(alpha: 0.1);
     }
   }
 
-  Widget _buildQuiz(Map<String, dynamic> quiz, int quizIndex) {
+  Widget buildQuiz(Map<String, dynamic> quiz, int quizIndex) {
     final tipo = quiz['tipo'] as String? ?? 'unknown';
     final pregunta = quiz['pregunta'] as Map<String, dynamic>? ?? {};
     final opciones = (pregunta['opciones'] as List<dynamic>?)?.cast<String>() ?? [];
@@ -338,16 +514,11 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
       controller.value = Matrix4.identity()..scale(initialScale);
     }
 
-    // Debug pseudocode rendering
-    if (quiz['diagrama_flujo']?['pseudocodigo'] != null) {
-      debugPrint('Rendering pseudocode for quiz $quizIndex: ${quiz['diagrama_flujo']['pseudocodigo']}');
-    }
-
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: const Color(0x1AFFFFFF),
+      color: Colors.white.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -400,7 +571,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 ],
               ),
               ExpansionTile(
-                initiallyExpanded: true, // Expand by default for visibility
+                initiallyExpanded: true,
                 title: Text(
                   'Diagrama de Flujo',
                   style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
@@ -494,7 +665,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   if (quiz['diagrama_flujo']?['pseudocodigo'] != null)
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: _buildCodeBox(
+                      child: buildCodeBox(
                         quiz['diagrama_flujo']['pseudocodigo'] as String,
                         language: quiz['diagrama_flujo']['lenguaje']?.toString() ?? 'pseudocode',
                       ),
@@ -545,12 +716,14 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   value: option,
                   groupValue: selectedAnswer,
                   activeColor: Colors.blue[300],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedAnswers[quizIndex] = value;
-                      _showFeedback[quizIndex] = false;
-                    });
-                  },
+                  onChanged: showFeedback
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedAnswers[quizIndex] = value;
+                            _showFeedback[quizIndex] = false;
+                          });
+                        },
                 );
               }),
             ] else if (tipo == 'true_false') ...[
@@ -562,12 +735,14 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 value: 'true',
                 groupValue: selectedAnswer,
                 activeColor: Colors.blue[300],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedAnswers[quizIndex] = value;
-                    _showFeedback[quizIndex] = false;
-                  });
-                },
+                onChanged: showFeedback
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _selectedAnswers[quizIndex] = value;
+                          _showFeedback[quizIndex] = false;
+                        });
+                      },
               ),
               RadioListTile<String>(
                 title: Text(
@@ -577,57 +752,326 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 value: 'false',
                 groupValue: selectedAnswer,
                 activeColor: Colors.blue[300],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedAnswers[quizIndex] = value;
-                    _showFeedback[quizIndex] = false;
-                  });
-                },
+                onChanged: showFeedback
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _selectedAnswers[quizIndex] = value;
+                          _showFeedback[quizIndex] = false;
+                        });
+                      },
               ),
             ],
             const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: selectedAnswer == null
-                  ? null
-                  : () {
-                      setState(() {
-                        _showFeedback[quizIndex] = true;
-                      });
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[300],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            if (selectedAnswer != null && !showFeedback)
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _showFeedback[quizIndex] = true;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[300],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Enviar Respuesta',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 ),
               ),
-              child: Text(
-                'Enviar Respuesta',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            if (showFeedback)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  selectedAnswer == respuestaCorrecta ? '¡Correcto!' : 'Incorrecto',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: selectedAnswer == respuestaCorrecta ? Colors.green : Colors.red,
+                  ),
+                ),
               ),
-            ),
-            if (showFeedback) ...[
-              const SizedBox(height: 12),
-              _buildHighlightBox({
-                'text': selectedAnswer == respuestaCorrecta
-                    ? '¡Correcto! $explicacion'
-                    : 'Incorrecto. La respuesta correcta es: $respuestaCorrecta\n\n$explicacion',
-                'color': selectedAnswer == respuestaCorrecta ? 'green' : 'orange',
-              }),
-            ],
+            if (showFeedback && explicacion.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: buildHighlightBox({
+                  'text': explicacion,
+                  'color': 'green',
+                  'title': 'Explicación',
+                }),
+              ),
           ],
         ),
       ),
     );
   }
 
-  void _navigateNext() {
-    widget.onComplete(widget.sectionIndex);
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => Module2IntroScreen(module: widget.moduleData)),
-      (route) => route.settings.name == '/module2' || route.isFirst,
+  Widget buildSubtemaPage(int index, int totalPages) {
+    final introduccion = _contentData!['introduccion'] as Map<String, dynamic>? ?? {};
+    final subtema1 = _contentData!['subtema1'] as Map<String, dynamic>? ?? {};
+    final subtema2 = _contentData!['subtema2'] as Map<String, dynamic>? ?? {};
+    final subtema3 = _contentData!['subtema3'] as Map<String, dynamic>? ?? {};
+    final quizzes = (subtema3['quizzes'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+
+    final List<Map<String, dynamic>> pages = [
+      {
+        'title': 'Introducción',
+        'content': [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: Colors.white.withValues(alpha: 0.1),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    introduccion['titulo']?.toString() ?? 'Introducción',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...formatContent(introduccion['contenido']?.toString() ?? ''),
+                ],
+              ),
+            ),
+          ),
+        ],
+      },
+      {
+        'title': 'Patrones Numéricos',
+        'content': [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: Colors.white.withValues(alpha: 0.1),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subtema1['titulo']?.toString() ?? 'Subtema 1',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...formatContent(subtema1['contenido']?.toString() ?? ''),
+                  if (subtema1['nota'] != null)
+                    buildHighlightBox({
+                      'text': subtema1['nota']['contenido']?.toString() ?? '',
+                      'color': subtema1['nota']['color']?.toString() ?? 'blue',
+                    }),
+                ],
+              ),
+            ),
+          ),
+        ],
+      },
+      {
+        'title': 'Validación de Entrada',
+        'content': [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: Colors.white.withValues(alpha: 0.1),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subtema2['titulo']?.toString() ?? 'Subtema 2',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...formatContent(subtema2['contenido']?.toString() ?? ''),
+                  if (subtema2['nota'] != null)
+                    buildHighlightBox({
+                      'text': subtema2['nota']['contenido']?.toString() ?? '',
+                      'color': subtema2['nota']['color']?.toString() ?? 'blue',
+                    }),
+                ],
+              ),
+            ),
+          ),
+        ],
+      },
+      {
+        'title': 'Procesamiento de Cadenas',
+        'content': [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: Colors.white.withValues(alpha: 0.1),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subtema3['titulo']?.toString() ?? 'Subtema 3',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...formatContent(subtema3['contenido']?.toString() ?? ''),
+                  if (subtema3['nota'] != null)
+                    buildHighlightBox({
+                      'text': subtema3['nota']['contenido']?.toString() ?? '',
+                      'color': subtema3['nota']['color']?.toString() ?? 'blue',
+                    }),
+                ],
+              ),
+            ),
+          ),
+        ],
+      },
+      {
+        'title': 'Ejercicios Prácticos',
+        'content': [
+          if (quizzes.isNotEmpty) ...[
+            Text(
+              'Ejercicios Prácticos',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Resuelve estos ejercicios para practicar lo aprendido:',
+              style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
+            ),
+            const SizedBox(height: 12),
+            ...quizzes.asMap().entries.map((entry) => buildQuiz(entry.value, entry.key)),
+          ],
+        ],
+      },
+    ];
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (index == 0) ...[
+              SlideTransition(
+                position: _slideAnimation,
+                child: buildSectionImage(),
+              ),
+              const SizedBox(height: 16),
+            ],
+            ...pages[index]['content'],
+            if (index == totalPages - 1) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      'Video Explicativo',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _contentData?['video']?['description']?.toString() ?? 'Aprende más con este video tutorial',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildVideoPlayer(),
+            ],
+            const SizedBox(height: 80),
+          ],
+        ),
+      ),
     );
+  }
+
+  void navigateNext() {
+    if (_currentPage < 4) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      widget.onComplete(widget.sectionIndex);
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => Module2IntroScreen(
+            module: widget.moduleData,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    }
+  }
+
+  Future<bool> navigateBack() async {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return false;
+    } else {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => Module2IntroScreen(
+            module: widget.moduleData,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+      return true;
+    }
   }
 
   @override
@@ -647,172 +1091,54 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
       );
     }
 
-    final introduccion = _contentData!['introduccion'] as Map<String, dynamic>? ?? {};
-    final subtema1 = _contentData!['subtema1'] as Map<String, dynamic>? ?? {};
-    final subtema2 = _contentData!['subtema2'] as Map<String, dynamic>? ?? {};
-    final subtema3 = _contentData!['subtema3'] as Map<String, dynamic>? ?? {};
-    final quizzes = (subtema3['quizzes'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    const totalPages = 5; // Introduccion, Subtema1, Subtema2, Subtema3, Quizzes
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          widget.sectionTitle,
-          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+    return WillPopScope(
+      onWillPop: navigateBack,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: Text(
+            widget.sectionTitle,
+            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateNext,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.blue[900],
-        icon: const Icon(Icons.check),
-        label: Text(
-          'Completar Módulo',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: navigateNext,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.blue[900],
+          icon: const Icon(Icons.arrow_forward),
+          label: Text(
+            _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: _buildSectionImage(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  introduccion['titulo']?.toString() ?? 'Introducción',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ..._formatContent(introduccion['contenido']?.toString() ?? ''),
-                const SizedBox(height: 16),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  color: const Color(0x1AFFFFFF),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subtema1['titulo']?.toString() ?? 'Subtema 1',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ..._formatContent(subtema1['contenido']?.toString() ?? ''),
-                        if (subtema1['nota'] != null)
-                          _buildHighlightBox({
-                            'text': subtema1['nota']['contenido']?.toString() ?? '',
-                            'color': subtema1['nota']['color']?.toString() ?? 'blue',
-                          }),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  color: const Color(0x1AFFFFFF),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subtema2['titulo']?.toString() ?? 'Subtema 2',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ..._formatContent(subtema2['contenido']?.toString() ?? ''),
-                        if (subtema2['nota'] != null)
-                          _buildHighlightBox({
-                            'text': subtema2['nota']['contenido']?.toString() ?? '',
-                            'color': subtema2['nota']['color']?.toString() ?? 'blue',
-                          }),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  color: const Color(0x1AFFFFFF),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          subtema3['titulo']?.toString() ?? 'Subtema 3',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ..._formatContent(subtema3['contenido']?.toString() ?? ''),
-                        if (subtema3['nota'] != null)
-                          _buildHighlightBox({
-                            'text': subtema3['nota']['contenido']?.toString() ?? '',
-                            'color': subtema3['nota']['color']?.toString() ?? 'blue',
-                          }),
-                      ],
-                    ),
-                  ),
-                ),
-                if (quizzes.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    'Ejercicios Prácticos',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Resuelve estos ejercicios para practicar lo aprendido:',
-                    style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 12),
-                  ...quizzes.asMap().entries.map((entry) => _buildQuiz(entry.value, entry.key)),
-                ],
-                const SizedBox(height: 80),
-              ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: SafeArea(
+            child: PageView.builder(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                  _selectedAnswers.clear();
+                  _showFeedback.clear();
+                });
+              },
+              itemCount: totalPages,
+              itemBuilder: (context, index) {
+                return buildSubtemaPage(index, totalPages);
+              },
             ),
           ),
         ),

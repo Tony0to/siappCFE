@@ -2,7 +2,9 @@
     "module_title": "Módulo 2: Lógica de Programación",
     "welcome": {
         "title": "¡Bienvenido al Módulo 2!",
-        "description": "En este segundo módulo, nos adentraremos en los principios esenciales de la lógica de programación, una habilidad clave para desarrollar soluciones eficientes. Exploraremos desde las estructuras fundamentales, como secuencias, condicionales y bucles, hasta el manejo de estructuras de datos esenciales."
+        "subtitle": "Prepárate para programar",
+        "intro": "En este segundo módulo, nos adentraremos en los principios esenciales de la lógica de programación, una habilidad clave para desarrollar soluciones eficientes. Exploraremos desde las estructuras fundamentales, como secuencias, condicionales y bucles, hasta el manejo de estructuras de datos esenciales.",
+        "details": "A lo largo de este recorrido, aprenderás a estructurar algoritmos de manera lógica, comprenderás el funcionamiento de los operadores lógicos y relacionales, y aplicarás diagramas de flujo para visualizar el comportamiento de tus programas. Al finalizar este módulo, contarás con una base sólida para construir programas organizados, optimizados y funcionales, lo que te permitirá enfrentar desafíos más complejos con mayor confianza."
     },
     "syllabus": {
         "title": "Temario completo:",
@@ -16,19 +18,18 @@
                 ]
             },
             {
-                "title": "II. Estructuras de datos",
-                "items": [
-                    "Variables y tipos de datos",
-                    "Arreglos y matrices",
-                    "Listas y estructuras básicas"
-                ]
-            },
-            {
-                "title": "III. Estructuras de control",
+                "title": "II. Estructuras de control con datos primitivos",
                 "items": [
                     "Secuenciales",
                     "Condicionales (if, else, switch)",
                     "Bucles (while, for, do-while)"
+                ]
+            },
+            {
+                "title": "III. Estructuras de datos y de control",
+                "items": [
+                    "Arreglos y matrices",
+                    "Listas y estructuras básicas"
                 ]
             },
             {
@@ -46,28 +47,28 @@
         "points": [
             {
                 "icon": "account_tree",
-                "title": "Estructuras fundamentales",
-                "description": "Dominarás las bases de la programación como secuencias, condicionales y bucles para controlar el flujo de ejecución."
+                "title": "Lógica fundamental",
+                "description": "Comprenderás cómo usar diagramas de flujo y operadores para estructurar la lógica de un programa."
+            },
+            {
+                "icon": "code",
+                "title": "Control de flujo",
+                "description": "Dominarás estructuras secuenciales, condicionales y bucles para manejar datos primitivos."
             },
             {
                 "icon": "list_alt",
                 "title": "Manejo de datos",
-                "description": "Aprenderás a trabajar con variables, arreglos, matrices y otras estructuras para organizar información."
+                "description": "Aprenderás a organizar y procesar información con arreglos, matrices y listas."
             },
             {
                 "icon": "psychology",
-                "title": "Pensamiento algorítmico",
-                "description": "Desarrollarás la capacidad de descomponer problemas en pasos lógicos para crear soluciones eficientes."
-            },
-            {
-                "icon": "code",
-                "title": "Solución de problemas",
-                "description": "Practicarás con ejercicios reales que fortalecerán tu capacidad de análisis y razonamiento lógico."
+                "title": "Resolución de problemas",
+                "description": "Desarrollarás habilidades para plantear y resolver problemas usando algoritmos lógicos."
             }
         ]
     },
     "motivation": {
-        "text": "La programación no se trata solo de escribir código, sino de resolver problemas. Cada línea que escribas es un paso hacia el dominio del pensamiento computacional.",
+        "text": "¡La lógica de programación es la clave para transformar ideas en soluciones reales! Cada paso que des te acerca a dominar el arte de programar.",
         "icon": "emoji_objects"
     },
     "button_text": "Comenzar Módulo",
@@ -76,46 +77,19 @@
             "title": "I. Estructuras básicas de la lógica de programación",
             "subsections": [
                 {
-                    "title": "Introducción a las estructuras de control",
-                    "content": "Comprender cómo se controla el flujo de ejecución en un programa es clave para desarrollar soluciones lógicas y eficientes. Las estructuras de control permiten establecer decisiones, repetir instrucciones y representar visualmente el comportamiento de un algoritmo. En este subtema, profundizaremos en el uso de diagramas de flujo como herramienta para representar la lógica de forma clara, aprenderemos a utilizar operadores lógicos y relacionales para construir condiciones precisas, y exploraremos cómo evaluar expresiones booleanas para tomar decisiones dentro del programa. ¡Prepárate para dominar las herramientas que les dan vida a tus decisiones dentro del código!"
-                },
-                {
                     "title": "Diagramas de flujo aplicados",
-                    "content": "Los diagramas de flujo son herramientas visuales que representan la lógica de un programa. Permiten visualizar claramente el flujo de ejecución, decisiones y ciclos en un algoritmo. A continuación, se presentan ejemplos prácticos que muestran cómo se utilizan para representar estructuras de control como secuencias, decisiones y ciclos.",
+                    "content": "Los diagramas de flujo son herramientas visuales que representan la lógica de un programa, permitiendo visualizar secuencias, decisiones y ciclos.",
                     "examples": [
                         {
                             "title": "Ejemplo: Secuencia simple",
                             "content": "Problema: Calcular el área de un rectángulo.\n\nLógica: Leer base y altura, multiplicarlas, mostrar el resultado.",
                             "flowchart": "[Inicio]\n↓\n[Leer base]\n↓\n[Leer altura]\n↓\n[Área = base * altura]\n↓\n[Mostrar área]\n↓\n[Fin]"
-                        },
-                        {
-                            "title": "Ejemplo: Condicional",
-                            "content": "Problema: Determinar si un número es par o impar.\n\nLógica: Usar el operador módulo (%) para verificar si el residuo es 0.\n\nSe lee un número. Si el número dividido entre 2 da un residuo de 0, se muestra 'Es par'. En caso contrario, se muestra 'Es impar'.",
-                            "flowchart": "[Inicio]\n↓\n[Leer número]\n↓\n¿número % 2 == 0? → No\n↓                       ↓\n[Mostrar “Par”]    [Mostrar “Impar”]\n↓                       ↓\n[Fin]",
-                            "question": {
-                                "text": "¿Cuál de los siguientes números mostrará 'Es impar'?",
-                                "options": ["8", "12", "0", "15"],
-                                "correct": "15"
-                            },
-                            "level": "Intermedio bajo",
-                            "note": "Este ejercicio requiere comprender el operador módulo (%) para tomar decisiones basadas en el residuo, un paso hacia problemas más complejos."
-                        },
-                        {
-                            "title": "Ejemplo: Bucle (ciclo)",
-                            "content": "Problema: Mostrar los números del 1 al 5.\n\nLógica: Inicializar una variable i con el valor 1. Mientras i sea menor o igual a 5, mostrar i e incrementarlo en 1.",
-                            "flowchart": "[Inicio]\n↓\n[i = 1]\n↓\n¿i <= 5? → No\n↓                 ↓\n[Mostrar i]    [Fin]\n[i = i +1]\n↓\n(Volver a condición)",
-                            "note": "Este ciclo con condición fija introduce la idea de iteración de forma sencilla, ideal para principiantes."
-                        },
-                        {
-                            "title": "Ejemplo: Condicional múltiple",
-                            "content": "Problema: Determinar si un número es positivo, negativo o cero.\n\nLógica: Leer el número. Si es mayor que 0, es positivo. Si es menor que 0, es negativo. Si no es ni mayor ni menor, es cero. Mostrar el resultado.",
-                            "flowchart": "[Inicio]\n↓\n[Leer número]\n↓\n¿Número > 0? → No\n↓                    ↓\n[Mostrar “Positivo”]  ¿Número < 0? → No\n↓                    ↓            ↓\n[Fin]                [Mostrar “Negativo”] [Mostrar “Cero”]\n↓                    ↓            ↓\n[Fin]                [Fin]        [Fin]"
                         }
                     ]
                 },
                 {
                     "title": "Operadores lógicos y relacionales",
-                    "content": "Los operadores permiten realizar comparaciones y combinar condiciones en tus programas. Son esenciales para la toma de decisiones.",
+                    "content": "Los operadores permiten comparar valores y combinar condiciones para tomar decisiones en el código.",
                     "examples": [
                         {
                             "title": "Operadores relacionales",
@@ -126,105 +100,109 @@
                             "content": "AND, OR, NOT para combinar condiciones"
                         }
                     ]
+                },
+                {
+                    "title": "Evaluación de condiciones",
+                    "content": "Las expresiones booleanas determinan si una condición es verdadera o falsa, guiando el flujo del programa.",
+                    "examples": [
+                        {
+                            "title": "Condicional simple",
+                            "content": "Si un número es mayor a 0, mostrar 'Positivo'."
+                        }
+                    ]
                 }
             ]
         },
         "section_2": {
-            "title": "II. Estructuras de datos",
+            "title": "II. Estructuras de control con datos primitivos",
             "subsections": [
                 {
-                    "title": "Variables y tipos de datos",
-                    "content": "Las variables son contenedores para almacenar información. Los tipos de datos definen qué clase de valores pueden contener.",
+                    "title": "Secuenciales",
+                    "content": "Ejecución lineal de instrucciones en orden, usando datos primitivos como enteros o flotantes.",
                     "examples": [
                         {
-                            "title": "Tipos primitivos",
-                            "content": "int, float, char, bool para valores básicos"
-                        },
-                        {
-                            "title": "Estructuras complejas",
-                            "content": "String, arrays, listas para agrupar datos"
+                            "title": "Ejemplo básico",
+                            "content": "Leer dos números, sumarlos, mostrar resultado."
                         }
                     ]
                 },
                 {
-                    "title": "Arreglos y matrices",
-                    "content": "Estructuras para almacenar colecciones de datos del mismo tipo. Los arreglos son unidimensionales, las matrices son bidimensionales.",
+                    "title": "Condicionales",
+                    "content": "Permiten tomar decisiones basadas en condiciones, usando if, else o switch.",
                     "examples": [
                         {
-                            "title": "Arreglo unidimensional",
-                            "content": "int[] numeros = {1, 2, 3, 4, 5};"
-                        },
+                            "title": "if-else",
+                            "content": "if (edad >= 18) { mayor de edad } else { menor de edad }"
+                        }
+                    ]
+                },
+                {
+                    "title": "Bucles",
+                    "content": "Repiten instrucciones mientras una condición sea verdadera, usando while, for o do-while.",
+                    "examples": [
                         {
-                            "title": "Matriz bidimensional",
-                            "content": "int[][] matriz = {{1,2,3}, {4,5,6}};"
+                            "title": "for",
+                            "content": "for(int i=1; i<=5; i++) { mostrar i }"
                         }
                     ]
                 }
             ]
         },
         "section_3": {
-            "title": "III. Estructuras de control",
+            "title": "III. Estructuras de datos y de control",
             "subsections": [
                 {
-                    "title": "Secuenciales",
-                    "content": "Ejecución lineal de instrucciones una después de otra, en el orden en que están escritas.",
+                    "title": "Arreglos y matrices",
+                    "content": "Estructuras para almacenar colecciones de datos, unidimensionales (arreglos) o bidimensionales (matrices).",
                     "examples": [
                         {
-                            "title": "Ejemplo básico",
-                            "content": "Leer entrada → Procesar → Mostrar resultado"
+                            "title": "Arreglo",
+                            "content": "int[] numeros = {1, 2, 3, 4, 5};"
                         }
                     ]
                 },
                 {
-                    "title": "Condicionales",
-                    "content": "Permiten tomar decisiones en el código basadas en condiciones.",
+                    "title": "Listas y estructuras básicas",
+                    "content": "Estructuras dinámicas para almacenar datos que pueden crecer o reducirse.",
                     "examples": [
                         {
-                            "title": "if-else",
-                            "content": "if (edad >= 18) { ... } else { ... }"
-                        },
-                        {
-                            "title": "switch",
-                            "content": "switch(dia) { case 1: ... break; default: ... }"
-                        }
-                    ]
-                },
-                {
-                    "title": "Bucles",
-                    "content": "Estructuras para repetir bloques de código mientras se cumpla una condición.",
-                    "examples": [
-                        {
-                            "title": "for",
-                            "content": "for(int i=0; i<10; i++) { ... }"
-                        },
-                        {
-                            "title": "while",
-                            "content": "while(condicion) { ... }"
+                            "title": "Lista",
+                            "content": "List<String> nombres = ['Ana', 'Bob', 'Cris'];"
                         }
                     ]
                 }
             ]
         },
         "section_4": {
-            "title": "IV. Resolución de problemas",
+            "title": "IV. Resolución de problemas aplicando el razonamiento lógico",
             "subsections": [
                 {
                     "title": "Planteamiento de problemas",
-                    "content": "El primer paso es entender claramente el problema identificando entradas, procesos y salidas esperadas.",
+                    "content": "Identificar entradas, procesos y salidas para estructurar soluciones claras.",
                     "examples": [
                         {
-                            "title": "Ejemplo cotidiano",
-                            "content": "Organizar una salida al cine: entradas (días disponibles, personas), proceso (comparar horarios), salida (boletos comprados)."
+                            "title": "Ejemplo",
+                            "content": "Calcular promedio de notas: leer notas, sumar, dividir, mostrar."
                         }
                     ]
                 },
                 {
                     "title": "Algoritmos paso a paso",
-                    "content": "Descomposición del problema en instrucciones claras y ordenadas.",
+                    "content": "Descomponer problemas en pasos lógicos y ordenados.",
                     "examples": [
                         {
-                            "title": "Algoritmo para área de triángulo",
-                            "content": "1. Leer base\n2. Leer altura\n3. Calcular área = (base*altura)/2\n4. Mostrar resultado"
+                            "title": "Área de triángulo",
+                            "content": "1. Leer base\n2. Leer altura\n3. Área = (base*altura)/2\n4. Mostrar área"
+                        }
+                    ]
+                },
+                {
+                    "title": "Ejercicios prácticos",
+                    "content": "Resolver problemas reales para reforzar el razonamiento lógico.",
+                    "examples": [
+                        {
+                            "title": "Números pares",
+                            "content": "Mostrar números pares del 1 al 10."
                         }
                     ]
                 }
@@ -233,61 +211,56 @@
     },
     "activities": [
         {
-            "subtopic": "Estructuras de control",
-            "objective": "Practicar el uso de condicionales y bucles para controlar el flujo de un programa.",
+            "subtopic": "Estructuras de control con datos primitivos",
+            "objective": "Practicar el uso de condicionales y bucles con datos primitivos.",
             "theory": {
                 "questions": [
                     {
-                        "question": "¿Qué estructura de control usarías para ejecutar un bloque de código exactamente 10 veces?",
+                        "question": "¿Qué bucle usarías para repetir un bloque de código 5 veces?",
                         "options": [
-                            "Solo condicional if",
-                            "Bucle while",
-                            "Bucle for",
-                            "Condicional switch"
+                            "if",
+                            "while",
+                            "for",
+                            "switch"
                         ],
                         "correctAnswer": 2
                     }
                 ]
             },
             "practice": {
-                "question": "Escribe un algoritmo que imprima los números pares del 2 al 20",
-                "expected_output": "2, 4, 6, 8, 10, 12, 14, 16, 18, 20"
+                "question": "Escribe un algoritmo que muestre los números del 1 al 5",
+                "expected_output": "1, 2, 3, 4, 5"
             }
         },
         {
             "subtopic": "Estructuras de datos",
-            "objective": "Practicar el manejo de arreglos y listas para almacenar y procesar datos.",
+            "objective": "Practicar el manejo de arreglos y listas.",
             "theory": {
                 "questions": [
                     {
-                        "question": "¿Cuál es la principal diferencia entre un arreglo y una lista?",
+                        "question": "¿Qué estructura permite almacenar múltiples valores en una sola variable?",
                         "options": [
-                            "Los arreglos pueden cambiar de tamaño",
-                            "Las listas pueden cambiar de tamaño",
-                            "Solo los arreglos pueden tener números",
-                            "Las listas no pueden ser vacías"
+                            "Variable simple",
+                            "Arreglo",
+                            "Condicional",
+                            "Bucle"
                         ],
                         "correctAnswer": 1
                     }
                 ]
             },
             "practice": {
-                "question": "Crea un arreglo con 5 números y calcula su promedio",
-                "steps": [
-                    "Crear arreglo con valores [8, 10, 7, 9, 6]",
-                    "Sumar todos los elementos",
-                    "Dividir la suma entre la cantidad de elementos (5)",
-                    "Mostrar el resultado"
-                ]
+                "question": "Crea un arreglo con 3 nombres y muestra el primero",
+                "expected_output": "Nombre: Ana"
             }
         }
     ],
     "activity_descriptions": [
-        "Ejercicios con diagramas de flujo",
-        "Práctica con operadores lógicos",
-        "Implementación de estructuras de control",
-        "Manejo de estructuras de datos",
-        "Resolución de problemas algorítmicos"
+        "Práctica con diagramas de flujo",
+        "Ejercicios con operadores lógicos",
+        "Uso de estructuras de control",
+        "Manejo de arreglos y listas",
+        "Resolución de problemas lógicos"
     ],
     "activity_completion_message": "Progreso guardado exitosamente",
     "login_required_message": "Inicia sesión para guardar tu progreso",

@@ -56,7 +56,7 @@ flutter:
     - assets/data/module4/tema3.json
     - assets/data/module4/tema4.json
     - assets/data/module4/actividades.json
-
+    - assets/animations/loading.json
 
 flutter_icons:
   android: true  # Ícono adaptativo para Android

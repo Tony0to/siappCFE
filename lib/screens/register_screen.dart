@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
+import '../theme/app_colors.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -122,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -144,11 +145,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           margin: const EdgeInsets.symmetric(vertical: 8),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: AppColors.shadowColor,
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -160,11 +161,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             obscureText: obscureText,
             decoration: InputDecoration(
               labelText: label,
-              labelStyle: TextStyle(
-                color: Colors.blueAccent[400],
+              labelStyle: const TextStyle(
+                color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
-              prefixIcon: Icon(icon, color: Colors.blueAccent[400]),
+              prefixIcon: Icon(icon, color: AppColors.progressBrightBlue),
               border: InputBorder.none,
               focusedBorder: InputBorder.none,
               enabledBorder: InputBorder.none,
@@ -172,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               disabledBorder: InputBorder.none,
             ),
             validator: validator,
-            style: const TextStyle(color: Colors.black87),
+            style: const TextStyle(color: AppColors.textPrimary),
           ),
         ),
       ),
@@ -207,17 +208,17 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isEnabled
-                    ? [Colors.blueAccent[400]!, Colors.lightBlue[700]!]
-                    : [Colors.grey.shade400, Colors.grey.shade300],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: isEnabled
+                  ? AppColors.primaryGradient
+                  : const LinearGradient(
+                      colors: [AppColors.buttonDisabled, AppColors.buttonDisabled],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: AppColors.shadowColor,
                   blurRadius: 10,
                   spreadRadius: 2,
                   offset: const Offset(0, 4),
@@ -229,19 +230,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               child: InkWell(
                 borderRadius: BorderRadius.circular(30),
                 onTap: isEnabled ? onPressed : null,
-                splashColor: Colors.white30,
+                splashColor: AppColors.glassmorphicBorder,
                 highlightColor: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.person_add, color: Colors.white, size: 20),
+                      const Icon(Icons.person_add, color: AppColors.buttonText, size: 20),
                       const SizedBox(width: 10),
                       Text(
                         title,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.buttonText,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
@@ -261,12 +262,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // White background as requested
+      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -285,7 +286,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: AppColors.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -297,7 +298,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     'Regístrate para comenzar tu viaje',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black54,
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -363,7 +364,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 ),
                 const SizedBox(height: 40),
                 _isLoading
-                    ? const CircularProgressIndicator(color: Colors.blueAccent)
+                    ? const CircularProgressIndicator(color: AppColors.progressActive)
                     : _buildActionButton(
                         title: 'Crear cuenta',
                         onPressed: _register,
@@ -383,7 +384,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     child: Text(
                       '¿Ya tienes cuenta? Inicia sesión',
                       style: TextStyle(
-                        color: Colors.blueAccent[400],
+                        color: AppColors.primaryButton,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),

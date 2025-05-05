@@ -7,6 +7,7 @@ import 'package:siapp/screens/module4screens/tema1.dart';
 import 'package:siapp/screens/module4screens/tema2.dart';
 import 'package:siapp/screens/module4screens/tema3.dart';
 import 'package:siapp/screens/module4screens/tema4.dart';
+import 'package:siapp/screens/loading_screen.dart';
 
 class ContenidoScreen extends StatefulWidget {
   final Map<String, dynamic> moduleData;
@@ -26,9 +27,9 @@ class _ContenidoScreenState extends State<ContenidoScreen>
   late Animation<double> _progressAnimation;
   final List<AnimationController> _progressControllers = [];
   double _progress = 0.0;
-  bool _isLoading = true;
   String? _errorMessage;
   final ScrollController _scrollController = ScrollController();
+  late Future<void> _loadContentFuture;
 
   @override
   bool get wantKeepAlive => true;
@@ -70,15 +71,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       ),
     );
 
-    _loadModuleProgress().then((_) {
-      _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Curves.easeOutQuart,
-        ),
-      );
-      _animationController.forward();
-    });
+    _loadContentFuture = _loadContentWithDelay();
   }
 
   @override
@@ -92,20 +85,32 @@ class _ContenidoScreenState extends State<ContenidoScreen>
     super.dispose();
   }
 
-  Future<void> _loadModuleProgress() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadContentWithDelay() async {
+    try {
+      await Future.wait([
+        _loadModuleProgress(),
+        Future.delayed(const Duration(seconds: 1)), // Ensure minimum 1-second delay
+      ]);
+      _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Curves.easeOutQuart,
+        ),
+      );
+      _animationController.forward();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar el progreso: $e';
+      });
+      rethrow;
+    }
+  }
 
+  Future<void> _loadModuleProgress() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        setState(() {
-          _errorMessage = 'Usuario no autenticado.';
-          _isLoading = false;
-        });
-        return;
+        throw Exception('Usuario no autenticado.');
       }
 
       final progressDoc = await FirebaseFirestore.instance
@@ -120,19 +125,14 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         final savedProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
         setState(() {
           _progress = savedProgress / 100;
-          _isLoading = false;
         });
       } else {
         setState(() {
           _progress = 0.0;
-          _isLoading = false;
         });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Error al cargar el progreso: $e';
-        _isLoading = false;
-      });
+      throw Exception('Error al cargar el progreso: $e');
     }
   }
 
@@ -208,7 +208,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         throw Exception('Usuario no autenticado');
       }
 
-      // Fetch the current progress from Firestore to compare
       final progressDoc = await FirebaseFirestore.instance
           .collection('progress')
           .doc(user.uid)
@@ -220,12 +219,11 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       if (progressDoc.exists) {
         final data = progressDoc.data();
         currentProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
-        currentProgress = currentProgress / 100; // Convert to 0-1 scale
+        currentProgress = currentProgress / 100;
       }
 
-      // Only update if the new progress is higher than the current progress
       if (newProgress <= currentProgress) {
-        return; // Skip the update to preserve the higher progress
+        return;
       }
 
       await FirebaseFirestore.instance
@@ -288,20 +286,20 @@ class _ContenidoScreenState extends State<ContenidoScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
-    final syllabusSections = (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
-    final moduleImage = widget.moduleData['image'] as String? ??
-        'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
-
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            title: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
+    return FutureBuilder<void>(
+      future: _loadContentFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: LoadingScreen(
+              message: 'Cargando contenido...',
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              title: Text(
                 widget.moduleData['module_title'] ?? 'Paradigmas de Programación',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
@@ -316,162 +314,260 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                   ],
                 ),
               ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              iconTheme: const IconThemeData(color: Colors.white),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: true,
-            iconTheme: const IconThemeData(color: Colors.white),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
-              onPressed: () => Navigator.pop(context),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _loadModuleProgress,
-                  tooltip: 'Actualizar progreso',
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _colorAnimation.value!,
+                    _colorAnimation.value!.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-            ],
-          ),
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _colorAnimation.value!,
-                  _colorAnimation.value!.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 50,
+                        color: Colors.red[200],
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        _errorMessage ?? 'Error desconocido al cargar el contenido.',
+                        style: GoogleFonts.poppins(
+                          color: Colors.red[200],
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _loadContentFuture = _loadContentWithDelay();
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.blue[800],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                        ),
+                        child: Text(
+                          'Reintentar',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            child: _isLoading || _errorMessage != null
-                ? _buildLoadingOrError()
-                : ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: content.isEmpty
-                        ? _buildEmptyContent()
-                        : CustomScrollView(
-                            controller: _scrollController,
-                            physics: const BouncingScrollPhysics(),
-                            slivers: [
-                              SliverToBoxAdapter(
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 80),
-                                    _buildModuleHeader(moduleImage),
-                                    const SizedBox(height: 20),
-                                    _buildProgressIndicator(),
-                                    const SizedBox(height: 30),
-                                  ],
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                sliver: SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      final sectionKey = content.keys.elementAt(index);
-                                      final section = content[sectionKey];
-                                      // Tomar el título de syllabus.sections y eliminar el prefijo numérico
-                                      final syllabusTitle = syllabusSections[index]['title'] as String;
-                                      final cleanedTitle = syllabusTitle.replaceFirst(RegExp(r'^[IVXLC]+\.\s'), '');
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 16.0),
-                                        child: SectionCard(
-                                          index: index,
-                                          title: cleanedTitle,
-                                          description: section['description'] ?? '',
-                                          onTap: () async {
-                                            Widget targetScreen;
-                                            switch (index) {
-                                              case 0:
-                                                targetScreen = Tema1(
-                                                  section: section,
-                                                  sectionTitle: cleanedTitle,
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              case 1:
-                                                targetScreen = Tema2(
-                                                  section: section,
-                                                  sectionTitle: cleanedTitle,
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              case 2:
-                                                targetScreen = Tema3(
-                                                  section: section,
-                                                  sectionTitle: cleanedTitle,
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              case 3:
-                                                targetScreen = Tema4(
-                                                  section: section,
-                                                  sectionTitle: cleanedTitle,
-                                                  sectionIndex: index,
-                                                  totalSections: content.length,
-                                                  content: content,
-                                                  moduleData: widget.moduleData,
-                                                  onComplete: (index) {
-                                                    _updateProgress(index + 1, content.length);
-                                                  },
-                                                );
-                                                break;
-                                              default:
-                                                return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              PageRouteBuilder(
-                                                pageBuilder: (context, animation, secondaryAnimation) =>
-                                                    targetScreen,
-                                                transitionsBuilder:
-                                                    (context, animation, secondaryAnimation, child) {
-                                                  return FadeTransition(
-                                                    opacity: animation,
-                                                    child: child,
-                                                  );
-                                                },
-                                                transitionDuration: const Duration(milliseconds: 300),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    childCount: content.length,
-                                  ),
-                                ),
-                              ),
-                              const SliverToBoxAdapter(
-                                child: SizedBox(height: 30),
-                              ),
-                            ],
-                          ),
+          );
+        }
+
+        final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
+        final syllabusSections = (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
+        final moduleImage = widget.moduleData['image'] as String? ??
+            'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
+
+        return AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Scaffold(
+              extendBodyBehindAppBar: true,
+              appBar: AppBar(
+                title: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Text(
+                    widget.moduleData['module_title'] ?? 'Paradigmas de Programación',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 22,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(1, 1),
+                        ),
+                      ],
+                    ),
                   ),
-          ),
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                centerTitle: true,
+                iconTheme: const IconThemeData(color: Colors.white),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.refresh_rounded),
+                      onPressed: () {
+                        setState(() {
+                          _loadContentFuture = _loadContentWithDelay();
+                        });
+                      },
+                      tooltip: 'Actualizar progreso',
+                    ),
+                  ),
+                ],
+              ),
+              body: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _colorAnimation.value!,
+                      _colorAnimation.value!.withOpacity(0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: content.isEmpty
+                    ? _buildEmptyContent()
+                    : CustomScrollView(
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 80),
+                                _buildModuleHeader(moduleImage),
+                                const SizedBox(height: 20),
+                                _buildProgressIndicator(),
+                                const SizedBox(height: 30),
+                              ],
+                            ),
+                          ),
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final sectionKey = content.keys.elementAt(index);
+                                  final section = content[sectionKey];
+                                  final syllabusTitle = syllabusSections[index]['title'] as String;
+                                  final cleanedTitle = syllabusTitle.replaceFirst(RegExp(r'^[IVXLC]+\.\s'), '');
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    child: SectionCard(
+                                      index: index,
+                                      title: cleanedTitle,
+                                      description: section['description'] ?? '',
+                                      onTap: () async {
+                                        Widget targetScreen;
+                                        switch (index) {
+                                          case 0:
+                                            targetScreen = Tema1(
+                                              section: section,
+                                              sectionTitle: cleanedTitle,
+                                              sectionIndex: index,
+                                              totalSections: content.length,
+                                              content: content,
+                                              moduleData: widget.moduleData,
+                                              onComplete: (index) {
+                                                _updateProgress(index + 1, content.length);
+                                              },
+                                            );
+                                            break;
+                                          case 1:
+                                            targetScreen = Tema2(
+                                              section: section,
+                                              sectionTitle: cleanedTitle,
+                                              sectionIndex: index,
+                                              totalSections: content.length,
+                                              content: content,
+                                              moduleData: widget.moduleData,
+                                              onComplete: (index) {
+                                                _updateProgress(index + 1, content.length);
+                                              },
+                                            );
+                                            break;
+                                          case 2:
+                                            targetScreen = Tema3(
+                                              section: section,
+                                              sectionTitle: cleanedTitle,
+                                              sectionIndex: index,
+                                              totalSections: content.length,
+                                              content: content,
+                                              moduleData: widget.moduleData,
+                                              onComplete: (index) {
+                                                _updateProgress(index + 1, content.length);
+                                              },
+                                            );
+                                            break;
+                                          case 3:
+                                            targetScreen = Tema4(
+                                              section: section,
+                                              sectionTitle: cleanedTitle,
+                                              sectionIndex: index,
+                                              totalSections: content.length,
+                                              content: content,
+                                              moduleData: widget.moduleData,
+                                              onComplete: (index) {
+                                                _updateProgress(index + 1, content.length);
+                                              },
+                                            );
+                                            break;
+                                          default:
+                                            return;
+                                        }
+                                        Navigator.push(
+                                          context,
+                                          PageRouteBuilder(
+                                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                                targetScreen,
+                                            transitionsBuilder:
+                                                (context, animation, secondaryAnimation, child) {
+                                              return FadeTransition(
+                                                opacity: animation,
+                                                child: child,
+                                              );
+                                            },
+                                            transitionDuration: const Duration(milliseconds: 300),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                                childCount: content.length,
+                              ),
+                            ),
+                          ),
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: 30),
+                          ),
+                        ],
+                      ),
+              ),
+            );
+          },
         );
       },
     );
@@ -680,66 +776,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingOrError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (_isLoading) ...[
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 3,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Cargando contenido...',
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-            ] else ...[
-              Icon(
-                Icons.error_outline_rounded,
-                size: 50,
-                color: Colors.red[200],
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.poppins(
-                  color: Colors.red[200],
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _loadModuleProgress,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blue[800],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                ),
-                child: Text(
-                  'Reintentar',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

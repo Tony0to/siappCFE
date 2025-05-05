@@ -1,10 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/animation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:siapp/screens/ModulesScreen.dart';
-import 'ModulesScreen.dart';
+import 'package:siapp/screens/module1.dart';
+import 'package:siapp/screens/module2.dart';
+import 'package:siapp/screens/module3.dart';
+import 'package:siapp/screens/module4.dart';
+import '../theme/app_colors.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({Key? key}) : super(key: key);
@@ -13,27 +17,26 @@ class ProgressScreen extends StatefulWidget {
   _ProgressScreenState createState() => _ProgressScreenState();
 }
 
-class _ProgressScreenState extends State<ProgressScreen> 
-    with TickerProviderStateMixin {
+class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStateMixin {
   double progress = 0.0;
   int completedModules = 0;
   int totalModules = 4;
   int _currentIndex = 1;
   String? _errorMessage;
   bool _isLoading = true;
-  
+
   late final AnimationController _mainController = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 2),
   );
-  
+
   late final AnimationController _cardsController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 800),
   );
 
   late Animation<double> _progressAnimation;
-  late Animation<Color?> _colorAnimation;
+  late Animation<Color?> _gradientAnimation;
   late Animation<double> _cardsScaleAnimation;
   late Animation<double> _cardsOpacityAnimation;
 
@@ -53,7 +56,7 @@ class _ProgressScreenState extends State<ProgressScreen>
     {
       'title': 'Módulo 3: Algoritmos',
       'id': 'module3',
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
+      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
       'summary': 'Diseño y análisis de algoritmos',
     },
     {
@@ -71,19 +74,19 @@ class _ProgressScreenState extends State<ProgressScreen>
   @override
   void initState() {
     super.initState();
-    
-    _colorAnimation = ColorTween(
-      begin: Colors.blueAccent[400],
-      end: Colors.lightBlue[700],
+
+    _gradientAnimation = ColorTween(
+      begin: AppColors.backgroundGradientTop,
+      end: AppColors.backgroundGradientBottom,
     ).animate(_mainController);
-    
+
     _progressAnimation = Tween<double>(begin: 0, end: 0).animate(
       CurvedAnimation(
         parent: _mainController,
         curve: Curves.easeOut,
       ),
     );
-    
+
     _cardsScaleAnimation = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.05), weight: 50),
       TweenSequenceItem(tween: Tween(begin: 1.05, end: 1.0), weight: 50),
@@ -93,16 +96,16 @@ class _ProgressScreenState extends State<ProgressScreen>
         curve: Curves.easeInOut,
       ),
     );
-    
+
     _cardsOpacityAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _cardsController,
         curve: Curves.easeIn,
       ),
     );
-    
+
     cargarProgreso();
-    
+
     Future.delayed(const Duration(milliseconds: 300), () {
       _cardsController.forward();
     });
@@ -149,7 +152,6 @@ class _ProgressScreenState extends State<ProgressScreen>
       Map<String, double> tempPercentages = {};
 
       for (var module in moduleDetails.docs) {
-        // Safely access fields with fallback values
         final data = module.data();
         debugPrint('Module ${module.id} data: $data');
 
@@ -166,7 +168,7 @@ class _ProgressScreenState extends State<ProgressScreen>
         tempScores[module.id] = grade;
         tempQuizCompleted[module.id] = quizCompleted;
         tempPercentages[module.id] = porcentaje;
-        
+
         debugPrint('Module ${module.id}: porcentaje=$porcentaje, quiz_completed=$quizCompleted, grade=$grade');
 
         if (porcentaje == 100 && quizCompleted) {
@@ -186,7 +188,7 @@ class _ProgressScreenState extends State<ProgressScreen>
         debugPrint('moduleQuizCompleted=$moduleQuizCompleted');
         debugPrint('modulePercentages=$modulePercentages');
       });
-      
+
       _progressAnimation = Tween<double>(
         begin: 0,
         end: progress / 100,
@@ -196,7 +198,7 @@ class _ProgressScreenState extends State<ProgressScreen>
           curve: Curves.easeOut,
         ),
       );
-      
+
       _mainController.forward();
     } catch (e) {
       setState(() {
@@ -207,28 +209,55 @@ class _ProgressScreenState extends State<ProgressScreen>
     }
   }
 
+  void _navigateToModule(BuildContext context, Map<String, dynamic> module) {
+    final routes = {
+      'module1': (ctx) => Module1IntroScreen(module: module),
+      'module2': (ctx) => Module2IntroScreen(module: module),
+      'module3': (ctx) => Module3IntroScreen(module: module),
+      'module4': (ctx) => Module4IntroScreen(module: module),
+    };
+
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => routes[module['id']]!(context),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Widget _buildModuleCard(Map<String, dynamic> module, bool isCompleted) {
     final moduleId = module['id'];
     final score = moduleScores[moduleId] ?? 0.0;
     final quizCompleted = moduleQuizCompleted[moduleId] ?? false;
     final percentage = modulePercentages[moduleId] ?? 0.0;
-    
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
+      color: AppColors.glassmorphicBackground,
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
-        onTap: () {
-          final tapController = AnimationController(
-            vsync: this,
-            duration: const Duration(milliseconds: 200),
-          );
-          
-          tapController.addListener(() => setState(() {}));
-          tapController.forward().then((_) => tapController.reverse());
-        },
+        onTap: () => _navigateToModule(context, module),
         child: Padding(
           padding: const EdgeInsets.all(15.0),
           child: Row(
@@ -246,7 +275,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: AppColors.shadowColor,
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
@@ -261,25 +290,35 @@ class _ProgressScreenState extends State<ProgressScreen>
                   children: [
                     Text(
                       module['title'],
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       module['summary'],
                       style: TextStyle(
-                        color: Colors.grey[600],
                         fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Progreso: ${percentage.toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.progressActive,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Calificación: ${score.toStringAsFixed(1)}%',
                       style: TextStyle(
-                        color: Colors.blue[700],
                         fontSize: 14,
+                        color: AppColors.progressActive,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -287,8 +326,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                     Text(
                       'Quiz: ${quizCompleted ? 'Completado' : 'No completado'}',
                       style: TextStyle(
-                        color: quizCompleted ? Colors.green : Colors.red,
                         fontSize: 14,
+                        color: quizCompleted ? AppColors.success : AppColors.error,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -302,13 +341,13 @@ class _ProgressScreenState extends State<ProgressScreen>
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isCompleted 
-                        ? Colors.green.withOpacity(0.2)
-                        : Colors.grey.withOpacity(0.2),
+                    color: isCompleted
+                        ? AppColors.success.withOpacity(0.2)
+                        : AppColors.textSecondary.withOpacity(0.2),
                   ),
                   child: Icon(
                     isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                    color: isCompleted ? Colors.green : Colors.grey,
+                    color: isCompleted ? AppColors.success : AppColors.textSecondary,
                     size: 28,
                   ),
                 ),
@@ -327,17 +366,22 @@ class _ProgressScreenState extends State<ProgressScreen>
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                'Cargando progreso...',
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-              ),
-            ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.backgroundDynamic,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: AppColors.progressActive),
+                const SizedBox(height: 16),
+                Text(
+                  'Cargando progreso...',
+                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -345,21 +389,33 @@ class _ProgressScreenState extends State<ProgressScreen>
 
     if (_errorMessage != null) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _errorMessage!,
-                style: TextStyle(fontSize: 16, color: Colors.red[700]),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: cargarProgreso,
-                child: const Text('Reintentar'),
-              ),
-            ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.backgroundDynamic,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(fontSize: 16, color: AppColors.error),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: cargarProgreso,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryButton,
+                    foregroundColor: AppColors.buttonText,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Reintentar'),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -370,356 +426,321 @@ class _ProgressScreenState extends State<ProgressScreen>
       builder: (context, child) {
         return Scaffold(
           extendBody: true,
-          body: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 220,
-                floating: false,
-                pinned: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.parallax,
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          _colorAnimation.value!,
-                          _colorAnimation.value!.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: SafeArea(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedBuilder(
-                            animation: _mainController,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: 1 + (_mainController.value * 0.05),
-                                child: Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.2),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 10,
-                                        spreadRadius: 3,
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipOval(
-                                    child: Image.asset(
-                                      'assets/siaap.png',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(
-                                        Icons.bar_chart,
-                                        size: 40,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundDynamic,
+            ),
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+                    child: Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const ModulesScreen()),
                               );
                             },
                           ),
-                          const SizedBox(height: 15),
-                          FadeTransition(
-                            opacity: _cardsOpacityAnimation,
-                            child: const Text(
-                              'Tu Progreso',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                    offset: Offset(1, 1),
-                                  ),
-                                ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: 150,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(
+                              color: AppColors.glassmorphicBorder,
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.shadowColor,
+                                blurRadius: 10,
+                                spreadRadius: 3,
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/siaap.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const Icon(
+                                Icons.bar_chart,
+                                size: 50,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ),
-                        ],
+                        ),
+                        const SizedBox(height: 20),
+                        FadeTransition(
+                          opacity: _cardsOpacityAnimation,
+                          child: const Text(
+                            'Tu Progreso',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(1, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ScaleTransition(
+                      scale: _cardsScaleAnimation,
+                      child: FadeTransition(
+                        opacity: _cardsOpacityAnimation,
+                        child: Material(
+                          color: AppColors.glassmorphicBackground,
+                          borderRadius: BorderRadius.circular(20),
+                          clipBehavior: Clip.antiAlias,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Progreso General',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 160,
+                                      height: 160,
+                                      child: AnimatedBuilder(
+                                        animation: _progressAnimation,
+                                        builder: (context, child) {
+                                          return CircularProgressIndicator(
+                                            value: _progressAnimation.value,
+                                            strokeWidth: 12,
+                                            backgroundColor: AppColors.progressInactive,
+                                            color: AppColors.progressActive,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    AnimatedBuilder(
+                                      animation: _progressAnimation,
+                                      builder: (context, child) {
+                                        return Text(
+                                          '${(_progressAnimation.value * 100).toStringAsFixed(0)}%',
+                                          style: TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 15),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 500),
+                                  child: Text(
+                                    'Módulos completados: $completedModules / $totalModules',
+                                    key: ValueKey<int>(completedModules),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  transitionBuilder: (Widget child, Animation<double> animation) {
+                                    return ScaleTransition(scale: animation, child: child);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      ScaleTransition(
-                        scale: _cardsScaleAnimation,
-                        child: FadeTransition(
-                          opacity: _cardsOpacityAnimation,
-                          child: Card(
-                            elevation: 8,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            shadowColor: Colors.blue.withOpacity(0.3),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    'Progreso General',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 160,
-                                        height: 160,
-                                        child: AnimatedBuilder(
-                                          animation: _progressAnimation,
-                                          builder: (context, child) {
-                                            return CircularProgressIndicator(
-                                              value: _progressAnimation.value,
-                                              strokeWidth: 12,
-                                              backgroundColor: Colors.grey[200],
-                                              color: Colors.blueAccent,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      AnimatedBuilder(
-                                        animation: _progressAnimation,
-                                        builder: (context, child) {
-                                          return Text(
-                                            '${(_progressAnimation.value * 100).toStringAsFixed(0)}%',
-                                            style: const TextStyle(
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 15),
-                                  AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 500),
-                                    child: Text(
-                                      'Módulos completados: $completedModules / $totalModules',
-                                      key: ValueKey<int>(completedModules),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                    transitionBuilder: (Widget child, Animation<double> animation) {
-                                      return ScaleTransition(scale: animation, child: child);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final module = modules[index];
+                      final moduleId = module['id'];
+                      final percentage = modulePercentages[moduleId] ?? 0.0;
+                      final quizCompleted = moduleQuizCompleted[moduleId] ?? false;
+                      final isCompleted = percentage == 100 && quizCompleted;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
                         ),
-                      ),
-                      const SizedBox(height: 30),
-                      FadeTransition(
-                        opacity: _cardsOpacityAnimation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.5),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: _cardsController,
-                            curve: Curves.easeOut,
-                          )),
-                          child: const Text(
-                            'Detalle por Módulo',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final module = modules[index];
-                    final moduleId = module['id'];
-                    final percentage = modulePercentages[moduleId] ?? 0.0;
-                    final quizCompleted = moduleQuizCompleted[moduleId] ?? false;
-                    final isCompleted = percentage == 100 && quizCompleted;
-                    
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
-                      child: ScaleTransition(
-                        scale: Tween<double>(
-                          begin: 0.9,
-                          end: 1.0,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _cardsController,
-                            curve: Interval(
-                              0.1 + (index * 0.1),
-                              0.5 + (index * 0.1),
-                              curve: Curves.easeOut,
-                            ),
-                          ),
-                        ),
-                        child: FadeTransition(
-                          opacity: Tween<double>(
-                            begin: 0,
-                            end: 1,
+                        child: ScaleTransition(
+                          scale: Tween<double>(
+                            begin: 0.9,
+                            end: 1.0,
                           ).animate(
                             CurvedAnimation(
                               parent: _cardsController,
                               curve: Interval(
                                 0.1 + (index * 0.1),
                                 0.5 + (index * 0.1),
-                                curve: Curves.easeIn,
+                                curve: Curves.easeOut,
                               ),
                             ),
                           ),
-                          child: _buildModuleCard(module, isCompleted),
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: modules.length,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      FadeTransition(
-                        opacity: _cardsOpacityAnimation,
-                        child: const Text(
-                          'Continúa aprendiendo para completar todos los módulos',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Colors.blueAccent,
-                              Colors.lightBlue,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.emoji_events, color: Colors.white),
-                            SizedBox(width: 10),
-                            Text(
-                              '¡Tú puedes!',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                          child: FadeTransition(
+                            opacity: Tween<double>(
+                              begin: 0,
+                              end: 1,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: _cardsController,
+                                curve: Interval(
+                                  0.1 + (index * 0.1),
+                                  0.5 + (index * 0.1),
+                                  curve: Curves.easeIn,
+                                ),
                               ),
                             ),
-                          ],
+                            child: _buildModuleCard(module, isCompleted),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 40),
-                    ],
+                      );
+                    },
+                    childCount: modules.length,
                   ),
                 ),
-              ),
-            ],
-          ),
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _colorAnimation.value!,
-                  _colorAnimation.value!.withOpacity(0.9),
-                ],
-              ),
-            ),
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() => _currentIndex = index);
-                if (index == 0) {
-                  Navigator.pushReplacement(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const ModulesScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        FadeTransition(
+                          opacity: _cardsOpacityAnimation,
+                          child: Text(
+                            'Continúa aprendiendo para completar todos los módulos',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.shadowColor,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.emoji_events, color: AppColors.buttonText),
+                              SizedBox(width: 10),
+                              Text(
+                                '¡Tú puedes!',
+                                style: TextStyle(
+                                  color: AppColors.buttonText,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
                     ),
-                  );
-                }
-              },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white70,
-              selectedIconTheme: const IconThemeData(size: 28),
-              unselectedIconTheme: const IconThemeData(size: 24),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Inicio',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.bar_chart),
-                  label: 'Progreso',
+                  ),
                 ),
               ],
+            ),
+          ),
+          bottomNavigationBar: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.shadowColor,
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  onTap: (index) {
+                    setState(() => _currentIndex = index);
+                    if (index == 0) {
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const ModulesScreen(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(opacity: animation, child: child);
+                          },
+                        ),
+                      );
+                    }
+                  },
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  selectedItemColor: AppColors.textPrimary,
+                  unselectedItemColor: AppColors.textSecondary,
+                  selectedIconTheme: const IconThemeData(size: 28),
+                  unselectedIconTheme: const IconThemeData(size: 24),
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: 'Inicio',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.bar_chart),
+                      label: 'Progreso',
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         );

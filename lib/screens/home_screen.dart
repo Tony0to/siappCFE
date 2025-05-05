@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/animation.dart';
 import 'auth_screen.dart';
 import 'ModulesScreen.dart';
+import '../theme/App_Colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -46,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
 
     _gradientAnimation = ColorTween(
-      begin: Colors.blueAccent[400],
-      end: Colors.lightBlue[700],
+      begin: AppColors.backgroundGradientTop,
+      end: AppColors.backgroundGradientBottom,
     ).animate(_controller);
 
     _controller.forward();
@@ -175,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_initializationError ?? 'Error: ${e.toString()}'),
-          backgroundColor: Colors.red[400],
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 5),
         ),
@@ -192,10 +193,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: AppColors.glassmorphicBackground,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.4),
+              color: AppColors.glassmorphicBorder,
               width: 1.5,
             ),
           ),
@@ -220,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('Error al cerrar sesión'),
-                      backgroundColor: Colors.red[400],
+                      backgroundColor: AppColors.error,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -229,12 +230,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   );
                 }
               },
-              splashColor: Colors.white30,
+              splashColor: AppColors.glassmorphicBorder,
               child: const Padding(
                 padding: EdgeInsets.all(10),
                 child: Icon(
                   Icons.logout,
-                  color: Colors.white,
+                  color: AppColors.buttonText,
                   size: 24,
                 ),
               ),
@@ -279,12 +280,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               color: backgroundColor,
               borderRadius: BorderRadius.circular(30),
               border: border
-                  ? Border.all(color: Colors.white, width: 2)
+                  ? Border.all(color: AppColors.textPrimary, width: 2)
                   : null,
               boxShadow: [
                 if (!border)
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: AppColors.shadowColor,
                     blurRadius: 10,
                     spreadRadius: 2,
                     offset: const Offset(0, 4),
@@ -296,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: InkWell(
                 borderRadius: BorderRadius.circular(30),
                 onTap: onPressed,
-                splashColor: border ? Colors.white30 : Colors.blue.shade100,
+                splashColor: border ? AppColors.glassmorphicBorder : AppColors.progressActive,
                 highlightColor: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -336,16 +337,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           backgroundColor: Colors.transparent,
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gradientAnimation.value!,
-                  _gradientAnimation.value!.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: const [0.3, 0.7],
-              ),
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundDynamic,
             ),
             child: SafeArea(
               child: Column(
@@ -371,14 +364,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 height: 250,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: AppColors.glassmorphicBackground,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: AppColors.glassmorphicBorder,
                                     width: 5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: AppColors.shadowColor,
                                       blurRadius: 15,
                                       spreadRadius: 5,
                                     ),
@@ -401,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -413,20 +406,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               'Prepárate para tu viaje en programación',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.white70,
+                                color: AppColors.textSecondary,
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ),
                           const SizedBox(height: 40),
                           if (_isInitializing)
-                            const CircularProgressIndicator(color: Colors.white)
+                            const CircularProgressIndicator(color: AppColors.progressActive)
                           else
                             _buildActionButton(
                               title: 'Explorar Módulos',
                               icon: Icons.school,
-                              backgroundColor: Colors.white,
-                              textColor: Colors.blue.shade800,
+                              backgroundColor: AppColors.primaryButton,
+                              textColor: AppColors.buttonText,
                               onPressed: _navigateToModules,
                               animationDelay: 0.4,
                             ),
@@ -436,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               child: Text(
                                 _initializationError!,
                                 style: const TextStyle(
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                   fontSize: 14,
                                 ),
                                 textAlign: TextAlign.center,
@@ -451,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   'Tu progreso',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.white70,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -461,8 +454,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     borderRadius: BorderRadius.circular(10),
                                     child: LinearProgressIndicator(
                                       value: _progress,
-                                      backgroundColor: Colors.white.withOpacity(0.3),
-                                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                      backgroundColor: AppColors.progressInactive,
+                                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.progressActive),
                                       minHeight: 10,
                                     ),
                                   ),
@@ -472,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   '${(_progress * 100).toStringAsFixed(0)}% completado',
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white70,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ],
