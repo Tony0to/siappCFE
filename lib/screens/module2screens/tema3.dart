@@ -8,6 +8,57 @@ import 'package:flutter/services.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
 import 'package:flutter_highlighter/themes/github.dart';
 
+// Pantalla para mostrar la imagen en pantalla completa con área maximizada
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenImage({Key? key, required this.imagePath}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: InteractiveViewer(
+          minScale: 0.1, // Permite reducir más para diagramas largos
+          maxScale: 6.0, // Mayor zoom para detalles
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain, // Asegura que el diagrama sea completamente visible
+              width: double.infinity,
+              height: double.infinity, // Ocupa todo el espacio disponible
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen: $imagePath\n$error',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class Tema3 extends StatefulWidget {
   final Map<String, dynamic> section;
   final String sectionTitle;
@@ -377,7 +428,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       case 'c++':
         highlightLanguage = 'cpp';
         break;
-      case 'ejemplo genérico':
+      case 'pseudocode':
         highlightLanguage = 'text';
         break;
       default:
@@ -402,7 +453,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              'Ejemplo de Código',
+              'Pseudocódigo',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -429,6 +480,64 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildDiagramImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 350,
+        color: const Color(0xFF1E3A8A),
+        child: Center(
+          child: Text(
+            'Diagrama no disponible',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: null,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullScreenImage(imagePath: imagePath),
+            ),
+          );
+        },
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
+          height: 350,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Container(
+            height: 350,
+            color: const Color(0xFF1E3A8A),
+            child: Center(
+              child: Text(
+                'Error al cargar el diagrama: $imagePath\n$error',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: null,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -480,7 +589,6 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
     final bool isCorrect = _answerResults[questionIndex] == true;
     final bool showExplanation = _showExplanations[questionIndex] ?? false;
 
-    // Handle question['tipo'] being a list or string
     final tipo = question['tipo'] is List ? question['tipo'].first.toString() : question['tipo']?.toString() ?? 'multiple_choice';
 
     return Container(
@@ -635,107 +743,59 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
   Widget buildSubtemaPage(int index, int totalPages) {
     final List<Map<String, dynamic>> pages = [
       {
-        'title': 'Introducción y Estructuras secuenciales',
+        'title': 'Introducción',
         'content': [
-          if (_contentData?['introduccion'] != null)
-            buildContentCard(
-              _contentData!['introduccion']['titulo']?.toString() ?? 'Introducción',
-              [
-                ...formatContent(_contentData!['introduccion']['contenido']?.toString() ?? ''),
-                const SizedBox(height: 16),
-                buildHighlightBox(
-                  _contentData!['introduccion']['highlight']['text']?.toString() ?? '',
-                  color: const Color(0xFF10B981),
-                  title: 'Importante',
-                ),
-              ],
-              color: Color.fromRGBO(62, 146, 204, 0.15),
-            ),
-          if (_contentData?['caracteristicas'] != null)
-            buildContentCard(
-              _contentData!['caracteristicas']['titulo']?.toString() ?? '',
-              [
-                buildBulletList(_contentData!['caracteristicas']['items'] ?? []),
-              ],
-              color: Color.fromRGBO(16, 185, 129, 0.15),
-            ),
+          buildContentCard(
+            'III. Estructuras de datos y de control',
+            [
+              buildHighlightBox(
+                _contentData!['introduccion']['highlight1']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              buildHighlightBox(
+                _contentData!['introduccion']['highlight2']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+            ],
+            color: Color.fromRGBO(62, 146, 204, 0.15),
+          ),
         ],
       },
       {
-        'title': 'Secuenciales',
+        'title': 'Arreglos, matrices, listas, etc.',
         'content': [
-          if (_contentData?['subtema1'] != null)
-            buildContentCard(
-              _contentData!['subtema1']['titulo']?.toString() ?? '',
-              [
-                ...formatContent(_contentData!['subtema1']['contenido']?.toString() ?? ''),
-                const SizedBox(height: 16),
-                buildContentCard(
-                  _contentData!['subtema1']['ejemplo']['titulo']?.toString() ?? '',
-                  [
-                    Text(
-                      _contentData!['subtema1']['ejemplo']['descripcion']?.toString() ?? '',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Color.fromRGBO(255, 255, 255, 0.9),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    buildCodeBox(
-                      _contentData!['subtema1']['ejemplo']['codigo']?.toString() ?? '',
-                      'JavaScript',
-                    ),
-                  ],
-                  color: Color.fromRGBO(30, 64, 175, 0.2),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _contentData!['subtema1']['conclusion']?.toString() ?? '',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    color: Color.fromRGBO(255, 255, 255, 0.9),
+          buildContentCard(
+            'Arreglos, matrices, listas, etc.',
+            [
+              buildHighlightBox(
+                _contentData!['subtema1']['highlight1']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              ...formatContent(_contentData!['subtema1']['contenido']?.toString() ?? ''),
+              const SizedBox(height: 16),
+              buildHighlightBox(
+                _contentData!['subtema1']['highlight2']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                'Arreglos',
+                [
+                  buildHighlightBox(
+                    _contentData!['subtema1']['arreglos']['definicion']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                    title: 'Definición',
                   ),
-                ),
-              ],
-              color: Color.fromRGBO(16, 185, 129, 0.15),
-            ),
-        ],
-      },
-      {
-        'title': 'Estructuras condicionales',
-        'content': [
-          if (_contentData?['subtema2'] != null)
-            buildContentCard(
-              _contentData!['subtema2']['titulo']?.toString() ?? '',
-              [
-                ...formatContent(_contentData!['subtema2']['contenido']?.toString() ?? ''),
-                const SizedBox(height: 16),
-                ...(_contentData!['subtema2']['condicionales'] as List<dynamic>? ?? []).map<Widget>((condicional) {
-                  Color color;
-                  switch (condicional['color']?.toString()) {
-                    case 'blue':
-                      color = Colors.blue;
-                      break;
-                    case 'purple':
-                      color = Colors.purple;
-                      break;
-                    case 'indigo':
-                      color = Colors.indigo;
-                      break;
-                    case 'teal':
-                      color = Colors.teal;
-                      break;
-                    case 'cyan':
-                      color = Colors.cyan;
-                      break;
-                    default:
-                      color = Colors.blue;
-                  }
-                  return buildContentCard(
-                    'Condicional ${condicional['tipo']?.toString() ?? ''}',
+                  const SizedBox(height: 16),
+                  ...formatContent(_contentData!['subtema1']['arreglos']['contenido']?.toString() ?? ''),
+                  const SizedBox(height: 16),
+                  buildContentCard(
+                    _contentData!['subtema1']['arreglos']['ejemplo']['titulo']?.toString() ?? '',
                     [
                       Text(
-                        condicional['descripcion']?.toString() ?? '',
+                        _contentData!['subtema1']['arreglos']['ejemplo']['descripcion']?.toString() ?? '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           color: Color.fromRGBO(255, 255, 255, 0.9),
@@ -743,160 +803,239 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 12),
                       buildCodeBox(
-                        condicional['ejemplo']?.toString() ?? '',
-                        condicional['tipo'] == 'switch' || condicional['tipo'] == 'switch sin break'
-                            ? 'JavaScript'
-                            : 'Ejemplo genérico',
+                        _contentData!['subtema1']['arreglos']['ejemplo']['pseudocodigo']?.toString() ?? '',
+                        'pseudocode',
+                      ),
+                      const SizedBox(height: 12),
+                      buildDiagramImage('assets/module2photos/diag16.png'),
+                      const SizedBox(height: 12),
+                      Text(
+                        _contentData!['subtema1']['arreglos']['ejemplo']['conclusion']?.toString() ?? '',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Color.fromRGBO(255, 255, 255, 0.9),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      buildHighlightBox(
+                        _contentData!['subtema1']['arreglos']['usos']['text']?.toString() ?? '',
+                        color: const Color(0xFF3E92CC),
+                        title: 'Usos de los arreglos',
                       ),
                     ],
-                    color: color.withOpacity(0.2),
-                  );
-                }),
-                const SizedBox(height: 16),
-                buildHighlightBox(
-                  _contentData!['subtema2']['nota_importante']['text']?.toString() ?? '',
-                  color: const Color(0xFF10B981),
-                  title: 'Importante',
-                ),
-                const SizedBox(height: 16),
-                buildContentCard(
-                  _contentData!['subtema2']['cuando_usar_switch']['titulo']?.toString() ?? '',
-                  [
-                    buildBulletList(_contentData!['subtema2']['cuando_usar_switch']['items'] ?? []),
-                    const SizedBox(height: 12),
-                    Text(
-                      _contentData!['subtema2']['cuando_usar_switch']['conclusion']?.toString() ?? '',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Color.fromRGBO(255, 255, 255, 0.9),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                  color: Color.fromRGBO(6, 95, 70, 0.2),
-                ),
-              ],
-              color: Color.fromRGBO(139, 92, 246, 0.15),
-            ),
+                    color: Color.fromRGBO(30, 64, 175, 0.2),
+                  ),
+                ],
+                color: Color.fromRGBO(16, 185, 129, 0.15),
+              ),
+            ],
+            color: Color.fromRGBO(16, 185, 129, 0.15),
+          ),
         ],
       },
       {
-        'title': 'Estructuras cíclicas',
+        'title': 'Matrices',
         'content': [
-          if (_contentData?['subtema3'] != null)
-            buildContentCard(
-              _contentData!['subtema3']['titulo']?.toString() ?? '',
-              [
-                ...formatContent(_contentData!['subtema3']['contenido']?.toString() ?? ''),
-                const SizedBox(height: 16),
-                ...(_contentData!['subtema3']['bucles'] as List<dynamic>? ?? []).map<Widget>((bucle) {
-                  Color color;
-                  switch (bucle['color']?.toString()) {
-                    case 'orange':
-                      color = Colors.orange;
-                      break;
-                    case 'purple':
-                      color = Colors.purple;
-                      break;
-                    case 'indigo':
-                      color = Colors.indigo;
-                      break;
-                    default:
-                      color = Colors.orange;
-                  }
-                  return buildContentCard(
-                    'Bucle ${bucle['tipo']?.toString() ?? ''}',
+          buildContentCard(
+            'Matrices',
+            [
+              buildHighlightBox(
+                _contentData!['subtema2']['highlight1']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema2']['ejemplo']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['subtema2']['ejemplo']['descripcion']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema2']['ejemplo']['pseudocodigo']?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag17.png'),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema2']['operaciones']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                    title: 'Operaciones comunes',
+                  ),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema2']['definicion']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                  ),
+                ],
+                color: Color.fromRGBO(30, 64, 175, 0.2),
+              ),
+            ],
+            color: Color.fromRGBO(139, 92, 246, 0.15),
+          ),
+        ],
+      },
+      {
+        'title': 'Listas',
+        'content': [
+          buildContentCard(
+            'Listas',
+            [
+              buildHighlightBox(
+                _contentData!['subtema3']['highlight1']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                'Características',
+                [
+                  buildBulletList(_contentData!['subtema3']['caracteristicas']['items'] ?? []),
+                ],
+                color: Color.fromRGBO(30, 64, 175, 0.2),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema3']['ejemplo']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['subtema3']['ejemplo']['descripcion']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema3']['ejemplo']['pseudocodigo']?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag18.png'),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema3']['comparacion']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                  ),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema3']['usos']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                  ),
+                ],
+                color: Color.fromRGBO(30, 64, 175, 0.2),
+              ),
+            ],
+            color: Color.fromRGBO(255, 214, 10, 0.15),
+          ),
+        ],
+      },
+      {
+        'title': 'Aplicación en estructuras de control',
+        'content': [
+          buildContentCard(
+            '¿Cómo aplicarlo en estructuras de control?',
+            [
+              buildHighlightBox(
+                _contentData!['subtema4']['highlight1']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              buildHighlightBox(
+                _contentData!['subtema4']['importancia']['text']?.toString() ?? '',
+                color: const Color(0xFF10B981),
+                title: '¿Por qué es importante esta combinación?',
+              ),
+              const SizedBox(height: 16),
+              buildHighlightBox(
+                _contentData!['subtema4']['acceso']['text']?.toString() ?? '',
+                color: const Color(0xFF3E92CC),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema4']['ejemplo1']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['subtema4']['ejemplo1']['descripcion']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema4']['ejemplo1']['pseudocodigo']?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag19.png'),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema4']['listas']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                  ),
+                  const SizedBox(height: 16),
+                  buildContentCard(
+                    _contentData!['subtema4']['ejemplo2']['titulo']?.toString() ?? '',
                     [
                       Text(
-                        bucle['descripcion']?.toString() ?? '',
+                        _contentData!['subtema4']['ejemplo2']['descripcion']?.toString() ?? '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           color: Color.fromRGBO(255, 255, 255, 0.9),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        '¿Qué es?',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        bucle['definicion']?.toString() ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
-                          fontStyle: FontStyle.italic,
-                        ),
+                      buildCodeBox(
+                        _contentData!['subtema4']['ejemplo2']['pseudocodigo']?.toString() ?? '',
+                        'pseudocode',
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        bucle['explicacion']?.toString() ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Estructura',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        bucle['estructura']?.toString() ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ...?(bucle['ejemplos'] as List<dynamic>?)?.map<Widget>((ejemplo) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: buildCodeBox(
-                              ejemplo['codigo']?.toString() ?? '',
-                              ejemplo['lenguaje']?.toString() ?? 'text',
-                            ),
-                          )),
-                      const SizedBox(height: 12),
-                      Text(
-                        '¿Cuándo utilizarlo?',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      buildBulletList(bucle['cuando_usar'] ?? []),
-                      const SizedBox(height: 12),
-                      Text(
-                        bucle['conclusion']?.toString() ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
-                        ),
-                      ),
+                      buildDiagramImage('assets/module2photos/diag20.png'),
                     ],
-                    color: color.withOpacity(0.2),
-                  );
-                }),
-                const SizedBox(height: 16),
-                buildHighlightBox(
-                  _contentData!['subtema3']['nota_importante']['text']?.toString() ?? '',
-                  color: const Color(0xFF10B981),
-                  title: 'Importante',
-                ),
-              ],
-              color: Color.fromRGBO(255, 214, 10, 0.15),
-            ),
+                    color: Color.fromRGBO(30, 64, 175, 0.2),
+                  ),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema4']['matrices']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                  ),
+                  const SizedBox(height: 16),
+                  buildContentCard(
+                    _contentData!['subtema4']['ejemplo3']['titulo']?.toString() ?? '',
+                    [
+                      Text(
+                        _contentData!['subtema4']['ejemplo3']['descripcion']?.toString() ?? '',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Color.fromRGBO(255, 255, 255, 0.9),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      buildCodeBox(
+                        _contentData!['subtema4']['ejemplo3']['pseudocodigo']?.toString() ?? '',
+                        'pseudocode',
+                      ),
+                      const SizedBox(height: 12),
+                      buildDiagramImage('assets/module2photos/diag21.png'),
+                    ],
+                    color: Color.fromRGBO(30, 64, 175, 0.2),
+                  ),
+                  const SizedBox(height: 16),
+                  buildHighlightBox(
+                    _contentData!['subtema4']['diccionarios']['text']?.toString() ?? '',
+                    color: const Color(0xFF3E92CC),
+                  ),
+                ],
+                color: Color.fromRGBO(16, 185, 129, 0.15),
+              ),
+            ],
+            color: Color.fromRGBO(255, 214, 10, 0.15),
+          ),
         ],
       },
       {
@@ -981,7 +1120,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
   }
 
   void navigateNext() {
-    if (_currentPage < 4) {
+    if (_currentPage < 5) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -1038,7 +1177,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       );
     }
 
-    const totalPages = 5; // Introduction, Subtema1, Subtema2, Subtema3, Quiz
+    const totalPages = 6; // Introduction, Arreglos, Matrices, Listas, Aplicación, Quiz
 
     return WillPopScope(
       onWillPop: navigateBack,

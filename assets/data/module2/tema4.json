@@ -1,123 +1,78 @@
 {
   "introduccion": {
-    "titulo": "Estructuras de Control Avanzadas",
-    "contenido": "Exploraremos problemas más complejos con estructuras de control anidadas y bucles especializados.\n\n• **Patrones numéricos**: Uso de bucles para generar secuencias.\n• **Validación de entrada**: Estructuras de decisión para inputs.\n• **Procesamiento de strings**: Manipulación de cadenas con bucles.\n\n[Ejemplo: for (int i = 1; i <= 5; i++) { print('*' * i); }]"
+    "titulo": "IV. Resolución de problemas aplicando el razonamiento lógico",
+    "contenido": "Resolver problemas es una de las habilidades más importantes en programación. No se trata solo de saber qué instrucciones usar, sino de saber cómo enfrentarte a un reto, entenderlo bien y encontrar la mejor manera de solucionarlo paso a paso.\n\nEn este apartado, comenzarás por identificar y plantear problemas de forma clara. Luego, irás construyendo soluciones organizadas mediante algoritmos sencillos pero efectivos. Finalmente, pondrás en práctica lo aprendido a través de ejercicios que te ayudarán a analizar diferentes formas de resolver un mismo caso.\n\nAquí es donde la lógica y la práctica se combinan para fortalecer tu pensamiento como desarrollador."
   },
   "subtema1": {
-    "titulo": "Patrones Numéricos",
-    "contenido": "Los bucles pueden generar patrones mediante anidamiento y condiciones.\n\n• **Pirámides numéricas**: Combinación de bucles y contadores.\n• **Secuencias matemáticas**: Cálculo de valores en tiempo real.\n• **Formatos personalizados**: Ajuste de espacios y saltos de línea.\n\n[Ejemplo pirámide: for (int i = 1; i <= 3; i++) { print(' '.repeat(3-i) + '*'.repeat(2*i-1)); }]",
+    "titulo": "Planteamiento de problemas",
+    "contenido": "Un buen planteamiento del problema permite visualizar claramente el objetivo, los recursos disponibles y las posibles restricciones. No se trata de escribir código de inmediato, sino de detenerse a pensar: ¿qué necesito lograr?, ¿qué datos tengo?, ¿qué se espera como resultado?\n\nEl proceso inicia con la identificación del problema, seguido por la definición de entradas, procesos y salidas esperadas. Esta estructura sencilla te ayuda a visualizar la solución desde una perspectiva lógica y ordenada.\n\n**Ejemplo 1: Problema cotidiano**\nSituación: Tienes que organizar una salida al cine con tus amigos.\nEntrada: Día disponible, número de personas, cartelera del cine, precios.\nProceso: Comparar horarios, verificar disponibilidad de todos, elegir la película y hora.\nSalida: Horario y película acordados, boletos comprados.\nEste tipo de análisis no requiere programación, pero sí pensamiento lógico. Así se entrena la habilidad para resolver problemas reales.\n\n**Ejemplo 2: Problema en programación**\nProblema: Diseñar un programa que calcule el total a pagar en una tienda con descuento.\nEntrada: Precio del producto, porcentaje de descuento.\nProceso: Aplicar la fórmula → descuento = precio * (porcentaje / 100), luego total = precio - descuento.\nSalida: Mostrar el total a pagar.\n\nPlanteamiento estructurado:\n• ¿Qué me están pidiendo? Calcular un precio final.\n• ¿Qué necesito? Dos datos: precio y porcentaje.\n• ¿Cómo lo calculo? Con una operación matemática.\n• ¿Qué debo mostrar? El total con el descuento aplicado.\n\n**¿Cómo identificar qué tipo de datos utilizar?**\nUna vez comprendido lo que se necesita realizar y obtener, el siguiente paso es identificar qué tipos de datos necesitarás para representarlo correctamente en tu programa. Los tipos de datos son fundamentales porque determinan cómo los datos se almacenarán, manipularán y presentarán en la solución.\n\n**Ejemplo 2: Contar estudiantes aprobados**\nProblema: Un programa debe contar cuántos estudiantes aprobaron un examen (nota mayor o igual a 7).\nPlanteamiento:\nEntrada: Lista de notas de los estudiantes.\nProceso: Contar cuántas notas son mayores o iguales a 7.\nSalida: Número de estudiantes aprobados.",
     "nota": {
-      "contenido": "Usa variables temporales para almacenar valores intermedios en patrones complejos.",
-      "color": "blue"
+      "contenido": "Consejo práctico\n\nPara resolver problemas de manera más fácil, enfocándose en cómo está planteado el problema, siempre es importante realizar lo siguiente:\n• Lee con atención. Entiende qué se espera.\n• Subraya los datos. ¿Qué te dan? ¿Qué debes encontrar?\n• Dibuja o escribe un esquema. A veces, visualizar ayuda a ordenar ideas.\n• Pregunta lo necesario. Si hay algo que no está claro, plantéalo.\nEs fundamental en programación identificar correctamente los tipos de datos que se van a utilizar para resolver un problema, ya que esto asegura que el código sea eficiente y adecuado para la tarea.\n\nConsejos para seleccionar tipos de datos:\n• Sé específico con los números: Si los números tienen decimales (como precios o medidas), usa float. Si no, int es suficiente.\n• Elige estructuras adecuadas: Si necesitas ordenar, almacenar o acceder a elementos de manera organizada, usa estructuras como listas, diccionarios, tuplas, etc.\n• Evita el uso innecesario de tipos complejos: No uses estructuras complicadas si no es necesario. Usa lo que te permita resolver el problema de manera eficiente.",
+      "color": "green"
+    },
+    "diagrama_flujo": {
+      "id": "contador_aprobados",
+      "image_path": "assets/module2photos/diag23.png",
+      "descripcion": "Este diagrama de flujo describe el proceso de contar cuántos estudiantes aprobaron un examen, considerando que se aprueba con una nota mayor o igual a 7. El programa recorre la lista de notas, cuenta las que cumplen con la condición y luego muestra el resultado.",
+      "pseudocodigo": "Inicio\n    # Entrada de datos\n    Leer lista_notas\n    # Inicializar contador de aprobados\n    aprobados = 0\n    # Recorrer lista de notas\n    Para cada nota en lista_notas:\n        Si nota >= 7:\n            aprobados = aprobados + 1\n    # Mostrar número de estudiantes aprobados\n    Imprimir \"Número de estudiantes aprobados: \", aprobados\nFin"
+    },
+    "quiz": {
+      "titulo": "Cuestionario: Planteamiento de problemas",
+      "descripcion": "Responde la siguiente pregunta para evaluar tu comprensión sobre cómo plantear problemas de manera estructurada.",
+      "preguntas": [
+        {
+          "pregunta": "¿Cuál de las siguientes opciones representa mejor el planteamiento estructurado de un problema para calcular el promedio de temperaturas diarias de una semana?",
+          "tipo": "multiple_choice",
+          "opciones": [
+            "Entrada: Lista de temperaturas; Proceso: Sumar temperaturas y dividir por 7; Salida: Promedio de temperaturas.",
+            "Entrada: Una temperatura; Proceso: Dividir por 7; Salida: Temperatura promedio.",
+            "Entrada: Días de la semana; Proceso: Contar días; Salida: Número de días.",
+            "Entrada: Promedio de temperaturas; Proceso: Sumar temperaturas; Salida: Lista de temperaturas."
+          ],
+          "respuesta_correcta": "Entrada: Lista de temperaturas; Proceso: Sumar temperaturas y dividir por 7; Salida: Promedio de temperaturas.",
+          "explicacion": "Un planteamiento estructurado debe identificar correctamente las entradas (lista de temperaturas), el proceso (sumar y dividir por 7), y la salida (promedio). La opción correcta describe esto con precisión."
+        }
+      ]
     }
   },
   "subtema2": {
-    "titulo": "Validación de Entrada",
-    "contenido": "Las estructuras de decisión garantizan que los datos ingresados cumplan requisitos.\n\n• **Rangos numéricos**: Verificar que un número esté entre mínimo y máximo.\n• **Formato de strings**: Validar longitud o caracteres permitidos.\n• **Bucles con validación**: Repetir hasta obtener un input válido.\n\n[Ejemplo: do { edad = leerInput(); } while (edad < 0 || edad > 120);]",
+    "titulo": "Algoritmos paso a paso",
+    "contenido": "Recordando lo aprendido en el módulo anterior, un algoritmo es simplemente un conjunto de pasos ordenados y lógicos que permiten resolver un problema. En programación, los algoritmos nos ayudan a planear lo que hará nuestro código antes de escribirlo, como si estuviéramos armando una receta.\n\nAunque suene complicado, los algoritmos están presentes en muchas cosas cotidianas: desde prepararte un sándwich hasta resolver una ecuación. La clave está en que los pasos deben ser claros, precisos y ejecutables.\n\n**Los algoritmos paso a paso son una herramienta esencial para resolver problemas de manera estructurada y eficiente.**\nAl construirlos, aprendemos a descomponer una situación en instrucciones claras y ordenadas, lo que nos prepara para desarrollar programas funcionales.\n\n**¿Cómo se construye un algoritmo?**\n• Identifica el problema.\n• Define entradas, procesos y salidas.\n• Escribe los pasos en orden lógico.\n• Asegúrate de que cualquier persona pueda seguirlos sin dudas.\n\n**Recomendaciones para escribir buenos algoritmos**\n• Usa frases claras y simples.\n• No supongas nada: escribe todos los pasos.\n• Utiliza palabras como “leer”, “calcular”, “mostrar”, “verificar”.\n• Puedes escribirlos en lenguaje natural, pseudocódigo o diagramas de flujo.\n\n**Ejemplo 1: Algoritmo cotidiano (hacer un sándwich)**\nProblema: Quiero preparar un sándwich.\nEntradas: Pan, jamón, queso, mayonesa.\nProceso: Colocar ingredientes en orden.\nSalida: Un sándwich listo para comer.\nAlgoritmo en lenguaje natural:\n1. Tomar dos rebanadas de pan.\n2. Untar mayonesa en una rebanada.\n3. Colocar una rebanada de jamón sobre la mayonesa.\n4. Agregar una rebanada de queso encima del jamón.\n5. Tapar con la otra rebanada de pan.\n6. Servir el sándwich.\nThis example muestra cómo pensar paso a paso, sin saltarte nada. Muy básico, pero ayuda a comprender cómo se debe construir un algoritmo.\n\nAl practicar la escritura de algoritmos en lenguaje natural, pseudocódigo o incluso en código real, fortalecemos nuestra capacidad lógica y damos forma concreta a nuestras ideas antes de programar. Aquí se ve cómo los pasos del algoritmo se traducen directamente a código. Saber qué datos se necesitan (entradas), qué procesos se deben realizar y qué se espera obtener (salidas) es clave para diseñar soluciones efectivas.",
     "nota": {
-      "contenido": "Siempre proporciona mensajes claros al usuario cuando el input sea inválido.",
-      "color": "orange"
+      "contenido": "Es importante recordar que no existe una única forma correcta de construir un algoritmo: puedes resolver un mismo problema de distintas maneras. Lo que realmente importa es que tu solución sea clara, lógica y efectiva. Mientras más practiques, más natural será identificar patrones, optimizar pasos y anticipar posibles errores.",
+      "color": "green"
+    },
+    "quiz": {
+      "titulo": "Cuestionario: Algoritmos paso a paso",
+      "descripcion": "Responde la siguiente pregunta para evaluar tu comprensión sobre cómo construir algoritmos en lenguaje natural.",
+      "preguntas": [
+        {
+          "pregunta": "¿Cuál es el orden correcto de los pasos para un algoritmo en lenguaje natural que resuelve el problema de verificar si un número es par?",
+          "tipo": "multiple_choice",
+          "opciones": [
+            "1. Leer número. 2. Dividir número por 2. 3. Si el residuo es 0, mostrar \"Par\". 4. Sino, mostrar \"Impar\".",
+            "1. Mostrar \"Par\". 2. Leer número. 3. Dividir número por 2. 4. Verificar residuo.",
+            "1. Leer número. 2. Mostrar \"Par\". 3. Dividir número por 2. 4. Verificar residuo.",
+            "1. Dividir número por 2. 2. Leer número. 3. Verificar residuo. 4. Mostrar resultado."
+          ],
+          "respuesta_correcta": "1. Leer número. 2. Dividir número por 2. 3. Si el residuo es 0, mostrar \"Par\". 4. Sino, mostrar \"Impar\".",
+          "explicacion": "Un algoritmo debe seguir un orden lógico: leer el número, realizar la operación (dividir por 2 y verificar el residuo), y mostrar el resultado (\"Par\" o \"Impar\"). La opción correcta sigue este orden correctamente."
+        }
+      ]
     }
   },
   "subtema3": {
-    "titulo": "Procesamiento de Cadenas",
-    "contenido": "Los strings pueden analizarse carácter por carácter usando bucles.\n\n• **Conteo de vocales**: Uso de switch-case dentro de bucles.\n• **Inversión de cadena**: Acceso a índices en orden inverso.\n• **Búsqueda de subcadenas**: Comparaciones parciales con anidamiento.\n\n[Ejemplo: for (int i = texto.length-1; i >= 0; i--) { invertido += texto[i]; }]",
-    "nota": {
-      "contenido": "Los strings son inmutables en muchos lenguajes. Considera usar StringBuilder para manipulación frecuente.",
-      "color": "green"
-    },
-    "quizzes": [
-      {
-        "titulo": "Ejercicio 1: Generador de Triángulo Numérico",
-        "tipo": "flowchart",
-        "enunciado": "Un programa genera un triángulo numérico donde cada fila muestra una secuencia ascendente hasta el número de fila actual. Para N=3:\n1\n1 2\n1 2 3",
-        "algoritmo": [
-          "Leer número N (filas).",
-          "Para i desde 1 hasta N:",
-          "  Para j desde 1 hasta i:",
-          "    Imprimir j seguido de espacio.",
-          "  Imprimir salto de línea."
-        ],
-        "diagrama_flujo": {
-          "id": "triangulo_numerico",
-          "descripcion": "El diagrama muestra dos bucles anidados: el externo controla las filas y el interno los números por fila.",
-          "pseudocodigo": "INICIO\nLeer N\nPARA i = 1 HASTA N HACER\n  PARA j = 1 HASTA i HACER\n    IMPRIMIR j + ' '\n  FIN PARA\n  IMPRIMIR '\\n'\nFIN PARA\nFIN"
-        },
-        "analisis": "Este algoritmo usa complejidad O(N²) por los bucles anidados. Es eficiente para N pequeños pero consume más recursos con N grandes.",
-        "pregunta": {
-          "texto": "¿Qué imprime el algoritmo para N=2?",
-          "opciones": [
-            "1\n2",
-            "1\n1 2",
-            "1 2\n1 2",
-            "1\n2 3"
-          ],
-          "respuesta_correcta": "1\n1 2",
-          "explicacion": "Para N=2, la primera fila imprime '1' y la segunda '1 2', siguiendo el patrón de incremento por fila."
-        }
-      },
-      {
-        "titulo": "Ejercicio 2: Validador de Contraseña",
-        "tipo": "flowchart",
-        "enunciado": "Un programa valida que una contraseña tenga:\n- Al menos 8 caracteres\n- Al menos 1 mayúscula\n- Al menos 1 número",
-        "algoritmo": [
-          "Leer contraseña.",
-          "Si longitud < 8: mostrar 'Inválida' y terminar.",
-          "Inicializar flags: tieneMayus = falso, tieneNum = falso.",
-          "Para cada carácter en contraseña:",
-          "  Si es mayúscula: tieneMayus = verdadero.",
-          "  Si es número: tieneNum = verdadero.",
-          "Si tieneMayus y tieneNum: mostrar 'Válida'.",
-          "Si no: mostrar 'Inválida'."
-        ],
-        "diagrama_flujo": {
-          "id": "validador_password",
-          "descripcion": "El diagrama incluye una decisión inicial para longitud, un bucle para verificar caracteres y flags booleanos.",
-          "pseudocodigo": "INICIO\nLeer password\nSI longitud(password) < 8 ENTONCES\n  IMPRIMIR 'Inválida'\nSINO\ntieneMayus = FALSO\ntieneNum = FALSO\nPARA cada c EN password HACER\n  SI c ES MAYÚSCULA ENTONCES\n    tieneMayus = VERDADERO\n  FIN SI\n  SI c ES NÚMERO ENTONCES\n    tieneNum = VERDADERO\n  FIN SI\nFIN PARA\nSI tieneMayus Y tieneNum ENTONCES\n  IMPRIMIR 'Válida'\nSINO\n  IMPRIMIR 'Inválida'\nFIN SI\nFIN"
-        },
-        "analisis": "El algoritmo tiene complejidad O(n) donde n es la longitud de la contraseña. Es óptimo para validaciones simples.",
-        "pregunta": {
-          "texto": "¿Cuál contraseña sería válida según el algoritmo?",
-          "opciones": [
-            "abc123",
-            "Password1",
-            "PASSWORD",
-            "12345678"
-          ],
-          "respuesta_correcta": "Password1",
-          "explicacion": "'Password1' cumple con los 3 requisitos: 8+ caracteres, al menos 1 mayúscula (P) y 1 número (1)."
-        }
-      },
-      {
-        "titulo": "Ejercicio 3: Contador de Vocales",
-        "tipo": "flowchart",
-        "enunciado": "Un programa cuenta cuántas vocales (a,e,i,o,u) hay en un texto, ignorando mayúsculas/minúsculas.",
-        "algoritmo": [
-          "Leer texto.",
-          "Convertir texto a minúsculas.",
-          "Inicializar contador = 0.",
-          "Para cada carácter en texto:",
-          "  Si es vocal: incrementar contador.",
-          "Mostrar contador."
-        ],
-        "diagrama_flujo": {
-          "id": "contador_vocales",
-          "descripcion": "El diagrama muestra un bucle que recorre el texto y un switch-case para identificar vocales.",
-          "pseudocodigo": "INICIO\nLeer texto\ntexto = texto.minusculas()\ncontador = 0\nPARA cada c EN texto HACER\n  SI c EN {'a','e','i','o','u'} ENTONCES\n    contador = contador + 1\n  FIN SI\nFIN PARA\nIMPRIMIR contador\nFIN"
-        },
-        "analisis": "La conversión a minúsculas simplifica las comparaciones. Complejidad O(n) donde n es la longitud del texto.",
-        "pregunta": {
-          "texto": "¿Qué devuelve el algoritmo para 'Flutter'?",
-          "opciones": [
-            "1",
-            "2",
-            "3",
-            "4"
-          ],
-          "respuesta_correcta": "2",
-          "explicacion": "'Flutter' en minúsculas es 'flutter' y contiene 2 vocales: 'u' y 'e'."
-        }
-      }
-    ]
-  }
+    "titulo": "Ejercicios Prácticos",
+    "contenido": "En esta sección, pondrás en práctica los conceptos aprendidos sobre planteamiento de problemas y construcción de algoritmos. Aunque no hay ejercicios interactivos disponibles en este momento, te recomendamos reflexionar sobre los ejemplos vistos y tratar de crear tus propios algoritmos para problemas cotidianos o de programación. Intenta identificar las entradas, procesos y salidas, y escribe los pasos en lenguaje natural o pseudocódigo para reforzar tu aprendizaje.",
+    "quizzes": [],
+    "video": {
+      "id": "cShOfUMT5iA",
+      "description": "Explora ejercicios prácticos y análisis de soluciones en este video."
+    }
+  },
+  "video": {
+    "id": "walAu_skXHA",
+    "description": "Aprende más sobre resolución de problemas y algoritmos con este video tutorial."
+  },
+  "sectionImage": "https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg"
 }

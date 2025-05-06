@@ -9,7 +9,6 @@ import 'package:flutter_highlighter/flutter_highlighter.dart';
 import 'package:flutter_highlighter/themes/github.dart';
 import 'package:siapp/screens/loading_screen.dart';
 import 'package:siapp/screens/module2.dart';
-import 'flowcharts3.dart';
 import 'dart:math';
 
 class ActividadesScreen extends StatefulWidget {
@@ -424,10 +423,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       }
     }
 
-    if (matches.isEmpty) {
+    // Si no hay coincidencias, renderizamos el texto completo como un solo widget
+    if (widgets.isEmpty) {
       widgets.add(
         Text(
-          question,
+          question.trim(),
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w500,
@@ -636,7 +636,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
 
   Widget _buildExerciseDetail() {
     final currentExercise = selectedExercise!;
-    final isDiagramExercise = currentExercise.containsKey('flowchart');
+    final isDiagramExercise = currentExercise.containsKey('diagram');
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -649,15 +649,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           _buildAttemptsIndicator().animate().fadeIn(duration: 500.ms),
           const SizedBox(height: 20),
           _buildExerciseTitle(currentExercise).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
-          const SizedBox(height: 20),
-          Text(
-            _contentData?['sectionDescription']?.toString() ?? 'Descripción no disponible',
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              color: const Color.fromRGBO(255, 255, 255, 0.7),
-              height: 1.5,
-            ),
-          ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
           const SizedBox(height: 20),
           Text(
             currentExercise['description']?.toString() ?? 'Descripción no disponible',
@@ -771,15 +762,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   }
 
   Widget _buildFlowChartSection(Map<String, dynamic> exercise) {
-    final flowchart = exercise['flowchart'] as Map<String, dynamic>;
-    final flowchartId = flowchart['flowchartId'].toString();
-
-    final flowchartConfig = {
-      'identificador_primos': {'scale': 0.8, 'height': 600.0, 'width': 500.0},
-      'conversor_temperaturas': {'scale': 0.8, 'height': 800.0, 'width': 600.0},
-    };
-
-    final config = flowchartConfig[flowchartId] ?? {'scale': 0.8, 'height': 600.0, 'width': 500.0};
+    final diagramPath = exercise['diagram']?.toString() ?? '';
+    final diagramTitle = exercise['title']?.toString() ?? 'Diagrama de Flujo';
+    final diagramDescription = exercise['explanation']?.toString() ?? exercise['logic']?.toString() ?? 'Descripción no disponible';
 
     return GlassmorphicCard(
       child: Column(
@@ -801,7 +786,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            flowchart['description']?.toString() ?? 'Descripción no disponible',
+            diagramDescription,
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color.fromRGBO(255, 255, 255, 0.7),
@@ -811,7 +796,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
-            height: config['height'] as double,
+            height: 600.0,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -831,11 +816,21 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                 minScale: 0.5,
                 maxScale: 2.0,
                 child: Center(
-                  child: SizedBox(
-                    width: config['width'] as double,
-                    height: config['height'] as double,
-                    child: FlowCharts3.getFlowChart(flowchartId) ?? const Text('Error: Diagrama no disponible', style: TextStyle(color: Colors.black)),
-                  ),
+                  child: diagramPath.isNotEmpty
+                      ? Image.asset(
+                          diagramPath,
+                          fit: BoxFit.contain,
+                          width: 500.0,
+                          height: 600.0,
+                          errorBuilder: (context, error, stackTrace) => const Text(
+                            'Error: No se pudo cargar el diagrama',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        )
+                      : const Text(
+                          'Error: Diagrama no disponible',
+                          style: TextStyle(color: Colors.black),
+                        ),
                 ),
               ),
             ),
@@ -855,7 +850,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   }
 
   Widget _buildPseudocodeSection(Map<String, dynamic> exercise) {
-    final pseudocode = exercise['pseudocode']?.toString() ?? 'Pseudocódigo no disponible';
+    final pseudocode = exercise['logic']?.toString() ?? exercise['pseudocodigo']?.toString() ?? 'Pseudocódigo no disponible';
 
     return GlassmorphicCard(
       child: Column(
@@ -1492,12 +1487,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                               borderRadius: BorderRadius.circular(6),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Color.fromRGBO(
-                                    _getScoreColor(percentage).r.toInt(),
-                                    _getScoreColor(percentage).g.toInt(),
-                                    _getScoreColor(percentage).b.toInt(),
-                                    0.5,
-                                  ),
+                                  color: _getScoreColor(percentage).withValues(alpha: 0.5),
                                   blurRadius: 8,
                                   spreadRadius: 1,
                                 ),

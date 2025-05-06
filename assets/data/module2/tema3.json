@@ -1,218 +1,157 @@
 {
   "introduccion": {
-    "titulo": "Estructuras de Control",
-    "contenido": "Para construir programas funcionales y eficientes, es esencial comprender las estructuras fundamentales que conforman la lógica de programación. Estas estructuras determinan la forma en que las instrucciones se organizan y ejecutan dentro de un algoritmo, permitiéndote desarrollar soluciones estructuradas y comprensibles.\n\nEn este tema, exploraremos las secuencias, condicionales y bucles, elementos clave que controlan el flujo de ejecución de un programa. Aprenderás cómo encadenar instrucciones de manera ordenada, tomar decisiones con estructuras condicionales y repetir procesos utilizando ciclos.\n\n¡Es momento de dar el siguiente paso en tu aprendizaje!",
-    "highlight": {
-      "text": "Las estructuras de control son un conjunto de reglas que hacen posible la gestión del flujo de ejecución de los programas, esto lo logran determinando el orden en que las instrucciones se ejecutan.\n\"Las estructuras de control permiten que el código tome decisiones, repita acciones o bien siga su flujo de ejecución secuencial\".\nLas estructuras de control se dividen en tres categorías: secuenciales, condicionales e iterativas. Veamos en qué consiste cada una.",
-      "color": "green"
+    "highlight1": {
+      "text": "En programación, una estructura de datos permite almacenar y organizar la información que un programa necesita para funcionar correctamente. Por otro lado, las estructuras de control determinan cómo fluye la ejecución de ese programa dependiendo de condiciones, decisiones o repeticiones. Unir ambas es esencial para crear algoritmos útiles, organizados y eficientes."
+    },
+    "highlight2": {
+      "text": "A continuación, exploraremos las estructuras de datos más utilizadas junto con ejemplos que integran condicionales (if, else) y ciclos (for, while), para que veas cómo se combinan en la práctica."
     }
   },
-  "caracteristicas": {
-    "titulo": "Características clave de las estructuras",
-    "items": [
-      "Orden lógico: Garantiza que las instrucciones se ejecuten de forma consecutiva y en el orden correcto, asegurando el procesamiento adecuado de los datos y operaciones.",
-      "Flujo predecible: Asegura que las instrucciones sigan un camino lineal y que el programa produzca los mismos resultados con los mismos datos de entrada, evitando comportamientos impredecibles."
-    ],
-    "color": "blue"
-  },
   "subtema1": {
-    "titulo": "Secuenciales",
-    "contenido": "Las estructuras de control secuenciales son las más básicas. En este caso, las instrucciones se ejecutan una tras otra en el mismo orden en que están escritas.\n\"Se refieren a la ejecución ordenada y secuencial de instrucciones, una tras otra, en el mismo orden en que fueron escritas\".\nBasa su funcionamiento en tener acciones o instrucciones que sigan a otras de forma secuencial, se ejecutan en un orden específico, de arriba a abajo, una tras otra, sin bifurcaciones ni saltos, por lo que es unidireccional.",
-    "ejemplo": {
-      "titulo": "Estructura",
-      "descripcion": "En el siguiente ejemplo, la primera línea asigna un valor a la variable nombre, luego se crea un saludo y finalmente se imprime en la consola. Todas las acciones ocurren en el orden en que fueron escritas.",
-      "codigo": "// Ejemplo en JavaScript\nlet nombre = \"María\";\nlet saludo = \"Hola, \" + nombre + \"!\";\nconsole.log(saludo);",
-      "color": "blue"
+    "titulo": "Arreglos, matrices, listas, etc.",
+    "highlight1": {
+      "text": "En programación, existen diferentes formas de almacenar y organizar datos. Entre las más básicas y fundamentales se encuentran los arreglos, las matrices y las listas. Estas estructuras permiten agrupar múltiples valores bajo un mismo nombre, facilitando el acceso, la modificación y el recorrido de los datos."
     },
-    "conclusion": "Al seguir un flujo de ejecución estructurado y predecible, se pueden evitar errores comunes, mejorar la legibilidad del código y asegurar que el programa funcione de manera confiable."
+    "contenido": "Estas estructuras son esenciales porque sirven como base para construir otras estructuras más complejas, como pilas, colas, árboles o tablas hash. Además, son ideales para resolver problemas donde se necesita manejar grandes cantidades de datos, repetir operaciones o realizar búsquedas de forma ordenada.",
+    "highlight2": {
+      "text": "Comprender cómo funcionan y cómo se usan te permitirá desarrollar soluciones más limpias, eficientes y fáciles de mantener."
+    },
+    "arreglos": {
+      "definicion": "“Estructuras de datos compuestos en las que se utilizan uno o más subíndices para identificar los elementos individuales almacenados, a los que es posible tener acceso en cualquier orden”.",
+      "contenido": "Permite acceder a cada elemento mediante un índice numérico, lo que facilita la manipulación de grandes volúmenes de información. Son imprescindibles y existen distintos tipos, vectores, tuplas, etc.",
+      "ejemplo": {
+        "titulo": "Ejemplo: Contar cuántos números pares hay en un arreglo",
+        "descripcion": "Dado un arreglo de 5 números enteros, el programa debe recorrerlo y contar cuántos de ellos son pares. Al final, debe mostrar el total de números pares encontrados.",
+        "pseudocodigo": "numeros ← [3, 8, 5, 12, 7]\ncontador ← 0\nPARA i ← 0 HASTA 4 HACER\n    SI numeros[i] MOD 2 = 0 ENTONCES\n        contador ← contador + 1\n    FIN SI\nFIN PARA\nmostrar \"Cantidad de números pares: \" + contador",
+        "diagrama": "diag16.png",
+        "conclusion": "En el contexto de los sistemas de cómputo, un arreglo es una estructura de datos que hace referencia a un grupo de casillas de memoria que se puede ver como una colección finita, homogénea y ordenada de elementos."
+      },
+      "usos": {
+        "text": "Los arreglos son fundamentales en muchas aplicaciones de software y se utilizan para:\n\nAlmacenar grandes volúmenes de datos de manera eficiente.\nOptimizar el rendimiento de algoritmos de búsqueda y ordenamiento.\nManejar datos en estructuras más complejas como grafos y listas enlazadas.\nFacilitar el procesamiento de imágenes y señales en inteligencia artificial."
+      }
+    }
   },
   "subtema2": {
-    "titulo": "Condicionales",
-    "contenido": "Son otra de las estructuras básicas en la programación, permiten que el programa vaya tomando decisiones con base en ciertas condiciones.\n\"Las condicionales son estructuras fundamentales en la programación que permiten ejecutar instrucciones dependiendo de si una condición se cumple o no\".\nExisten varios tipos de estructuras condicionales, como los if o switch, y cada una de ellas se utiliza para ejecutar diferentes bloques de código, esto dependiendo de si una condición es verdadera o falsa.",
-    "condicionales": [
-      {
-        "tipo": "if",
-        "descripcion": "Este condicional tiene dos casos particulares. El primero es cuando se emplea simplemente la condición if, donde se busca comprobar una relación y, si se cumple, ejecutar un bloque de código determinado.",
-        "ejemplo": "if (edad >= 18) {\n  console.log(\"Eres mayor de edad\");\n}",
-        "color": "blue"
-      },
-      {
-        "tipo": "if-else",
-        "descripcion": "Es el segundo caso de un if, este se da cuando se emplea la estructura if-else. En este caso, se evalúa una condición y, si es verdadera, se ejecuta un bloque de código; si es falsa, se ejecuta otro bloque alternativo.",
-        "ejemplo": "if (edad >= 18) {\n  console.log(\"Eres mayor de edad\");\n} else {\n  console.log(\"Eres menor de edad\");\n}",
-        "color": "purple"
-      },
-      {
-        "tipo": "if-else anidados",
-        "descripcion": "También se pueden utilizar de forma anidada, es decir, un if dentro de otro. En algunos casos, se pueden anidar múltiples if-else para evaluar más de dos condiciones, ya que nos permiten manejar varios casos y tomar decisiones más complejas.",
-        "ejemplo": "if (nota >= 90) {\n  console.log(\"Excelente\");\n} else if (nota >= 70) {\n  console.log(\"Bueno\");\n} else if (nota >= 60) {\n  console.log(\"Aprobado\");\n} else {\n  console.log(\"Reprobado\");\n}",
-        "color": "indigo"
-      },
-      {
-        "tipo": "switch",
-        "descripcion": "El condicional switch es una estructura de control utilizada cuando una variable puede tomar distintos valores y, según cada valor, se ejecuta una acción específica. A diferencia del if-else, que evalúa condiciones lógicas, el switch compara el valor de una variable con diferentes casos predefinidos.",
-        "ejemplo": "switch(diaSemana) {\n  case 1: console.log(\"Lunes\"); break;\n  case 2: console.log(\"Martes\"); break;\n  case 3: console.log(\"Miércoles\"); break;\n  default: console.log(\"Día no válido\");\n}",
-        "color": "teal"
-      },
-      {
-        "tipo": "switch sin break",
-        "descripcion": "Es la segunda versión del condicional switch, en este caso no se utiliza el break. Si no se usa break, se ejecutarán todos los casos siguientes hasta encontrar uno que sí lo tenga. Esto puede ser útil en ciertos escenarios.",
-        "ejemplo": "switch(mes) {\n  case 1: case 3: case 5: case 7: case 8: case 10: case 12:\n    console.log(\"31 días\"); break;\n  case 4: case 6: case 9: case 11:\n    console.log(\"30 días\"); break;\n  case 2:\n    console.log(\"28 o 29 días\"); break;\n}",
-        "color": "cyan"
-      }
-    ],
-    "nota_importante": {
-      "text": "El condicional if-else es fundamental en la programación porque permite la toma de decisiones dentro de un programa. Su correcta implementación es clave para el flujo lógico del software, permitiendo ejecutar diferentes bloques de código según las condiciones evaluadas.",
-      "color": "green"
+    "titulo": "Matrices",
+    "highlight1": {
+      "text": "Además de las herramientas unidimensionales como arreglos o listas, existe una estructura más compleja llamada matriz, también conocida como arreglo bidimensional. Una matriz puede imaginarse como una tabla con filas y columnas, donde cada fila es en sí misma una secuencia ordenada de elementos."
     },
-    "cuando_usar_switch": {
-      "titulo": "¿Cuándo usar switch en lugar de if-else?",
-      "items": [
-        "Cuando se tiene una variable con múltiples valores predefinidos.",
-        "Cuando las comparaciones son directas y no dependen de expresiones complejas.",
-        "Cuando se quiere hacer el código más claro y organizado.",
-        "No es recomendable cuando se necesitan evaluar rangos de valores (<, >, <=, >=) o condiciones compuestas (&&, ||). En estos casos, es mejor usar if-else."
-      ],
-      "conclusion": "El condicional switch es una herramienta útil para estructurar decisiones múltiples de forma clara y eficiente, especialmente cuando se trata de valores discretos y definidos.",
-      "color": "green"
+    "ejemplo": {
+      "titulo": "Ejemplo: Sumar todos los elementos de una matriz",
+      "descripcion": "Dada una matriz de 2 filas por 3 columnas con números enteros, el programa debe recorrer todos los elementos y calcular la suma total. Al final, debe mostrar el resultado de la suma.",
+      "pseudocodigo": "matriz ← [[4, 2, 1], [6, 3, 5]]\nsuma ← 0\nPARA i ← 0 HASTA 1 HACER\n    PARA j ← 0 HASTA 2 HACER\n        suma ← suma + matriz[i][j]\n    FIN PARA\nFIN PARA\nmostrar \"La suma total es: \" + suma",
+      "diagrama": "diag17.png"
+    },
+    "operaciones": {
+      "text": "Operaciones comunes con matrices:\n\nAcceder a un elemento específico: matriz[fila][columna]\nRecorrer una matriz con bucles anidados.\nModificar valores de celdas específicas.\nSumar, restar, multiplicar matrices.\nTransponer (intercambiar filas por columnas)."
+    },
+    "definicion": {
+      "text": "Desde el punto de vista de programación, una matriz es una secuencia de secuencias: un arreglo donde cada elemento es a su vez otro arreglo. Por esta razón, las matrices también pueden extenderse a más dimensiones (matrices tridimensionales, etc.), aunque lo más común es trabajar con matrices de dos dimensiones."
     }
   },
   "subtema3": {
-    "titulo": "Iterativas o Bucles",
-    "contenido": "Permiten repetir un conjunto de instrucciones varias veces, se presenta cuando necesitamos realizar la misma acción en diferentes valores, o cuando no sabemos cuántas veces una condición será verdadera.\n\"Los bucles son estructuras con fragmentos de código que se ejecutan repetidas veces dependiendo de si una condición se cumple o no, continua hasta que la condición se vuelve falsa\".\nSon complementadas por una condicional, por lo que es primordial comprender el funcionamiento de estas. Hay dos tipos principales de bucles: for y while, cada uno tiene una estructura y función diferente.",
-    "bucles": [
-      {
-        "tipo": "for",
-        "descripcion": "Esta estructura es similar al bucle while, en este la operación se ejecuta para un número determinado de repeticiones, se utiliza para iterar en una secuencia de elementos.",
-        "definicion": "\"Estructura de control que ejecuta repetidamente en un bloque de código un número de veces conocido\".",
-        "explicacion": "La idea principal es repetir un bloque de código un número específico de veces o para cada elemento en una colección.",
-        "estructura": "El bucle for en Java inicializa una variable i en 2 y la incrementa en 1 en cada iteración, sumando su valor a la variable suma mientras i sea menor o igual a 10, calculando así la suma de los números del 2 al 10.\n\nEn contraste, el bucle for en Python itera sobre los números generados por range(5), que son del 0 al 4, y en cada iteración calcula el cuadrado del número actual, imprimiendo tanto el número como su respectivo cuadrado.",
-        "ejemplos": [
-          {
-            "lenguaje": "Java",
-            "codigo": "for (int i = 2; i <= 10; i++) {\n  suma = suma + i;\n}"
-          },
-          {
-            "lenguaje": "Python",
-            "codigo": "for numero in range(5):\n  cuadrado = numero ** 2\n  print(f\"El cuadrado de {numero} es: {cuadrado}\")"
-          }
-        ],
-        "cuando_usar": [
-          "Recorrer una lista de elementos.",
-          "Solicitar una serie de números al usuario, cuando se conoce de antemano cuántas veces se debe realizar la solicitud.",
-          "Realizar sumatorias u otras operaciones repetitivas donde el número de pasos a ejecutar es conocido.",
-          "Iterar un número específico de veces utilizando un rango numérico."
-        ],
-        "conclusion": "Es ideal cuando se conoce de antemano el número de veces que se debe ejecutar un bloque de código, reduciendo la complejidad del código y haciendo que el código sea más legible y menos propenso a errores de \"fuera de rango\".",
-        "color": "orange"
-      },
-      {
-        "tipo": "while",
-        "descripcion": "Esta estructura es de las más simples, como su nombre lo dice, el bucle while ejecuta las instrucciones dentro de su bloque mientras o siempre que se cumpla una condición.",
-        "definicion": "\"Estructura de control que ejecuta repetidamente en un bloque de código, continua mientras la condición sea verdadera\"",
-        "explicacion": "Si en algún momento la condición se evalúa como falsa, el bucle se detiene y la ejecución continúa con el código después del bucle.",
-        "estructura": "Python while: Imprime números desde el valor inicial de x hasta 9, incrementando x en cada paso.\nJava while: Imprime la frase \"El valor de i es:\" junto con los números del 1 al 5, incrementando i en cada paso.",
-        "ejemplos": [
-          {
-            "lenguaje": "Python",
-            "codigo": "while x < 10:\n  print(x)\n  x = x + 1"
-          },
-          {
-            "lenguaje": "Java",
-            "codigo": "int i = 1;\nwhile (i <= 5) {\n  System.out.println(\"El valor de i es: \" + i);\n  i = i + 1;\n}"
-          }
-        ],
-        "cuando_usar": [
-          "Si necesitas leer datos de un archivo hasta un final específico o se encuentre cierta información.",
-          "Ejecución hasta que una variable cambie.",
-          "Comprobar las veces que se cumple una condición sin un número fijo.",
-          "Cuando el número exacto de iteraciones que se deben realizar no se conoce de antemano."
-        ],
-        "conclusion": "Es aplicado sobre todo cuando no hay un número exacto de repeticiones, in contraste con el funcionamiento del ciclo for.",
-        "color": "purple"
-      },
-      {
-        "tipo": "do-while",
-        "descripcion": "Esta estructura asegura que el código dentro del bucle se ejecute al menos una vez.",
-        "definicion": "\"Estructura de control que ejecuta repetidamente en un bloque de código, continua hasta que la condición se vuelve falsa\"",
-        "explicacion": "A diferencia del bucle while, el do-while es ideal en situaciones donde necesitas que el bloque de código se ejecute sí o sí la primera vez, como en la validación de entrada del usuario o al presentar un menú de opciones. El bucle continuará repitiéndose mientras la condición especificada se mantenga verdadera.",
-        "estructura": "En el ejemplo 1 tenemos un ciclo que ejecutaría al menos una vez la impresión del valor de x y su incremento, luego continuaría repitiéndose mientras x sea menor que 10.\n\nPor otro lado, el ejemplo 2 muestra una solicitud al usuario para ingresar un número y almacenándolo en una variable. Posteriormente, evalúa si es menor o igual a 500; si lo es, repite la solicitud, termina solo cuando el número es mayor que 500.",
-        "ejemplos": [
-          {
-            "lenguaje": "Python",
-            "codigo": "while True:\n  print(x)\n  x = x + 1\n  if not (x < 10):\n    break"
-          },
-          {
-            "lenguaje": "Java",
-            "codigo": "do {\n  System.out.println(\"Ingrese un numero: \");\n  numero = sc.nextInt();\n} while(numero <= 500);"
-          }
-        ],
-        "cuando_usar": [
-          "Validación de entrada del usuario.",
-          "Al presentar un menú de opciones a un usuario.",
-          "Repetición de una acción hasta que se cumpla una condición."
-        ],
-        "conclusion": "La clave para elegir un do-while es la necesidad de garantizar la primera ejecución del bloque de código. Si la condición debe verificarse antes de la primera ejecución, un bucle while simple sería más apropiado.",
-        "color": "indigo"
-      }
-    ],
-    "nota_importante": {
-      "text": "Es importante saber identificar en qué momento es mejor aplicar cada bloque, es decir, si es necesario un for, while o do-while. En programación un bucle es utilizado generalmente para buscar y procesar datos, interactuar con el usuario. Por ejemplo, para pedir al usuario que ingrese una serie de números, etc.\n\nDeben contener una condición de salida clara y que sean controlados adecuadamente para evitar bucles infinitos. Por ello, se debe aumentar o cambiar la condición de parada en cada iteración.",
-      "color": "green"
+    "titulo": "Listas",
+    "highlight1": {
+      "text": "Una lista es una colección ordenada de elementos. Puede contener distintos tipos de datos y permite duplicados. En muchos lenguajes de programación, las listas son estructuras dinámicas que pueden cambiar de tamaño durante la ejecución."
+    },
+    "caracteristicas": {
+      "titulo": "Características",
+      "items": [
+        "Tamaño variable.",
+        "Puede permitir distintos tipos de datos (como en Python).",
+        "Métodos integrados para agregar, eliminar, buscar u ordenar elementos"
+      ]
+    },
+    "ejemplo": {
+      "titulo": "Ejemplo: Eliminar los elementos menores a 10 de una lista",
+      "descripcion": "Dada una lista de números, el programa debe recorrerla y eliminar aquellos elementos que sean menores a 10. Al final, debe mostrar la lista resultante con solo los números mayores o iguales a 10.\n\nLista de ejemplo: [4, 15, 8, 23, 7, 12]\n\nResultado esperado: [15, 23, 12]",
+      "pseudocodigo": "lista ← [4, 15, 8, 23, 7, 12]\nnuevaLista ← []\nPARA cada elemento EN lista HACER\n    SI elemento ≥ 10 ENTONCES\n        agregar elemento a nuevaLista\n    FIN SI\nFIN PARA\nmostrar nuevaLista",
+      "diagrama": "diag18.png"
+    },
+    "comparacion": {
+      "text": "Son muy parecidas a los arreglos, pero no son lo mismo, mientras que los arreglos son ideales cuando conoces la cantidad fija de datos y buscas eficiencia, las listas son más flexibles para trabajar con información dinámica."
+    },
+    "usos": {
+      "text": "Estas estructuras son muy útiles cuando se quiere representar un objeto o entidad con varias características. Por ejemplo, un estudiante puede tener nombre, edad, matrícula y promedio, y todas estas propiedades pueden agruparse en un solo registro.\n\nEl uso de diccionarios mejora la organización de datos y hace que el código sea más legible, especialmente cuando se manejan datos que tienen una relación semántica clara."
+    }
+  },
+  "subtema4": {
+    "titulo": "¿Cómo aplicarlo en estructuras de control?",
+    "highlight1": {
+      "text": "En programación, las estructuras de datos y las estructuras de control son dos de los pilares fundamentales que permiten resolver problemas de manera efectiva y eficiente. Estas herramientas trabajan de forma complementaria, y su combinación es clave para desarrollar programas que no solo sean funcionales, sino también escalables y optimizados.\n\nLa verdadera magia ocurre cuando combinamos estas estructuras. Usando estructuras de datos para almacenar información y estructuras de control para procesarla, podemos escribir algoritmos mucho más poderosos. Por ejemplo, podríamos tener una lista de elementos y usar un bucle para recorrerla, o una pila para manejar un conjunto de datos que debe seguir un orden específico. A través de las decisiones condicionales, podemos determinar qué acción tomar con los datos en función de sus valores o de condiciones externas."
+    },
+    "importancia": {
+      "text": "Optimización del tiempo: El uso adecuado de estructuras de datos con estructuras de control permite realizar operaciones como búsqueda, ordenamiento o filtrado de datos de manera eficiente, minimizando el tiempo de ejecución.\n\nEscalabilidad: Cuando trabajamos con grandes cantidades de datos, tener las estructuras adecuadas hace que nuestro programa sea capaz de manejar de manera eficiente conjuntos de información más grandes.\n\nResolución de problemas más complejos: Muchas veces, la solución a un problema requiere la combinación de diferentes tipos de datos y operaciones lógicas. Usar estas herramientas permite desarrollar soluciones más robustas y flexibles."
+    },
+    "acceso": {
+      "text": "El acceso y manipulación de datos son tareas fundamentales en la programación, ya que permiten que un programa obtenga, modifique y gestione la información que maneja. Estas operaciones son clave para resolver problemas y para que un sistema pueda realizar funciones útiles, como mostrar información al usuario, procesar datos y tomar decisiones en función de esos datos."
+    },
+    "ejemplo1": {
+      "titulo": "Ejemplo de acceso y modificación de datos en un arreglo",
+      "descripcion": "Imagina que tenemos un arreglo con los números [5, 12, 8, 20, 3], y queremos acceder a cada número y multiplicar por 2 aquellos que sean mayores que 10.",
+      "pseudocodigo": "Arreglo: [5, 12, 8, 20, 3]\nPara cada elemento \"número\" en el Arreglo:\n    Si número > 10:\n        número = número * 2\n    FinSi\nFinPara",
+      "diagrama": "diag19.png"
+    },
+    "listas": {
+      "text": "Las estructuras de control juegan un papel fundamental cuando se trata de manipular listas. Las listas, como estructuras de datos, permiten almacenar múltiples valores en un solo objeto, y las estructuras de control permiten recorrer, filtrar, modificar y organizar esos valores de acuerdo con ciertas condiciones o repeticiones."
+    },
+    "ejemplo2": {
+      "titulo": "Agregar, modificar y eliminar elementos en una lista",
+      "descripcion": "Tenemos una lista de estudiantes con sus calificaciones. Queremos realizar las siguientes operaciones:\n\nAgregar un nuevo estudiante: (\"María\", 90)\nModificar la calificación de \"Luis\" a 95.\nEliminar a \"Carlos\" de la lista.",
+      "pseudocodigo": "Lista de estudiantes: [(\"Ana\", 85), (\"Luis\", 92), (\"Carlos\", 78)]\n1. Agregar (\"María\", 90) a la lista de estudiantes.\n2. Para cada estudiante en la lista de estudiantes:\n    Si el nombre del estudiante es \"Luis\":\n        Modificar calificación a 95\n    FinSi\n3. Eliminar a \"Carlos\" de la lista.",
+      "diagrama": "diag20.png"
+    },
+    "matrices": {
+      "text": "La relación entre las estructuras de control y las matrices es muy similar a la que tienen con las listas, pero con the particularidad de que las matrices son estructuras de datos bidimensionales. Es decir, una matriz puede contener múltiples filas y columnas, lo que la hace ideal para representar tablas de datos, como calificaciones de estudiantes en diferentes materias o coordenadas espaciales."
+    },
+    "ejemplo3": {
+      "titulo": "Manipulación de una matriz",
+      "descripcion": "Imaginemos que tenemos una matriz con las calificaciones de varios estudiantes en varias materias. Queremos aumentar todas las calificaciones en 5 puntos.",
+      "pseudocodigo": "Matriz de calificaciones:\n[ [85, 92, 78],\n  [88, 76, 90],\n  [91, 84, 85] ]\nPara cada fila en la Matriz de calificaciones:\n    Para cada calificación en la fila:\n        Aumentar calificación en 5\n    FinPara\nFinPara",
+      "diagrama": "diag21.png"
+    },
+    "diccionarios": {
+      "text": "Las estructuras tipo registro (también conocidas como diccionarios o mapas) son colecciones de datos donde cada elemento está formado por una clave única y un valor asociado. A diferencia de las listas o matrices, que almacenan elementos de manera secuencial, los diccionarios permiten acceder a los elementos mediante una clave única, lo que los hace especialmente útiles cuando se requiere acceder a los datos de manera rápida y con un identificador específico."
     }
   },
   "quiz": {
-    "titulo": "Evaluación de Estructuras de Control",
-    "descripcion": "Pon a prueba tus conocimientos sobre las estructuras de control con las siguientes preguntas. Selecciona la opción correcta o indica si la afirmación es verdadera o falsa.",
+    "titulo": "Evaluación de Estructuras de Datos y Control",
+    "descripcion": "Pon a prueba tus conocimientos sobre las estructuras de datos y control con las siguientes preguntas. Selecciona la opción correcta o indica si la afirmación es verdadera o falsa.",
     "preguntas": [
       {
         "tipo": "multiple_choice",
-        "pregunta": "¿Cuál de las siguientes estructuras de control ejecuta las instrucciones en el orden en que están escritas, sin bifurcaciones ni repeticiones?",
+        "pregunta": "¿Qué estructura de control es más adecuada para contar los números pares en un arreglo, como en el ejemplo donde se recorre [3, 8, 5, 12, 7]?",
         "opciones": [
-          "Estructura condicional",
-          "Estructura secuencial",
-          "Estructura iterativa",
-          "Estructura switch"
-        ],
-        "respuesta_correcta": "Estructura secuencial",
-        "explicacion": "La estructura secuencial ejecuta las instrucciones una tras otra en el orden en que están escritas, sin saltos ni repeticiones."
-      },
-      {
-        "tipo": "true_false",
-        "pregunta": "El condicional 'switch' es más adecuado que 'if-else' cuando se evalúan rangos de valores o condiciones compuestas.",
-        "respuesta_correcta": false,
-        "explicacion": "El condicional 'switch' es ideal para comparar una variable con valores discretos predefinidos, no para rangos o condiciones compuestas, donde 'if-else' es más apropiado."
-      },
-      {
-        "tipo": "multiple_choice",
-        "pregunta": "¿Qué bucle es más adecuado cuando se conoce de antemano el número exacto de iteraciones?",
-        "opciones": [
-          "while",
-          "do-while",
+          "if-else",
           "for",
+          "while",
           "switch"
         ],
         "respuesta_correcta": "for",
-        "explicacion": "El bucle 'for' es ideal cuando se conoce el número exacto de iteraciones, ya que permite definir el inicio, fin e incremento en una sola línea."
+        "explicacion": "Un bucle for es ideal para recorrer un arreglo de tamaño fijo, como en el ejemplo donde se cuenta los números pares en [3, 8, 5, 12, 7], ya que permite iterar sobre cada índice de manera ordenada."
       },
       {
         "tipo": "true_false",
-        "pregunta": "Un bucle 'do-while' garantiza que el bloque de código se ejecute al menos una vez, incluso si la condición es falsa inicialmente.",
+        "pregunta": "Una matriz requiere bucles anidados para recorrer todos sus elementos, como en el ejemplo de sumar los elementos de [[4, 2, 1], [6, 3, 5]].",
         "respuesta_correcta": true,
-        "explicacion": "El bucle 'do-while' ejecuta el bloque de código al menos una vez antes de verificar la condición, a diferencia del bucle 'while'."
+        "explicacion": "Debido a que una matriz es bidimensional, con filas y columnas, se necesitan bucles anidados (uno para las filas y otro para las columnas) para recorrer todos sus elementos, como se muestra en el ejemplo de suma."
       },
       {
         "tipo": "multiple_choice",
-        "pregunta": "¿Qué sucede en un condicional 'switch' si no se incluye la instrucción 'break'?",
+        "pregunta": "¿Cuál es una característica clave de las listas que las diferencia de los arreglos, según el contenido del módulo?",
         "opciones": [
-          "El programa termina inmediatamente",
-          "Se ejecutan todos los casos posteriores hasta encontrar un 'break' o el final del switch",
-          "Solo se ejecuta el caso actual",
-          "Se genera un error de compilación"
+          "Tienen tamaño fijo",
+          "Solo almacenan datos del mismo tipo",
+          "Pueden cambiar de tamaño dinámicamente",
+          "Se accede a ellas mediante claves únicas"
         ],
-        "respuesta_correcta": "Se ejecutan todos los casos posteriores hasta encontrar un 'break' o el final del switch",
-        "explicacion": "Sin la instrucción 'break', el flujo de ejecución continúa con los casos siguientes hasta que se encuentra un 'break' o el switch termina."
+        "respuesta_correcta": "Pueden cambiar de tamaño dinámicamente",
+        "explicacion": "Las listas, a diferencia de los arreglos, son estructuras dinámicas que pueden cambiar de tamaño durante la ejecución, como se menciona en el subtema de listas."
       }
     ]
+  },
+  "video": {
+    "id": "walAu_skXHA",
+    "description": "Aprende con este video tutorial"
   }
 }

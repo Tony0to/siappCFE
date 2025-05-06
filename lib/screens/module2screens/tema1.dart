@@ -5,7 +5,59 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
+
+// Pantalla para mostrar la imagen en pantalla completa con área maximizada
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenImage({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: InteractiveViewer(
+          minScale: 0.1, // Permite reducir más para diagramas largos
+          maxScale: 6.0, // Mayor zoom para detalles
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain, // Asegura que el diagrama sea completamente visible
+              width: double.infinity,
+              height: double.infinity, // Ocupa todo el espacio disponible
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen: $imagePath\n$error',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class Tema1 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -276,27 +328,108 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 16),
-      child: Image.asset(
-        imagePath,
-        fit: BoxFit.contain,
-        height: 350,
-        width: double.infinity,
-        errorBuilder: (context, error, stackTrace) => Container(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullScreenImage(imagePath: imagePath),
+            ),
+          );
+        },
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
           height: 350,
-          color: const Color(0xFF1E3A8A),
-          child: Center(
-            child: Text(
-              'Error al cargar el diagrama: $imagePath',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Container(
+            height: 350,
+            color: const Color(0xFF1E3A8A),
+            child: Center(
+              child: Text(
+                'Error al cargar el diagrama: $imagePath\n$error',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: null,
               ),
-              textAlign: TextAlign.center,
-              maxLines: null,
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildCodeBox(String code, String language) {
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'java':
+        highlightLanguage = 'java';
+        break;
+      case 'c++':
+        highlightLanguage = 'cpp';
+        break;
+      case 'pseudocode':
+        highlightLanguage = 'text';
+        break;
+      default:
+        highlightLanguage = 'text';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(10, 36, 99, 0.25),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Color.fromRGBO(62, 146, 204, 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3E92CC),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              'Pseudocódigo',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: HighlightView(
+                code,
+                language: highlightLanguage,
+                theme: githubTheme,
+                padding: const EdgeInsets.all(12),
+                textStyle: GoogleFonts.sourceCodePro(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -600,6 +733,11 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
   Widget buildExampleCard(Map<String, dynamic>? example) {
     if (example == null) return const SizedBox.shrink();
 
+    final isLoopExample = example['title']?.toString().contains('Bucle') ?? false;
+    final pseudocode = isLoopExample
+        ? example['logic']?.toString().split('Lógica de solución:').last.trim()
+        : null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -651,7 +789,11 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               ),
             ],
             const SizedBox(height: 10),
-            ...formatContent(example['logic']?.toString()),
+            if (isLoopExample && pseudocode != null) ...[
+              buildCodeBox(pseudocode, 'pseudocode'),
+            ] else ...[
+              ...formatContent(example['logic']?.toString()),
+            ],
             if (example['diagram'] != null)
               buildDiagramImage(example['diagram']?.toString()),
             const SizedBox(height: 10),
@@ -711,9 +853,9 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     return buildNoteCard(
       note['content']?.toString(),
       color: Color.fromRGBO(
-        color.red,
-        color.green,
-        color.blue,
+        color.r.toInt(),
+        color.g.toInt(),
+        color.b.toInt(),
         opacity,
       ),
       title: note['title']?.toString(),
@@ -887,8 +1029,13 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
     final totalPages = subsections.length;
 
-    return WillPopScope(
-      onWillPop: navigateBack,
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          await navigateBack();
+        }
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFF1E40AF),
         extendBodyBehindAppBar: true,

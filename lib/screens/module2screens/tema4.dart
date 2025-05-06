@@ -8,6 +8,57 @@ import 'package:siapp/screens/module2.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
 import 'package:flutter_highlighter/themes/github.dart';
 
+// Pantalla para mostrar la imagen en pantalla completa con área maximizada
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenImage({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: InteractiveViewer(
+          minScale: 0.1, // Permite reducir más para diagramas largos
+          maxScale: 6.0, // Mayor zoom para detalles
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain, // Asegura que el diagrama sea completamente visible
+              width: double.infinity,
+              height: double.infinity, // Ocupa todo el espacio disponible
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen: $imagePath\n$error',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class Tema4 extends StatefulWidget {
   final Map<String, dynamic> section;
   final String sectionTitle;
@@ -39,13 +90,17 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
   late Animation<double> _scaleAnimation;
   Map<String, dynamic>? _contentData;
   YoutubePlayerController? _youtubeController;
+  YoutubePlayerController? _youtubeControllerSubtema3;
   bool _videoError = false;
+  bool _videoErrorSubtema3 = false;
   bool _showVideo = false;
+  bool _showVideoSubtema3 = false;
   final _scrollController = ScrollController();
   final _pageController = PageController();
   int _currentPage = 0;
   final Map<int, String?> _selectedAnswers = {};
-  final Map<int, bool> _showFeedback = {};
+  final Map<int, bool?> _answerResults = {};
+  final Map<int, bool> _showExplanations = {};
   final Map<int, TransformationController> _transformationControllers = {};
 
   @override
@@ -74,6 +129,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     _controller.dispose();
     _youtubeController?.pause();
     _youtubeController?.dispose();
+    _youtubeControllerSubtema3?.pause();
+    _youtubeControllerSubtema3?.dispose();
     _scrollController.dispose();
     _pageController.dispose();
     for (var controller in _transformationControllers.values) {
@@ -131,6 +188,36 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     });
   }
 
+  void initializeVideoSubtema3() {
+    setState(() {
+      _showVideoSubtema3 = true;
+      try {
+        _youtubeControllerSubtema3 = YoutubePlayerController(
+          initialVideoId: _contentData?['subtema3']?['video']?['id']?.toString() ?? 'cShOfUMT5iA',
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: true,
+            disableDragSeek: false,
+            loop: false,
+            enableCaption: true,
+            hideThumbnail: false,
+          ),
+        )..addListener(() {
+            if (_youtubeControllerSubtema3!.value.hasError && !_videoErrorSubtema3) {
+              setState(() {
+                _videoErrorSubtema3 = true;
+              });
+            }
+          });
+      } catch (e) {
+        debugPrint('Error initializing subtema3 video: $e');
+        setState(() {
+          _videoErrorSubtema3 = true;
+        });
+      }
+    });
+  }
+
   Widget buildSectionImage() {
     final imageUrl = _contentData?['sectionImage']?.toString() ??
         'https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg';
@@ -167,12 +254,16 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     );
   }
 
-  Widget buildVideoPlayer() {
-    if (!_showVideo) {
+  Widget buildVideoPlayer({bool isSubtema3 = false}) {
+    final showVideo = isSubtema3 ? _showVideoSubtema3 : _showVideo;
+    final videoError = isSubtema3 ? _videoErrorSubtema3 : _videoError;
+    final initializeFunction = isSubtema3 ? initializeVideoSubtema3 : initializeVideo;
+
+    if (!showVideo) {
       return ScaleTransition(
         scale: _scaleAnimation,
         child: GestureDetector(
-          onTap: initializeVideo,
+          onTap: initializeFunction,
           child: Container(
             height: 200,
             decoration: BoxDecoration(
@@ -195,7 +286,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       );
     }
 
-    if (_videoError) {
+    if (videoError) {
       return ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
@@ -242,7 +333,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: initializeVideo,
+                onPressed: initializeFunction,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
@@ -278,7 +369,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             ],
           ),
           child: YoutubePlayer(
-            controller: _youtubeController!,
+            controller: isSubtema3 ? _youtubeControllerSubtema3! : _youtubeController!,
             showVideoProgressIndicator: true,
             progressIndicatorColor: Colors.blue,
             progressColors: ProgressBarColors(
@@ -288,10 +379,18 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               backgroundColor: Colors.blue.withValues(alpha: 0.1),
             ),
             onReady: () {
-              _youtubeController!.unMute();
+              if (isSubtema3) {
+                _youtubeControllerSubtema3!.unMute();
+              } else {
+                _youtubeController!.unMute();
+              }
             },
             onEnded: (metaData) {
-              _youtubeController!.pause();
+              if (isSubtema3) {
+                _youtubeControllerSubtema3!.pause();
+              } else {
+                _youtubeController!.pause();
+              }
             },
           ),
         ),
@@ -323,7 +422,17 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         final code = trimmed.substring(1, trimmed.length - 1);
         textWidget = buildCodeBox(
           code,
-          language: 'dart',
+          language: 'pseudocode',
+        );
+      } else if (trimmed.startsWith('**') && trimmed.contains('**')) {
+        final title = trimmed.replaceAll('**', '');
+        textWidget = Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         );
       } else {
         textWidget = Text(
@@ -367,7 +476,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     );
   }
 
-  Widget buildCodeBox(String code, {String language = 'plaintext'}) {
+  Widget buildCodeBox(String code, {String language = 'pseudocode'}) {
     if (code.isEmpty) {
       return const Text(
         'Código no disponible',
@@ -425,7 +534,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              language.toLowerCase() == 'pseudocode' ? 'Pseudocódigo' : 'Código',
+              'Pseudocódigo',
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -484,39 +593,165 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     }
   }
 
+  Widget buildQuizQuestion(Map<String, dynamic> question, int questionIndex) {
+    final bool isAnswered = _answerResults[questionIndex] != null;
+    final bool isCorrect = _answerResults[questionIndex] == true;
+    final bool showExplanation = _showExplanations[questionIndex] ?? false;
+
+    final tipo = question['tipo'] is List ? question['tipo'].first.toString() : question['tipo']?.toString() ?? 'multiple_choice';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(30, 64, 175, 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Pregunta ${questionIndex + 1}: ${question['pregunta'] ?? ''}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...(question['opciones'] ?? (tipo == 'true_false' ? ['Verdadero', 'Falso'] : [])).map<Widget>((option) {
+            final optionText = option.toString();
+            final isSelected = _selectedAnswers[questionIndex] == optionText;
+            final isCorrectOption = optionText == question['respuesta_correcta']?.toString();
+            Color textColor = Colors.white;
+            Color borderColor = Color.fromRGBO(59, 130, 246, 0.5);
+            Color bgColor = Color.fromRGBO(30, 64, 175, 0.2);
+
+            if (isAnswered) {
+              if (isSelected && !isCorrectOption) {
+                borderColor = const Color(0xFFEF4444);
+                bgColor = Color.fromRGBO(153, 27, 27, 0.2);
+              } else if (isSelected && isCorrectOption) {
+                borderColor = const Color(0xFF10B981);
+                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+              } else if (isCorrectOption) {
+                borderColor = const Color(0xFF10B981);
+                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+              }
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: isAnswered
+                    ? null
+                    : () {
+                        setState(() {
+                          _selectedAnswers[questionIndex] = optionText;
+                        });
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: isSelected
+                            ? Icon(
+                                isCorrectOption ? Icons.check : Icons.close,
+                                size: 16,
+                                color: isCorrectOption ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          optionText,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          if (_selectedAnswers[questionIndex] != null && !isAnswered)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _answerResults[questionIndex] =
+                        _selectedAnswers[questionIndex] == question['respuesta_correcta']?.toString();
+                    _showExplanations[questionIndex] = true;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3E92CC),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Enviar Respuesta',
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          if (isAnswered)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                isCorrect ? '¡Correcto!' : 'Incorrecto',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isCorrect ? Colors.green : Colors.red,
+                ),
+              ),
+            ),
+          if (showExplanation && question['explicacion'] != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: buildHighlightBox({
+                'text': question['explicacion'].toString(),
+                'color': 'green',
+                'title': 'Explicación',
+              }),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget buildQuiz(Map<String, dynamic> quiz, int quizIndex) {
-    final tipo = quiz['tipo'] as String? ?? 'unknown';
-    final pregunta = quiz['pregunta'] as Map<String, dynamic>? ?? {};
-    final opciones = (pregunta['opciones'] as List<dynamic>?)?.cast<String>() ?? [];
-    final respuestaCorrecta = pregunta['respuesta_correcta'] as String? ?? (tipo == 'true_false' ? 'true' : '');
-    final explicacion = pregunta['explicacion'] as String? ?? 'Sin explicación disponible';
-    final selectedAnswer = _selectedAnswers[quizIndex];
-    final showFeedback = _showFeedback[quizIndex] ?? false;
-
-    final controller = _transformationControllers[quizIndex] ?? TransformationController();
-    final containerWidth = MediaQuery.of(context).size.width * 0.95;
-    const containerHeight = 600.0;
-    const initialScale = 0.6;
-
-    void zoomIn() {
-      final currentScale = controller.value.getMaxScaleOnAxis();
-      final newScale = currentScale * 1.2;
-      controller.value = Matrix4.identity()..scale(newScale);
-    }
-
-    void zoomOut() {
-      final currentScale = controller.value.getMaxScaleOnAxis();
-      final newScale = (currentScale / 1.2).clamp(0.3, 4.0);
-      controller.value = Matrix4.identity()..scale(newScale);
-    }
-
-    void resetZoom() {
-      controller.value = Matrix4.identity()..scale(initialScale);
-    }
-
     return Card(
       elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.white.withValues(alpha: 0.1),
       child: Padding(
@@ -525,285 +760,93 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              quiz['titulo']?.toString() ?? 'Quiz sin título',
+              quiz['titulo']?.toString() ?? 'Cuestionario',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
-              quiz['enunciado']?.toString() ?? 'Sin enunciado',
-              style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
-            ),
-            if (tipo == 'flowchart') ...[
-              const SizedBox(height: 12),
-              ExpansionTile(
-                title: Text(
-                  'Algoritmo',
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: (quiz['algoritmo'] as List<dynamic>? ?? [])
-                          .map((step) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(Icons.arrow_right, size: 16, color: Colors.white70),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        step.toString(),
-                                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                ],
-              ),
-              ExpansionTile(
-                initiallyExpanded: true,
-                title: Text(
-                  'Diagrama de Flujo',
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        ClipRect(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: containerWidth,
-                                maxHeight: containerHeight,
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: InteractiveViewer(
-                                  transformationController: controller,
-                                  minScale: 0.3,
-                                  maxScale: 4.0,
-                                  boundaryMargin: const EdgeInsets.all(20),
-                                  constrained: false,
-                                  onInteractionStart: (_) {
-                                    if (controller.value.getMaxScaleOnAxis() == 1.0) {
-                                      controller.value = Matrix4.identity()..scale(initialScale);
-                                    }
-                                  },
-                                  child: Center(
-                                    child: (quiz['diagrama_flujo'] != null &&
-                                            quiz['diagrama_flujo']['id'] != null)
-                                        ? Builder(
-                                            builder: (context) {
-                                              try {
-                                                return FlowCharts.getFlowChart(quiz['diagrama_flujo']['id'] as String);
-                                              } catch (e) {
-                                                return const Text(
-                                                  'Error al cargar el diagrama',
-                                                  style: TextStyle(color: Colors.white70),
-                                                );
-                                              }
-                                            },
-                                          )
-                                        : const Text(
-                                            'Diagrama no disponible',
-                                            style: TextStyle(color: Colors.white70),
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.zoom_in, color: Colors.white),
-                              onPressed: zoomIn,
-                              tooltip: 'Acercar',
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.zoom_out, color: Colors.white),
-                              onPressed: zoomOut,
-                              tooltip: 'Alejar',
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.refresh, color: Colors.white),
-                              onPressed: resetZoom,
-                              tooltip: 'Restablecer',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (quiz['diagrama_flujo']?['descripcion'] != null)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        quiz['diagrama_flujo']['descripcion'] as String,
-                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-                      ),
-                    ),
-                  if (quiz['diagrama_flujo']?['pseudocodigo'] != null)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: buildCodeBox(
-                        quiz['diagrama_flujo']['pseudocodigo'] as String,
-                        language: quiz['diagrama_flujo']['lenguaje']?.toString() ?? 'pseudocode',
-                      ),
-                    )
-                  else
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Pseudocódigo no disponible',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                ],
-              ),
-              ExpansionTile(
-                title: Text(
-                  'Análisis',
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      quiz['analisis']?.toString() ?? 'Sin análisis',
-                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 12),
-            Text(
-              pregunta['texto']?.toString() ?? 'Pregunta no disponible',
+              quiz['descripcion']?.toString() ?? 'Responde las siguientes preguntas.',
               style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+                fontSize: 15,
+                color: Colors.white70,
               ),
             ),
-            const SizedBox(height: 12),
-            if (tipo == 'multiple_choice' || tipo == 'flowchart') ...[
-              ...opciones.map((option) {
-                return RadioListTile<String>(
-                  title: Text(
-                    option,
-                    style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                  ),
-                  value: option,
-                  groupValue: selectedAnswer,
-                  activeColor: Colors.blue[300],
-                  onChanged: showFeedback
-                      ? null
-                      : (value) {
-                          setState(() {
-                            _selectedAnswers[quizIndex] = value;
-                            _showFeedback[quizIndex] = false;
-                          });
-                        },
-                );
-              }),
-            ] else if (tipo == 'true_false') ...[
-              RadioListTile<String>(
-                title: Text(
-                  'Verdadero',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                ),
-                value: 'true',
-                groupValue: selectedAnswer,
-                activeColor: Colors.blue[300],
-                onChanged: showFeedback
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _selectedAnswers[quizIndex] = value;
-                          _showFeedback[quizIndex] = false;
-                        });
-                      },
-              ),
-              RadioListTile<String>(
-                title: Text(
-                  'Falso',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                ),
-                value: 'false',
-                groupValue: selectedAnswer,
-                activeColor: Colors.blue[300],
-                onChanged: showFeedback
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _selectedAnswers[quizIndex] = value;
-                          _showFeedback[quizIndex] = false;
-                        });
-                      },
-              ),
-            ],
-            const SizedBox(height: 12),
-            if (selectedAnswer != null && !showFeedback)
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _showFeedback[quizIndex] = true;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[300],
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Enviar Respuesta',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                ),
-              ),
-            if (showFeedback)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  selectedAnswer == respuestaCorrecta ? '¡Correcto!' : 'Incorrecto',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: selectedAnswer == respuestaCorrecta ? Colors.green : Colors.red,
-                  ),
-                ),
-              ),
-            if (showFeedback && explicacion.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: buildHighlightBox({
-                  'text': explicacion,
-                  'color': 'green',
-                  'title': 'Explicación',
-                }),
-              ),
+            const SizedBox(height: 16),
+            ...(quiz['preguntas'] as List<dynamic>? ?? [])
+                .asMap()
+                .entries
+                .map<Widget>((entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: buildQuizQuestion(entry.value, quizIndex * 100 + entry.key),
+                    ))
+                .toList(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildDiagramImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 350,
+        color: const Color(0xFF1E3A8A),
+        child: Center(
+          child: Text(
+            'Diagrama no disponible',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: null,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullScreenImage(imagePath: imagePath),
+            ),
+          );
+        },
+        child: InteractiveViewer(
+          minScale: 0.1,
+          maxScale: 6.0,
+          child: Image.asset(
+            imagePath,
+            fit: BoxFit.contain,
+            height: 350,
+            width: double.infinity,
+            errorBuilder: (context, error, stackTrace) => Container(
+              height: 350,
+              color: const Color(0xFF1E3A8A),
+              child: Center(
+                child: Text(
+                  'Error al cargar el diagrama: $imagePath\n$error',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: null,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -846,7 +889,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         ],
       },
       {
-        'title': 'Patrones Numéricos',
+        'title': 'Planteamiento de problemas',
         'content': [
           Card(
             elevation: 4,
@@ -871,15 +914,62 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     buildHighlightBox({
                       'text': subtema1['nota']['contenido']?.toString() ?? '',
                       'color': subtema1['nota']['color']?.toString() ?? 'blue',
+                      'title': 'Consejo práctico',
                     }),
                 ],
               ),
             ),
           ),
+          if (subtema1['diagrama_flujo'] != null) ...[
+            const SizedBox(height: 16),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              color: Colors.white.withValues(alpha: 0.1),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ejemplo: Contar estudiantes aprobados',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (subtema1['diagrama_flujo']['pseudocodigo'] != null)
+                      buildCodeBox(
+                        subtema1['diagrama_flujo']['pseudocodigo'] as String,
+                        language: 'pseudocode',
+                      ),
+                    const SizedBox(height: 12),
+                    if (subtema1['diagrama_flujo']['image_path'] != null)
+                      buildDiagramImage(subtema1['diagrama_flujo']['image_path'] as String),
+                    if (subtema1['diagrama_flujo']['descripcion'] != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: buildHighlightBox({
+                          'text': subtema1['diagrama_flujo']['descripcion'] as String,
+                          'color': 'blue',
+                          'title': 'Descripción del diagrama',
+                        }),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (subtema1['quiz'] != null) ...[
+            const SizedBox(height: 16),
+            buildQuiz(subtema1['quiz'], 1),
+          ],
         ],
       },
       {
-        'title': 'Validación de Entrada',
+        'title': 'Algoritmos paso a paso',
         'content': [
           Card(
             elevation: 4,
@@ -904,15 +994,54 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     buildHighlightBox({
                       'text': subtema2['nota']['contenido']?.toString() ?? '',
                       'color': subtema2['nota']['color']?.toString() ?? 'blue',
+                      'title': 'Nota',
                     }),
                 ],
               ),
             ),
           ),
+          if (subtema2['quiz'] != null) ...[
+            const SizedBox(height: 16),
+            buildQuiz(subtema2['quiz'], 2),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  'Video Explicativo',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _contentData?['video']?['description']?.toString() ?? 'Aprende más con este video tutorial',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 16),
+          buildVideoPlayer(),
         ],
       },
       {
-        'title': 'Procesamiento de Cadenas',
+        'title': 'Ejercicios Prácticos',
         'content': [
           Card(
             elevation: 4,
@@ -933,36 +1062,58 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 8),
                   ...formatContent(subtema3['contenido']?.toString() ?? ''),
-                  if (subtema3['nota'] != null)
-                    buildHighlightBox({
-                      'text': subtema3['nota']['contenido']?.toString() ?? '',
-                      'color': subtema3['nota']['color']?.toString() ?? 'blue',
-                    }),
+                  if (quizzes.isEmpty)
+                    Text(
+                      'No hay ejercicios disponibles en este momento.',
+                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
+                    ),
+                  if (quizzes.isNotEmpty) ...[
+                    Text(
+                      'Resuelve estos ejercicios para practicar lo aprendido:',
+                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
+                    ),
+                    const SizedBox(height: 12),
+                    ...quizzes.asMap().entries.map((entry) => buildQuiz(entry.value, 3 + entry.key)),
+                  ],
                 ],
               ),
             ),
           ),
-        ],
-      },
-      {
-        'title': 'Ejercicios Prácticos',
-        'content': [
-          if (quizzes.isNotEmpty) ...[
-            Text(
-              'Ejercicios Prácticos',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+          if (subtema3['video'] != null) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    'Video Explicativo',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
-              'Resuelve estos ejercicios para practicar lo aprendido:',
-              style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
+              subtema3['video']['description']?.toString() ?? 'Explora ejercicios prácticos y análisis de soluciones en este video.',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
             ),
-            const SizedBox(height: 12),
-            ...quizzes.asMap().entries.map((entry) => buildQuiz(entry.value, entry.key)),
+            const SizedBox(height: 16),
+            buildVideoPlayer(isSubtema3: true),
           ],
         ],
       },
@@ -984,42 +1135,6 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               const SizedBox(height: 16),
             ],
             ...pages[index]['content'],
-            if (index == totalPages - 1) ...[
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      'Video Explicativo',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _contentData?['video']?['description']?.toString() ?? 'Aprende más con este video tutorial',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 16),
-              buildVideoPlayer(),
-            ],
             const SizedBox(height: 80),
           ],
         ),
@@ -1028,7 +1143,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
   }
 
   void navigateNext() {
-    if (_currentPage < 4) {
+    if (_currentPage < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -1091,10 +1206,15 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       );
     }
 
-    const totalPages = 5; // Introduccion, Subtema1, Subtema2, Subtema3, Quizzes
+    const totalPages = 4; // Introduccion, Subtema1, Subtema2, Subtema3
 
-    return WillPopScope(
-      onWillPop: navigateBack,
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          navigateBack();
+        }
+      },
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -1132,7 +1252,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 setState(() {
                   _currentPage = index;
                   _selectedAnswers.clear();
-                  _showFeedback.clear();
+                  _answerResults.clear();
+                  _showExplanations.clear();
                 });
               },
               itemCount: totalPages,

@@ -5,7 +5,60 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
+
+// Pantalla para mostrar la imagen en pantalla completa con área maximizada
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenImage({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: InteractiveViewer(
+          minScale: 0.1,
+          maxScale: 6.0,
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              height: double.infinity,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.black,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen: $imagePath\n$error',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                    softWrap: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class Tema2 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -188,6 +241,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
           Positioned(
             bottom: 20,
             left: 20,
+            right: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -207,8 +261,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
+                    softWrap: true,
                   ),
                 ),
                 Text(
@@ -255,14 +308,18 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
         height: 350,
         color: const Color(0xFF1E3A8A),
         child: Center(
-          child: Text(
-            'Diagrama no disponible',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Diagrama no disponible',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              softWrap: true,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       );
@@ -273,22 +330,38 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width - 32,
       ),
-      child: Image.asset(
-        imagePath,
-        fit: BoxFit.contain,
-        height: 350,
-        errorBuilder: (context, error, stackTrace) => Container(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullScreenImage(imagePath: imagePath),
+            ),
+          );
+        },
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
           height: 350,
-          color: const Color(0xFF1E3A8A),
-          child: Center(
-            child: Text(
-              'Error al cargar el diagrama: $imagePath',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Container(
+            height: 350,
+            color: const Color(0xFF1E3A8A),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Error al cargar el diagrama: $imagePath\n$error',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                  maxLines: null,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ),
@@ -326,11 +399,14 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 40),
                 const SizedBox(height: 8),
-                Text(
-                  'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.7)),
-                  textAlign: TextAlign.center,
-                  softWrap: true,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
+                    style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.7)),
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
                 ),
               ],
             ),
@@ -355,6 +431,77 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
         onEnded: (metaData) {
           _youtubeController!.pause();
         },
+      ),
+    );
+  }
+
+  Widget buildCodeBox(String code, String language) {
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'java':
+        highlightLanguage = 'java';
+        break;
+      case 'c++':
+        highlightLanguage = 'cpp';
+        break;
+      case 'pseudocode':
+        highlightLanguage = 'text';
+        break;
+      default:
+        highlightLanguage = 'text';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(10, 36, 99, 0.25),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Color.fromRGBO(62, 146, 204, 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3E92CC),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              'Pseudocódigo',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: HighlightView(
+                code,
+                language: highlightLanguage,
+                theme: githubTheme,
+                padding: const EdgeInsets.all(12),
+                textStyle: GoogleFonts.sourceCodePro(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -431,6 +578,9 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
   Widget buildExampleCard(Map<String, dynamic>? example) {
     if (example == null) return const SizedBox.shrink();
 
+    final isLoopExample = example['title']?.toString().contains('bucle') ?? false;
+    final pseudocode = isLoopExample ? example['logic']?.toString().split('Pseudocódigo:').last.trim() : null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -460,7 +610,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                       ),
                     ),
                   ),
@@ -479,7 +629,11 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
               ),
             ],
             const SizedBox(height: 10),
-            ...formatContent(example['logic']?.toString()),
+            if (isLoopExample && pseudocode != null) ...[
+              buildCodeBox(pseudocode, 'pseudocode'),
+            ] else ...[
+              ...formatContent(example['logic']?.toString()),
+            ],
             if (example['diagram_description'] != null)
               ...formatContent(example['diagram_description']?.toString()),
             if (example['diagram'] != null)
@@ -534,12 +688,12 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: color != null
-            ? Color.fromRGBO(color.red, color.green, color.blue, 0.3)
+            ? Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.3)
             : Color.fromRGBO(30, 64, 175, 0.3),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: color != null
-              ? Color.fromRGBO(color.red, color.green, color.blue, 0.5)
+              ? Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.5)
               : Color.fromRGBO(59, 130, 246, 0.5),
         ),
       ),
@@ -578,12 +732,12 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     return note['type'] == 'highlight'
         ? buildHighlightBox(
             note['content']?.toString(),
-            color: Color.fromRGBO(color.red, color.green, color.blue, opacity),
+            color: Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), opacity),
             title: note['title']?.toString(),
           )
         : buildNoteCard(
             note['content']?.toString(),
-            color: Color.fromRGBO(color.red, color.green, color.blue, opacity),
+            color: Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), opacity),
             title: note['title']?.toString(),
           );
   }
@@ -591,15 +745,18 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
   Widget buildSubsectionPage(Map<String, dynamic>? sectionData, int index, int totalPages) {
     if (sectionData == null) {
       return Center(
-        child: Text(
-          'No hay datos disponibles para esta sección',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'No hay datos disponibles para esta sección',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            softWrap: true,
           ),
-          textAlign: TextAlign.center,
-          softWrap: true,
         ),
       );
     }
@@ -607,69 +764,122 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     final examples = sectionData['examples'] as List<dynamic>? ?? [];
     final notes = sectionData['notes'] as List<dynamic>? ?? [];
 
+    final exampleMapping = {
+      'Condicional if': 'Ejemplo: Algoritmo para verificar si un número es positivo',
+      'Condicional if-else': 'Ejemplo: Algoritmo para aplicar un descuento según el monto de compra',
+      'Condicional if-else anidados': 'Ejemplo: Algoritmo para clasificar una calificación numérica',
+      'Condicional switch': 'Ejemplo: Algoritmo para mostrar el día de la semana según un número',
+      'Condicional switch sin break': 'Ejemplo: Algoritmo para mostrar una cuenta regresiva a partir de un número del 1 al 3',
+      'Bucle for': 'Ejemplo con bucle for: Mostrar los primeros 5 números pares',
+      'Bucle while': 'Ejemplo con bucle while: Contar del 1 al 5',
+      'Bucle do-while': 'Ejemplo con bucle do-while: Solicitar un número hasta que sea mayor que 10',
+    };
+
+    List<Widget> contentWidgets = [];
+
+    if (index == 0) {
+      contentWidgets.addAll([
+        FadeTransition(
+          opacity: Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
+          ),
+          child: buildSectionImage(),
+        ),
+        const SizedBox(height: 24),
+        FadeTransition(
+          opacity: Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
+          ),
+          child: buildNoteCard(
+            _contentData?['welcomeText']?.toString(),
+            color: Color.fromRGBO(30, 64, 175, 0.3),
+          ),
+        ),
+        const SizedBox(height: 16),
+        buildNoteCard(
+          _contentData?['introText1']?.toString(),
+          color: Color.fromRGBO(30, 64, 175, 0.3),
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            _contentData?['introText2']?.toString() ?? '',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+            softWrap: true,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ]);
+    }
+
+    contentWidgets.add(buildSectionHeader(sectionData['title']?.toString()));
+
+    if (sectionData['title'] == 'Condicionales (if, else, switch)' || sectionData['title'] == 'Bucles (while, for, do-while)') {
+      for (var note in notes) {
+        final noteData = note as Map<String, dynamic>?;
+        if (noteData == null) continue;
+
+        contentWidgets.add(buildNoteCardFromJson(noteData));
+
+        final noteTitle = noteData['title']?.toString();
+        if (noteTitle != null && exampleMapping.containsKey(noteTitle)) {
+          final exampleTitle = exampleMapping[noteTitle];
+          final matchingExample = examples.firstWhere(
+            (example) => example['title'] == exampleTitle,
+            orElse: () => null,
+          );
+          if (matchingExample != null) {
+            contentWidgets.add(buildExampleCard(matchingExample as Map<String, dynamic>?));
+          }
+        }
+
+        final nestedNotes = noteData['notes'] as List<dynamic>? ?? [];
+        for (var nestedNote in nestedNotes) {
+          contentWidgets.add(buildNoteCardFromJson(nestedNote as Map<String, dynamic>?));
+        }
+      }
+    } else {
+      contentWidgets.addAll(notes.map((note) => buildNoteCardFromJson(note as Map<String, dynamic>?)));
+      contentWidgets.addAll(examples.map((example) {
+        final exampleData = example as Map<String, dynamic>?;
+        if (exampleData == null) return const SizedBox.shrink();
+        return buildExampleCard(exampleData);
+      }));
+    }
+
+    if (index == totalPages - 1) {
+      contentWidgets.addAll([
+        const SizedBox(height: 16),
+        buildSectionHeader(_contentData?['video']?['title']?.toString()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            _contentData?['video']?['description']?.toString() ?? '',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Color.fromRGBO(255, 255, 255, 0.9),
+            ),
+            softWrap: true,
+          ),
+        ),
+        const SizedBox(height: 12),
+        buildVideoPlayer(),
+      ]);
+    }
+
+    contentWidgets.add(const SizedBox(height: 80));
+
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (index == 0) ...[
-            FadeTransition(
-              opacity: Tween<double>(begin: 0, end: 1).animate(
-                CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
-              ),
-              child: buildSectionImage(),
-            ),
-            const SizedBox(height: 24),
-            FadeTransition(
-              opacity: Tween<double>(begin: 0, end: 1).animate(
-                CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
-              ),
-              child: buildNoteCard(
-                _contentData?['welcomeText']?.toString(),
-                color: Color.fromRGBO(30, 64, 175, 0.3),
-              ),
-            ),
-            const SizedBox(height: 16),
-            buildNoteCard(
-              _contentData?['introText1']?.toString(),
-              color: Color.fromRGBO(30, 64, 175, 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _contentData?['introText2']?.toString() ?? '',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-              softWrap: true,
-            ),
-            const SizedBox(height: 16),
-          ],
-          buildSectionHeader(sectionData['title']?.toString()),
-          ...notes.map((note) => buildNoteCardFromJson(note as Map<String, dynamic>?)),
-          ...examples.map((example) {
-            final exampleData = example as Map<String, dynamic>?;
-            if (exampleData == null) return const SizedBox.shrink();
-            return buildExampleCard(exampleData);
-          }),
-          if (index == totalPages - 1) ...[
-            const SizedBox(height: 16),
-            buildSectionHeader(_contentData?['video']?['title']?.toString()),
-            Text(
-              _contentData?['video']?['description']?.toString() ?? '',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Color.fromRGBO(255, 255, 255, 0.9),
-              ),
-              softWrap: true,
-            ),
-            const SizedBox(height: 12),
-            buildVideoPlayer(),
-          ],
-          const SizedBox(height: 80),
-        ],
+        children: contentWidgets,
       ),
     );
   }
@@ -700,15 +910,18 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 size: 50,
               ),
               const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  _errorMessage!,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
                 ),
-                textAlign: TextAlign.center,
-                softWrap: true,
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -740,8 +953,13 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
     final totalPages = subsections.length;
 
-    return WillPopScope(
-      onWillPop: navigateBack,
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          await navigateBack();
+        }
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFF1E40AF),
         extendBodyBehindAppBar: true,
@@ -749,7 +967,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
           title: Text(
             widget.sectionTitle,
             style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-            overflow: TextOverflow.ellipsis,
+            softWrap: true,
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
