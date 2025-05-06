@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:siapp/screens/module2screens/flowcharts2.dart';
 import 'package:siapp/screens/module2.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
 import 'package:flutter_highlighter/themes/github.dart';
+import 'package:siapp/theme/app_colors.dart';
 
 // Pantalla para mostrar la imagen en pantalla completa con área maximizada
 class FullScreenImage extends StatelessWidget {
@@ -17,32 +17,32 @@ class FullScreenImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.backgroundDark,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         elevation: 0,
       ),
       body: SafeArea(
         child: InteractiveViewer(
-          minScale: 0.1, // Permite reducir más para diagramas largos
-          maxScale: 6.0, // Mayor zoom para detalles
+          minScale: 0.1,
+          maxScale: 6.0,
           child: Center(
             child: Image.asset(
               imagePath,
-              fit: BoxFit.contain, // Asegura que el diagrama sea completamente visible
+              fit: BoxFit.contain,
               width: double.infinity,
-              height: double.infinity, // Ocupa todo el espacio disponible
+              height: double.infinity,
               errorBuilder: (context, error, stackTrace) => Container(
-                color: Colors.black,
+                color: AppColors.backgroundDark,
                 child: Center(
                   child: Text(
                     'Error al cargar la imagen: $imagePath\n$error',
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -118,7 +118,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _scaleAnimation = Tween<double>(begin: 0.95, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.8, curve: Curves.easeInOut)),
+      CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.3, 0.8, curve: Curves.easeInOut)),
     );
     _loadContentData();
     _controller.forward();
@@ -141,7 +143,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
 
   Future<void> _loadContentData() async {
     try {
-      final String response = await DefaultAssetBundle.of(context).loadString('assets/data/module2/tema4.json');
+      final String response = await DefaultAssetBundle.of(context)
+          .loadString('assets/data/module2/tema4.json');
       final data = jsonDecode(response) as Map<String, dynamic>;
       setState(() {
         _contentData = data;
@@ -163,7 +166,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       _showVideo = true;
       try {
         _youtubeController = YoutubePlayerController(
-          initialVideoId: _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
+          initialVideoId:
+              _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
           flags: const YoutubePlayerFlags(
             autoPlay: false,
             mute: true,
@@ -193,7 +197,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       _showVideoSubtema3 = true;
       try {
         _youtubeControllerSubtema3 = YoutubePlayerController(
-          initialVideoId: _contentData?['subtema3']?['video']?['id']?.toString() ?? 'cShOfUMT5iA',
+          initialVideoId:
+              _contentData?['subtema3']?['video']?['id']?.toString() ??
+                  'cShOfUMT5iA',
           flags: const YoutubePlayerFlags(
             autoPlay: false,
             mute: true,
@@ -203,7 +209,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             hideThumbnail: false,
           ),
         )..addListener(() {
-            if (_youtubeControllerSubtema3!.value.hasError && !_videoErrorSubtema3) {
+            if (_youtubeControllerSubtema3!.value.hasError &&
+                !_videoErrorSubtema3) {
               setState(() {
                 _videoErrorSubtema3 = true;
               });
@@ -231,22 +238,19 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             width: double.infinity,
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
-              color: Colors.grey[200]!.withValues(alpha: 0.3),
+              color: AppColors.glassmorphicBackground,
               child: const Center(child: CircularProgressIndicator()),
             ),
             errorWidget: (context, url, error) => Container(
-              color: Colors.grey[200]!.withValues(alpha: 0.3),
-              child: const Icon(Icons.image_not_supported, size: 50),
+              color: AppColors.glassmorphicBackground,
+              child: const Icon(Icons.image_not_supported,
+                  size: 50, color: AppColors.textPrimary),
             ),
           ),
           Container(
             height: 180,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
-              ),
+              gradient: AppColors.headerSection,
             ),
           ),
         ],
@@ -257,7 +261,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
   Widget buildVideoPlayer({bool isSubtema3 = false}) {
     final showVideo = isSubtema3 ? _showVideoSubtema3 : _showVideo;
     final videoError = isSubtema3 ? _videoErrorSubtema3 : _videoError;
-    final initializeFunction = isSubtema3 ? initializeVideoSubtema3 : initializeVideo;
+    final initializeFunction =
+        isSubtema3 ? initializeVideoSubtema3 : initializeVideo;
 
     if (!showVideo) {
       return ScaleTransition(
@@ -267,11 +272,11 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           child: Container(
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: AppColors.backgroundDark,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: AppColors.shadowColor,
                   blurRadius: 15,
                   spreadRadius: 2,
                   offset: const Offset(0, 5),
@@ -279,7 +284,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               ],
             ),
             child: const Center(
-              child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+              child: Icon(Icons.play_arrow,
+                  color: AppColors.textPrimary, size: 50),
             ),
           ),
         ),
@@ -292,11 +298,11 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.blue.withValues(alpha: 0.3),
+            color: AppColors.glassmorphicBackground,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: AppColors.shadowColor,
                 blurRadius: 10,
                 spreadRadius: 2,
                 offset: const Offset(0, 4),
@@ -305,7 +311,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           ),
           child: Column(
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 40),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 40),
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -314,7 +320,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -326,7 +332,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   'Por favor, intenta de nuevo más tarde.',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -335,8 +341,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               ElevatedButton(
                 onPressed: initializeFunction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.codeBoxLabel,
+                  foregroundColor: AppColors.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -361,7 +367,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: AppColors.shadowColor,
                 blurRadius: 15,
                 spreadRadius: 2,
                 offset: const Offset(0, 5),
@@ -369,14 +375,15 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             ],
           ),
           child: YoutubePlayer(
-            controller: isSubtema3 ? _youtubeControllerSubtema3! : _youtubeController!,
+            controller:
+                isSubtema3 ? _youtubeControllerSubtema3! : _youtubeController!,
             showVideoProgressIndicator: true,
-            progressIndicatorColor: Colors.blue,
+            progressIndicatorColor: AppColors.progressActive,
             progressColors: ProgressBarColors(
-              playedColor: Colors.blue,
-              handleColor: Colors.blue,
-              bufferedColor: Colors.blue.withValues(alpha: 0.3),
-              backgroundColor: Colors.blue.withValues(alpha: 0.1),
+              playedColor: AppColors.progressActive,
+              handleColor: AppColors.progressActive,
+              bufferedColor: AppColors.glassmorphicBackground,
+              backgroundColor: AppColors.glassmorphicBackground,
             ),
             onReady: () {
               if (isSubtema3) {
@@ -408,12 +415,14 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         textWidget = Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.fiber_manual_record, size: 10, color: Colors.white70),
+            const Icon(Icons.fiber_manual_record,
+                size: 10, color: AppColors.textSecondary),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 trimmed.substring(1).trim(),
-                style: GoogleFonts.poppins(fontSize: 15, color: Colors.white),
+                style: GoogleFonts.poppins(
+                    fontSize: 15, color: AppColors.textPrimary),
               ),
             ),
           ],
@@ -431,13 +440,14 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         );
       } else {
         textWidget = Text(
           trimmed,
-          style: GoogleFonts.poppins(fontSize: 15, color: Colors.white),
+          style:
+              GoogleFonts.poppins(fontSize: 15, color: AppColors.textPrimary),
         );
       }
 
@@ -455,7 +465,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         color: getHighlightColor(highlight['color'] as String?),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +476,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           if (highlight['title'] != null) const SizedBox(height: 8),
@@ -480,7 +490,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     if (code.isEmpty) {
       return const Text(
         'Código no disponible',
-        style: TextStyle(color: Colors.white70),
+        style: TextStyle(color: AppColors.textSecondary),
       );
     }
 
@@ -513,12 +523,12 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A2463).withValues(alpha: 0.7),
+        color: AppColors.codeBoxBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF3E92CC).withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.codeBoxBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: AppColors.shadowColor,
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -530,7 +540,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF3E92CC),
+              color: AppColors.codeBoxLabel,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
@@ -538,7 +548,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -546,11 +556,11 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: AppColors.shadowColor,
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -598,21 +608,23 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     final bool isCorrect = _answerResults[questionIndex] == true;
     final bool showExplanation = _showExplanations[questionIndex] ?? false;
 
-    final tipo = question['tipo'] is List ? question['tipo'].first.toString() : question['tipo']?.toString() ?? 'multiple_choice';
+    final tipo = question['tipo'] is List
+        ? question['tipo'].first.toString()
+        : question['tipo']?.toString() ?? 'multiple_choice';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.3),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 24),
+              const Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -620,31 +632,34 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          ...(question['opciones'] ?? (tipo == 'true_false' ? ['Verdadero', 'Falso'] : [])).map<Widget>((option) {
+          ...(question['opciones'] ??
+                  (tipo == 'true_false' ? ['Verdadero', 'Falso'] : []))
+              .map<Widget>((option) {
             final optionText = option.toString();
             final isSelected = _selectedAnswers[questionIndex] == optionText;
-            final isCorrectOption = optionText == question['respuesta_correcta']?.toString();
-            Color textColor = Colors.white;
-            Color borderColor = Color.fromRGBO(59, 130, 246, 0.5);
-            Color bgColor = Color.fromRGBO(30, 64, 175, 0.2);
+            final isCorrectOption =
+                optionText == question['respuesta_correcta']?.toString();
+            Color textColor = AppColors.textPrimary;
+            Color borderColor = AppColors.glassmorphicBorder;
+            Color bgColor = AppColors.glassmorphicBackground;
 
             if (isAnswered) {
               if (isSelected && !isCorrectOption) {
-                borderColor = const Color(0xFFEF4444);
-                bgColor = Color.fromRGBO(153, 27, 27, 0.2);
+                borderColor = AppColors.error;
+                bgColor = Colors.red.withValues(alpha: 0.2);
               } else if (isSelected && isCorrectOption) {
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                borderColor = AppColors.success;
+                bgColor = Colors.green.withValues(alpha: 0.2);
               } else if (isCorrectOption) {
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                borderColor = AppColors.success;
+                bgColor = Colors.green.withValues(alpha: 0.2);
               }
             }
 
@@ -660,7 +675,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                         });
                       },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(8),
@@ -679,7 +695,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                             ? Icon(
                                 isCorrectOption ? Icons.check : Icons.close,
                                 size: 16,
-                                color: isCorrectOption ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                color: isCorrectOption
+                                    ? AppColors.success
+                                    : AppColors.error,
                               )
                             : null,
                       ),
@@ -706,20 +724,22 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 onPressed: () {
                   setState(() {
                     _answerResults[questionIndex] =
-                        _selectedAnswers[questionIndex] == question['respuesta_correcta']?.toString();
+                        _selectedAnswers[questionIndex] ==
+                            question['respuesta_correcta']?.toString();
                     _showExplanations[questionIndex] = true;
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3E92CC),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.codeBoxLabel,
+                  foregroundColor: AppColors.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   'Enviar Respuesta',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.poppins(
+                      fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -731,7 +751,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: isCorrect ? Colors.green : Colors.red,
+                  color: isCorrect ? AppColors.success : AppColors.error,
                 ),
               ),
             ),
@@ -753,7 +773,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.white.withValues(alpha: 0.1),
+      color: AppColors.glassmorphicBackground,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -764,26 +784,27 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              quiz['descripcion']?.toString() ?? 'Responde las siguientes preguntas.',
+              quiz['descripcion']?.toString() ??
+                  'Responde las siguientes preguntas.',
               style: GoogleFonts.poppins(
                 fontSize: 15,
-                color: Colors.white70,
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
             ...(quiz['preguntas'] as List<dynamic>? ?? [])
                 .asMap()
                 .entries
-                .map<Widget>((entry) => Padding(
+                .map((entry) => Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: buildQuizQuestion(entry.value, quizIndex * 100 + entry.key),
-                    ))
-                .toList(),
+                      child: buildQuizQuestion(
+                          entry.value, quizIndex * 100 + entry.key),
+                    )),
           ],
         ),
       ),
@@ -795,12 +816,12 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 16),
         height: 350,
-        color: const Color(0xFF1E3A8A),
+        color: AppColors.neutralCard,
         child: Center(
           child: Text(
             'Diagrama no disponible',
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -832,12 +853,12 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             width: double.infinity,
             errorBuilder: (context, error, stackTrace) => Container(
               height: 350,
-              color: const Color(0xFF1E3A8A),
+              color: AppColors.neutralCard,
               child: Center(
                 child: Text(
                   'Error al cargar el diagrama: $imagePath\n$error',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -853,11 +874,14 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
   }
 
   Widget buildSubtemaPage(int index, int totalPages) {
-    final introduccion = _contentData!['introduccion'] as Map<String, dynamic>? ?? {};
+    final introduccion =
+        _contentData!['introduccion'] as Map<String, dynamic>? ?? {};
     final subtema1 = _contentData!['subtema1'] as Map<String, dynamic>? ?? {};
     final subtema2 = _contentData!['subtema2'] as Map<String, dynamic>? ?? {};
     final subtema3 = _contentData!['subtema3'] as Map<String, dynamic>? ?? {};
-    final quizzes = (subtema3['quizzes'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    final quizzes =
+        (subtema3['quizzes'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
+            [];
 
     final List<Map<String, dynamic>> pages = [
       {
@@ -865,8 +889,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         'content': [
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: Colors.white.withValues(alpha: 0.1),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: AppColors.glassmorphicBackground,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -877,7 +902,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -893,8 +918,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         'content': [
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: Colors.white.withValues(alpha: 0.1),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: AppColors.glassmorphicBackground,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -905,7 +931,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -924,8 +950,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             const SizedBox(height: 16),
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              color: Colors.white.withValues(alpha: 0.1),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              color: AppColors.glassmorphicBackground,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -936,7 +963,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -947,12 +974,14 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                       ),
                     const SizedBox(height: 12),
                     if (subtema1['diagrama_flujo']['image_path'] != null)
-                      buildDiagramImage(subtema1['diagrama_flujo']['image_path'] as String),
+                      buildDiagramImage(
+                          subtema1['diagrama_flujo']['image_path'] as String),
                     if (subtema1['diagrama_flujo']['descripcion'] != null)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: buildHighlightBox({
-                          'text': subtema1['diagrama_flujo']['descripcion'] as String,
+                          'text': subtema1['diagrama_flujo']['descripcion']
+                              as String,
                           'color': 'blue',
                           'title': 'Descripción del diagrama',
                         }),
@@ -973,8 +1002,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         'content': [
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: Colors.white.withValues(alpha: 0.1),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: AppColors.glassmorphicBackground,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -985,7 +1015,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1011,7 +1041,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                 width: 4,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: AppColors.progressActive,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1022,7 +1052,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -1030,10 +1060,11 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 8),
           Text(
-            _contentData?['video']?['description']?.toString() ?? 'Aprende más con este video tutorial',
+            _contentData?['video']?['description']?.toString() ??
+                'Aprende más con este video tutorial',
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: Colors.white70,
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
@@ -1045,8 +1076,9 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
         'content': [
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: Colors.white.withValues(alpha: 0.1),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: AppColors.glassmorphicBackground,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -1057,7 +1089,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1065,15 +1097,20 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   if (quizzes.isEmpty)
                     Text(
                       'No hay ejercicios disponibles en este momento.',
-                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
+                      style: GoogleFonts.poppins(
+                          fontSize: 15, color: AppColors.textSecondary),
                     ),
                   if (quizzes.isNotEmpty) ...[
                     Text(
                       'Resuelve estos ejercicios para practicar lo aprendido:',
-                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white70),
+                      style: GoogleFonts.poppins(
+                          fontSize: 15, color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 12),
-                    ...quizzes.asMap().entries.map((entry) => buildQuiz(entry.value, 3 + entry.key)),
+                    ...quizzes
+                        .asMap()
+                        .entries
+                        .map((entry) => buildQuiz(entry.value, 3 + entry.key)),
                   ],
                 ],
               ),
@@ -1087,7 +1124,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                   width: 4,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: AppColors.progressActive,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1098,7 +1135,7 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -1106,10 +1143,11 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 8),
             Text(
-              subtema3['video']['description']?.toString() ?? 'Explora ejercicios prácticos y análisis de soluciones en este video.',
+              subtema3['video']['description']?.toString() ??
+                  'Explora ejercicios prácticos y análisis de soluciones en este video.',
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.white70,
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -1153,7 +1191,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => Module2IntroScreen(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              Module2IntroScreen(
             module: widget.moduleData,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -1176,7 +1215,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => Module2IntroScreen(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              Module2IntroScreen(
             module: widget.moduleData,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -1193,74 +1233,61 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (_contentData == null) {
       return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: const Center(child: CircularProgressIndicator()),
-        ),
+        backgroundColor: AppColors.backgroundDark,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    const totalPages = 4; // Introduccion, Subtema1, Subtema2, Subtema3
+    const totalPages = 4;
 
     return PopScope(
       canPop: _currentPage == 0,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
-          navigateBack();
+          await navigateBack();
         }
       },
       child: Scaffold(
+        backgroundColor: AppColors.backgroundDark,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text(
             widget.sectionTitle,
-            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+            style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary),
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: AppColors.textPrimary),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: navigateNext,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.blue[900],
+          backgroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.backgroundDark,
           icon: const Icon(Icons.arrow_forward),
           label: Text(
             _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
         ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF0D47A1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: SafeArea(
-            child: PageView.builder(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                  _selectedAnswers.clear();
-                  _answerResults.clear();
-                  _showExplanations.clear();
-                });
-              },
-              itemCount: totalPages,
-              itemBuilder: (context, index) {
-                return buildSubtemaPage(index, totalPages);
-              },
-            ),
+        body: SafeArea(
+          child: PageView.builder(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+                _selectedAnswers.clear();
+                _answerResults.clear();
+                _showExplanations.clear();
+              });
+            },
+            itemCount: totalPages,
+            itemBuilder: (context, index) {
+              return buildSubtemaPage(index, totalPages);
+            },
           ),
         ),
       ),

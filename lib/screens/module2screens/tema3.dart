@@ -7,42 +7,43 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
 import 'package:flutter_highlighter/themes/github.dart';
+import 'package:siapp/theme/app_colors.dart';
 
 // Pantalla para mostrar la imagen en pantalla completa con área maximizada
 class FullScreenImage extends StatelessWidget {
   final String imagePath;
 
-  const FullScreenImage({Key? key, required this.imagePath}) : super(key: key);
+  const FullScreenImage({super.key, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.backgroundDark,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         elevation: 0,
       ),
       body: SafeArea(
         child: InteractiveViewer(
-          minScale: 0.1, // Permite reducir más para diagramas largos
-          maxScale: 6.0, // Mayor zoom para detalles
+          minScale: 0.1,
+          maxScale: 6.0,
           child: Center(
             child: Image.asset(
               imagePath,
-              fit: BoxFit.contain, // Asegura que el diagrama sea completamente visible
+              fit: BoxFit.contain,
               width: double.infinity,
-              height: double.infinity, // Ocupa todo el espacio disponible
+              height: double.infinity,
               errorBuilder: (context, error, stackTrace) => Container(
-                color: Colors.black,
+                color: AppColors.backgroundDark,
                 child: Center(
                   child: Text(
                     'Error al cargar la imagen: $imagePath\n$error',
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -69,7 +70,7 @@ class Tema3 extends StatefulWidget {
   final Function(int) onComplete;
 
   const Tema3({
-    Key? key,
+    super.key,
     required this.section,
     required this.sectionTitle,
     required this.sectionIndex,
@@ -77,7 +78,7 @@ class Tema3 extends StatefulWidget {
     required this.content,
     required this.moduleData,
     required this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   Tema3State createState() => Tema3State();
@@ -108,7 +109,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
 
   Future<void> _loadContentData() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/data/module2/tema3.json');
+      final String jsonString =
+          await rootBundle.loadString('assets/data/module2/tema3.json');
       final jsonData = json.decode(jsonString);
       if (jsonData == null) {
         throw FlutterError('El archivo JSON está vacío');
@@ -129,7 +131,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       _showVideo = true;
       try {
         _youtubeController = YoutubePlayerController(
-          initialVideoId: _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
+          initialVideoId:
+              _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
           flags: const YoutubePlayerFlags(
             autoPlay: false,
             mute: true,
@@ -182,12 +185,13 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
               width: double.infinity,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
-                color: const Color(0xFF0A2463),
+                color: AppColors.backgroundDark,
                 child: const Center(child: CircularProgressIndicator()),
               ),
               errorWidget: (context, url, error) => Container(
-                color: const Color(0xFF0A2463),
-                child: const Icon(Icons.image_not_supported, size: 50, color: Colors.white),
+                color: AppColors.backgroundDark,
+                child: const Icon(Icons.image_not_supported,
+                    size: 50, color: AppColors.textPrimary),
               ),
             ),
           ),
@@ -195,14 +199,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             height: 220,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Color.fromRGBO(10, 36, 99, 0.8),
-                ],
-              ),
+              gradient: AppColors.headerSection,
             ),
           ),
           Positioned(
@@ -216,11 +213,11 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     shadows: [
                       Shadow(
                         blurRadius: 10,
-                        color: Color.fromRGBO(0, 0, 0, 0.5),
+                        color: AppColors.shadowColor,
                         offset: const Offset(2, 2),
                       ),
                     ],
@@ -230,7 +227,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Color.fromRGBO(255, 255, 255, 0.9),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -248,11 +245,12 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
         child: Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: AppColors.backgroundDark,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
-            child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+            child:
+                Icon(Icons.play_arrow, color: AppColors.textPrimary, size: 50),
           ),
         ),
       );
@@ -262,24 +260,25 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(62, 146, 204, 0.3),
+          color: AppColors.glassmorphicBackground,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 40),
+            const Icon(Icons.error_outline, color: AppColors.error, size: 40),
             const SizedBox(height: 8),
             Text(
               'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-              style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.7)),
+              style: GoogleFonts.poppins(
+                  fontSize: 14, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: initializeVideo,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3E92CC),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.codeBoxLabel,
+                foregroundColor: AppColors.textPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -299,10 +298,10 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       child: YoutubePlayer(
         controller: _youtubeController!,
         showVideoProgressIndicator: true,
-        progressIndicatorColor: Colors.blueAccent,
-        progressColors: const ProgressBarColors(
-          playedColor: Colors.blue,
-          handleColor: Colors.blueAccent,
+        progressIndicatorColor: AppColors.progressBrightBlue,
+        progressColors: ProgressBarColors(
+          playedColor: AppColors.progressActive,
+          handleColor: AppColors.progressBrightBlue,
         ),
         onReady: () {
           _youtubeController!.unMute();
@@ -318,9 +317,9 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color ?? Color.fromRGBO(10, 36, 99, 0.3),
+        color: color ?? AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.3)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -333,7 +332,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   Container(
                     height: 2,
                     width: 40,
-                    color: const Color(0xFF93C5FD),
+                    color: AppColors.chipTopic,
                   ),
                   const SizedBox(width: 12),
                   Flexible(
@@ -342,7 +341,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -361,12 +360,13 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: color ?? Color.fromRGBO(62, 146, 204, 0.2),
+        color: color ?? AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: color != null
-              ? Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.5)
-              : Color.fromRGBO(62, 146, 204, 0.5),
+              ? Color.fromRGBO(
+                  color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.5)
+              : AppColors.glassmorphicBorder,
           width: 1.5,
         ),
       ),
@@ -381,8 +381,9 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   Icon(
                     Icons.lightbulb_outline,
                     color: color != null
-                        ? Color.fromRGBO(color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.8)
-                        : Color.fromRGBO(62, 146, 204, 0.8),
+                        ? Color.fromRGBO(color.r.toInt(), color.g.toInt(),
+                            color.b.toInt(), 0.8)
+                        : AppColors.glassmorphicBorder,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -392,7 +393,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -403,7 +404,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             content,
             style: GoogleFonts.poppins(
               fontSize: 15,
-              color: Color.fromRGBO(255, 255, 255, 0.9),
+              color: AppColors.textSecondary,
               fontStyle: title != null ? FontStyle.italic : null,
               height: 1.6,
             ),
@@ -439,9 +440,9 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(10, 36, 99, 0.25),
+        color: AppColors.codeBoxBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color.fromRGBO(62, 146, 204, 0.4)),
+        border: Border.all(color: AppColors.codeBoxBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,7 +450,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF3E92CC),
+              color: AppColors.codeBoxLabel,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
@@ -457,7 +458,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -465,7 +466,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: SingleChildScrollView(
@@ -489,12 +490,12 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 16),
         height: 350,
-        color: const Color(0xFF1E3A8A),
+        color: AppColors.neutralCard,
         child: Center(
           child: Text(
             'Diagrama no disponible',
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -523,12 +524,12 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           width: double.infinity,
           errorBuilder: (context, error, stackTrace) => Container(
             height: 350,
-            color: const Color(0xFF1E3A8A),
+            color: AppColors.neutralCard,
             child: Center(
               child: Text(
                 'Error al cargar el diagrama: $imagePath\n$error',
                 style: GoogleFonts.poppins(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -544,26 +545,29 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
 
   Widget buildBulletList(List<dynamic> items) {
     return Column(
-      children: items.map((item) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.fiber_manual_record, size: 8, color: Colors.white70),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                item.toString(),
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  color: Color.fromRGBO(255, 255, 255, 0.9),
-                  height: 1.5,
+      children: items
+          .map((item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.fiber_manual_record,
+                        size: 8, color: AppColors.textSecondary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item.toString(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ],
-        ),
-      )).toList(),
+              ))
+          .toList(),
     );
   }
 
@@ -576,7 +580,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           paragraph,
           style: GoogleFonts.poppins(
             fontSize: 15,
-            color: Color.fromRGBO(255, 255, 255, 0.9),
+            color: AppColors.textSecondary,
             height: 1.6,
           ),
         ),
@@ -589,21 +593,23 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
     final bool isCorrect = _answerResults[questionIndex] == true;
     final bool showExplanation = _showExplanations[questionIndex] ?? false;
 
-    final tipo = question['tipo'] is List ? question['tipo'].first.toString() : question['tipo']?.toString() ?? 'multiple_choice';
+    final tipo = question['tipo'] is List
+        ? question['tipo'].first.toString()
+        : question['tipo']?.toString() ?? 'multiple_choice';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.3),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 24),
+              const Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -611,31 +617,34 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          ...(question['opciones']?.toList() ?? (tipo == 'true_false' ? ['Verdadero', 'Falso'] : [])).map<Widget>((option) {
+          ...(question['opciones']?.toList() ??
+                  (tipo == 'true_false' ? ['Verdadero', 'Falso'] : []))
+              .map<Widget>((option) {
             final optionText = option.toString();
             final isSelected = _selectedAnswers[questionIndex] == optionText;
-            final isCorrectOption = optionText == question['respuesta_correcta']?.toString();
-            Color textColor = Colors.white;
-            Color borderColor = Color.fromRGBO(59, 130, 246, 0.5);
-            Color bgColor = Color.fromRGBO(30, 64, 175, 0.2);
+            final isCorrectOption =
+                optionText == question['respuesta_correcta']?.toString();
+            Color textColor = AppColors.textPrimary;
+            Color borderColor = AppColors.glassmorphicBorder;
+            Color bgColor = AppColors.glassmorphicBackground;
 
             if (isAnswered) {
               if (isSelected && !isCorrectOption) {
-                borderColor = const Color(0xFFEF4444);
-                bgColor = Color.fromRGBO(153, 27, 27, 0.2);
+                borderColor = AppColors.error;
+                bgColor = Colors.red.withValues(alpha: 0.2);
               } else if (isSelected && isCorrectOption) {
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                borderColor = AppColors.success;
+                bgColor = Colors.green.withValues(alpha: 0.2);
               } else if (isCorrectOption) {
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                borderColor = AppColors.success;
+                bgColor = Colors.green.withValues(alpha: 0.2);
               }
             }
 
@@ -651,7 +660,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                         });
                       },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(8),
@@ -670,7 +680,9 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                             ? Icon(
                                 isCorrectOption ? Icons.check : Icons.close,
                                 size: 16,
-                                color: isCorrectOption ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                color: isCorrectOption
+                                    ? AppColors.success
+                                    : AppColors.error,
                               )
                             : null,
                       ),
@@ -697,20 +709,22 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                 onPressed: () {
                   setState(() {
                     _answerResults[questionIndex] =
-                        _selectedAnswers[questionIndex] == question['respuesta_correcta']?.toString();
+                        _selectedAnswers[questionIndex] ==
+                            question['respuesta_correcta']?.toString();
                     _showExplanations[questionIndex] = true;
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3E92CC),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.codeBoxLabel,
+                  foregroundColor: AppColors.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   'Enviar Respuesta',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.poppins(
+                      fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -722,7 +736,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: isCorrect ? Colors.green : Colors.red,
+                  color: isCorrect ? AppColors.success : AppColors.error,
                 ),
               ),
             ),
@@ -731,7 +745,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(top: 12),
               child: buildHighlightBox(
                 question['explicacion'].toString(),
-                color: const Color(0xFF10B981),
+                color: AppColors.success,
                 title: 'Explicación',
               ),
             ),
@@ -749,16 +763,19 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             'III. Estructuras de datos y de control',
             [
               buildHighlightBox(
-                _contentData!['introduccion']['highlight1']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['introduccion']['highlight1']['text']
+                        ?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
               buildHighlightBox(
-                _contentData!['introduccion']['highlight2']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['introduccion']['highlight2']['text']
+                        ?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
             ],
-            color: Color.fromRGBO(62, 146, 204, 0.15),
           ),
         ],
       },
@@ -769,67 +786,85 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             'Arreglos, matrices, listas, etc.',
             [
               buildHighlightBox(
-                _contentData!['subtema1']['highlight1']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['subtema1']['highlight1']['text']?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
-              ...formatContent(_contentData!['subtema1']['contenido']?.toString() ?? ''),
+              ...formatContent(
+                  _contentData!['subtema1']['contenido']?.toString() ?? ''),
               const SizedBox(height: 16),
               buildHighlightBox(
-                _contentData!['subtema1']['highlight2']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['subtema1']['highlight2']['text']?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
               buildContentCard(
                 'Arreglos',
                 [
                   buildHighlightBox(
-                    _contentData!['subtema1']['arreglos']['definicion']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema1']['arreglos']['definicion']
+                            ?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                     title: 'Definición',
                   ),
                   const SizedBox(height: 16),
-                  ...formatContent(_contentData!['subtema1']['arreglos']['contenido']?.toString() ?? ''),
+                  ...formatContent(_contentData!['subtema1']['arreglos']
+                              ['contenido']
+                          ?.toString() ??
+                      ''),
                   const SizedBox(height: 16),
                   buildContentCard(
-                    _contentData!['subtema1']['arreglos']['ejemplo']['titulo']?.toString() ?? '',
+                    _contentData!['subtema1']['arreglos']['ejemplo']['titulo']
+                            ?.toString() ??
+                        '',
                     [
                       Text(
-                        _contentData!['subtema1']['arreglos']['ejemplo']['descripcion']?.toString() ?? '',
+                        _contentData!['subtema1']['arreglos']['ejemplo']
+                                    ['descripcion']
+                                ?.toString() ??
+                            '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 12),
                       buildCodeBox(
-                        _contentData!['subtema1']['arreglos']['ejemplo']['pseudocodigo']?.toString() ?? '',
+                        _contentData!['subtema1']['arreglos']['ejemplo']
+                                    ['pseudocodigo']
+                                ?.toString() ??
+                            '',
                         'pseudocode',
                       ),
                       const SizedBox(height: 12),
                       buildDiagramImage('assets/module2photos/diag16.png'),
                       const SizedBox(height: 12),
                       Text(
-                        _contentData!['subtema1']['arreglos']['ejemplo']['conclusion']?.toString() ?? '',
+                        _contentData!['subtema1']['arreglos']['ejemplo']
+                                    ['conclusion']
+                                ?.toString() ??
+                            '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 16),
                       buildHighlightBox(
-                        _contentData!['subtema1']['arreglos']['usos']['text']?.toString() ?? '',
-                        color: const Color(0xFF3E92CC),
+                        _contentData!['subtema1']['arreglos']['usos']['text']
+                                ?.toString() ??
+                            '',
+                        color: AppColors.codeBoxLabel,
                         title: 'Usos de los arreglos',
                       ),
                     ],
-                    color: Color.fromRGBO(30, 64, 175, 0.2),
                   ),
                 ],
-                color: Color.fromRGBO(16, 185, 129, 0.15),
               ),
             ],
-            color: Color.fromRGBO(16, 185, 129, 0.15),
           ),
         ],
       },
@@ -840,43 +875,51 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             'Matrices',
             [
               buildHighlightBox(
-                _contentData!['subtema2']['highlight1']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['subtema2']['highlight1']['text']?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
               buildContentCard(
-                _contentData!['subtema2']['ejemplo']['titulo']?.toString() ?? '',
+                _contentData!['subtema2']['ejemplo']['titulo']?.toString() ??
+                    '',
                 [
                   Text(
-                    _contentData!['subtema2']['ejemplo']['descripcion']?.toString() ?? '',
+                    _contentData!['subtema2']['ejemplo']['descripcion']
+                            ?.toString() ??
+                        '',
                     style: GoogleFonts.poppins(
                       fontSize: 15,
-                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 12),
                   buildCodeBox(
-                    _contentData!['subtema2']['ejemplo']['pseudocodigo']?.toString() ?? '',
+                    _contentData!['subtema2']['ejemplo']['pseudocodigo']
+                            ?.toString() ??
+                        '',
                     'pseudocode',
                   ),
                   const SizedBox(height: 12),
                   buildDiagramImage('assets/module2photos/diag17.png'),
                   const SizedBox(height: 16),
                   buildHighlightBox(
-                    _contentData!['subtema2']['operaciones']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema2']['operaciones']['text']
+                            ?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                     title: 'Operaciones comunes',
                   ),
                   const SizedBox(height: 16),
                   buildHighlightBox(
-                    _contentData!['subtema2']['definicion']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema2']['definicion']['text']
+                            ?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                   ),
                 ],
-                color: Color.fromRGBO(30, 64, 175, 0.2),
               ),
             ],
-            color: Color.fromRGBO(139, 92, 246, 0.15),
           ),
         ],
       },
@@ -887,50 +930,57 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             'Listas',
             [
               buildHighlightBox(
-                _contentData!['subtema3']['highlight1']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['subtema3']['highlight1']['text']?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
               buildContentCard(
                 'Características',
                 [
-                  buildBulletList(_contentData!['subtema3']['caracteristicas']['items'] ?? []),
+                  buildBulletList(_contentData!['subtema3']['caracteristicas']
+                          ['items'] ??
+                      []),
                 ],
-                color: Color.fromRGBO(30, 64, 175, 0.2),
               ),
               const SizedBox(height: 16),
               buildContentCard(
-                _contentData!['subtema3']['ejemplo']['titulo']?.toString() ?? '',
+                _contentData!['subtema3']['ejemplo']['titulo']?.toString() ??
+                    '',
                 [
                   Text(
-                    _contentData!['subtema3']['ejemplo']['descripcion']?.toString() ?? '',
+                    _contentData!['subtema3']['ejemplo']['descripcion']
+                            ?.toString() ??
+                        '',
                     style: GoogleFonts.poppins(
                       fontSize: 15,
-                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 12),
                   buildCodeBox(
-                    _contentData!['subtema3']['ejemplo']['pseudocodigo']?.toString() ?? '',
+                    _contentData!['subtema3']['ejemplo']['pseudocodigo']
+                            ?.toString() ??
+                        '',
                     'pseudocode',
                   ),
                   const SizedBox(height: 12),
                   buildDiagramImage('assets/module2photos/diag18.png'),
                   const SizedBox(height: 16),
                   buildHighlightBox(
-                    _contentData!['subtema3']['comparacion']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema3']['comparacion']['text']
+                            ?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                   ),
                   const SizedBox(height: 16),
                   buildHighlightBox(
                     _contentData!['subtema3']['usos']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    color: AppColors.codeBoxLabel,
                   ),
                 ],
-                color: Color.fromRGBO(30, 64, 175, 0.2),
               ),
             ],
-            color: Color.fromRGBO(255, 214, 10, 0.15),
           ),
         ],
       },
@@ -941,100 +991,119 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
             '¿Cómo aplicarlo en estructuras de control?',
             [
               buildHighlightBox(
-                _contentData!['subtema4']['highlight1']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                _contentData!['subtema4']['highlight1']['text']?.toString() ??
+                    '',
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
               buildHighlightBox(
-                _contentData!['subtema4']['importancia']['text']?.toString() ?? '',
-                color: const Color(0xFF10B981),
+                _contentData!['subtema4']['importancia']['text']?.toString() ??
+                    '',
+                color: AppColors.success,
                 title: '¿Por qué es importante esta combinación?',
               ),
               const SizedBox(height: 16),
               buildHighlightBox(
                 _contentData!['subtema4']['acceso']['text']?.toString() ?? '',
-                color: const Color(0xFF3E92CC),
+                color: AppColors.codeBoxLabel,
               ),
               const SizedBox(height: 16),
               buildContentCard(
-                _contentData!['subtema4']['ejemplo1']['titulo']?.toString() ?? '',
+                _contentData!['subtema4']['ejemplo1']['titulo']?.toString() ??
+                    '',
                 [
                   Text(
-                    _contentData!['subtema4']['ejemplo1']['descripcion']?.toString() ?? '',
+                    _contentData!['subtema4']['ejemplo1']['descripcion']
+                            ?.toString() ??
+                        '',
                     style: GoogleFonts.poppins(
                       fontSize: 15,
-                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 12),
                   buildCodeBox(
-                    _contentData!['subtema4']['ejemplo1']['pseudocodigo']?.toString() ?? '',
+                    _contentData!['subtema4']['ejemplo1']['pseudocodigo']
+                            ?.toString() ??
+                        '',
                     'pseudocode',
                   ),
                   const SizedBox(height: 12),
                   buildDiagramImage('assets/module2photos/diag19.png'),
                   const SizedBox(height: 16),
                   buildHighlightBox(
-                    _contentData!['subtema4']['listas']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema4']['listas']['text']?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                   ),
                   const SizedBox(height: 16),
                   buildContentCard(
-                    _contentData!['subtema4']['ejemplo2']['titulo']?.toString() ?? '',
+                    _contentData!['subtema4']['ejemplo2']['titulo']
+                            ?.toString() ??
+                        '',
                     [
                       Text(
-                        _contentData!['subtema4']['ejemplo2']['descripcion']?.toString() ?? '',
+                        _contentData!['subtema4']['ejemplo2']['descripcion']
+                                ?.toString() ??
+                            '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 12),
                       buildCodeBox(
-                        _contentData!['subtema4']['ejemplo2']['pseudocodigo']?.toString() ?? '',
+                        _contentData!['subtema4']['ejemplo2']['pseudocodigo']
+                                ?.toString() ??
+                            '',
                         'pseudocode',
                       ),
                       const SizedBox(height: 12),
                       buildDiagramImage('assets/module2photos/diag20.png'),
                     ],
-                    color: Color.fromRGBO(30, 64, 175, 0.2),
                   ),
                   const SizedBox(height: 16),
                   buildHighlightBox(
-                    _contentData!['subtema4']['matrices']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema4']['matrices']['text']?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                   ),
                   const SizedBox(height: 16),
                   buildContentCard(
-                    _contentData!['subtema4']['ejemplo3']['titulo']?.toString() ?? '',
+                    _contentData!['subtema4']['ejemplo3']['titulo']
+                            ?.toString() ??
+                        '',
                     [
                       Text(
-                        _contentData!['subtema4']['ejemplo3']['descripcion']?.toString() ?? '',
+                        _contentData!['subtema4']['ejemplo3']['descripcion']
+                                ?.toString() ??
+                            '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
-                          color: Color.fromRGBO(255, 255, 255, 0.9),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 12),
                       buildCodeBox(
-                        _contentData!['subtema4']['ejemplo3']['pseudocodigo']?.toString() ?? '',
+                        _contentData!['subtema4']['ejemplo3']['pseudocodigo']
+                                ?.toString() ??
+                            '',
                         'pseudocode',
                       ),
                       const SizedBox(height: 12),
                       buildDiagramImage('assets/module2photos/diag21.png'),
                     ],
-                    color: Color.fromRGBO(30, 64, 175, 0.2),
                   ),
                   const SizedBox(height: 16),
                   buildHighlightBox(
-                    _contentData!['subtema4']['diccionarios']['text']?.toString() ?? '',
-                    color: const Color(0xFF3E92CC),
+                    _contentData!['subtema4']['diccionarios']['text']
+                            ?.toString() ??
+                        '',
+                    color: AppColors.codeBoxLabel,
                   ),
                 ],
-                color: Color.fromRGBO(16, 185, 129, 0.15),
               ),
             ],
-            color: Color.fromRGBO(255, 214, 10, 0.15),
           ),
         ],
       },
@@ -1049,7 +1118,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   _contentData!['quiz']['descripcion']?.toString() ?? '',
                   style: GoogleFonts.poppins(
                     fontSize: 15,
-                    color: Color.fromRGBO(255, 255, 255, 0.9),
+                    color: AppColors.textSecondary,
                     height: 1.6,
                   ),
                 ),
@@ -1057,10 +1126,10 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                 ...(_contentData!['quiz']['preguntas'] as List<dynamic>? ?? [])
                     .asMap()
                     .entries
-                    .map<Widget>((entry) => buildQuizQuestion(entry.value, entry.key))
+                    .map<Widget>(
+                        (entry) => buildQuizQuestion(entry.value, entry.key))
                     .expand((widget) => [widget, const SizedBox(height: 16)]),
               ],
-              color: Color.fromRGBO(255, 214, 10, 0.15),
             ),
         ],
       },
@@ -1088,7 +1157,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   Container(
                     height: 2,
                     width: 40,
-                    color: const Color(0xFF93C5FD),
+                    color: AppColors.chipTopic,
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -1096,17 +1165,18 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                _contentData?['video']?['description']?.toString() ?? 'Aprende con este video tutorial',
+                _contentData?['video']?['description']?.toString() ??
+                    'Aprende con este video tutorial',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Color.fromRGBO(255, 255, 255, 0.9),
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1130,7 +1200,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ContenidoScreen(
             moduleData: widget.moduleData,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -1153,7 +1224,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ContenidoScreen(
             moduleData: widget.moduleData,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -1169,30 +1241,38 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (_contentData == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A2463),
-        body: Center(
+      return Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
 
-    const totalPages = 6; // Introduction, Arreglos, Matrices, Listas, Aplicación, Quiz
+    const totalPages = 6;
 
-    return WillPopScope(
-      onWillPop: navigateBack,
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          await navigateBack();
+        }
+      },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A2463),
+        backgroundColor: AppColors.backgroundDark,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text(
             widget.sectionTitle,
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+            style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary),
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () async {
               await navigateBack();
             },
@@ -1203,7 +1283,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
               child: Center(
                 child: Text(
                   '${widget.sectionIndex + 1}/${widget.totalSections}',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.9)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 14, color: AppColors.textSecondary),
                 ),
               ),
             ),
@@ -1211,8 +1292,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: navigateNext,
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF0A2463),
+          backgroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.backgroundDark,
           icon: const Icon(Icons.arrow_forward),
           label: Text(
             _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',

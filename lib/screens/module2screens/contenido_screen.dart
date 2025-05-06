@@ -118,7 +118,8 @@ class ContenidoScreenState extends State<ContenidoScreen>
       if (progressDoc.exists) {
         final data = progressDoc.data();
         final savedProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
-        final completedSections = (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
+        final completedSections =
+            (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
         setState(() {
           _progress = savedProgress / 100;
           completedSections.forEach((key, value) {
@@ -145,7 +146,8 @@ class ContenidoScreenState extends State<ContenidoScreen>
       }
 
       _completedSections[sectionIndex] = true;
-      final completedSections = _completedSections.values.where((completed) => completed).length;
+      final completedSections =
+          _completedSections.values.where((completed) => completed).length;
       final newProgress = (completedSections * 25.0) / 100.0; // 25% por sección
 
       await FirebaseFirestore.instance
@@ -154,13 +156,14 @@ class ContenidoScreenState extends State<ContenidoScreen>
           .collection('modules')
           .doc(widget.moduleData['id'] ?? 'module2')
           .set({
-            'porcentaje': newProgress * 100,
-            'last_updated': FieldValue.serverTimestamp(),
-            'module_id': widget.moduleData['id'] ?? 'module2',
-            'module_title': widget.moduleData['module_title'] ?? 'Módulo',
-            'completed': newProgress >= 1.0,
-            'completed_sections': _completedSections.map((key, value) => MapEntry(key.toString(), value)),
-          }, SetOptions(merge: true));
+        'porcentaje': newProgress * 100,
+        'last_updated': FieldValue.serverTimestamp(),
+        'module_id': widget.moduleData['id'] ?? 'module2',
+        'module_title': widget.moduleData['module_title'] ?? 'Módulo',
+        'completed': newProgress >= 1.0,
+        'completed_sections': _completedSections
+            .map((key, value) => MapEntry(key.toString(), value)),
+      }, SetOptions(merge: true));
 
       final progressController = AnimationController(
         vsync: this,
@@ -171,11 +174,12 @@ class ContenidoScreenState extends State<ContenidoScreen>
 
       setState(() {
         _progress = newProgress;
-        _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: newProgress)
-            .animate(CurvedAnimation(
-              parent: progressController,
-              curve: Curves.easeOutQuart,
-            ));
+        _progressAnimation =
+            Tween<double>(begin: _progressAnimation.value, end: newProgress)
+                .animate(CurvedAnimation(
+          parent: progressController,
+          curve: Curves.easeOutQuart,
+        ));
       });
 
       progressController.forward();
@@ -215,7 +219,8 @@ class ContenidoScreenState extends State<ContenidoScreen>
     }
 
     final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
-    final syllabusSections = (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
+    final syllabusSections =
+        (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
     final moduleImage = widget.moduleData['image'] as String? ??
         'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
 
@@ -290,8 +295,10 @@ class ContenidoScreenState extends State<ContenidoScreen>
                             (context, index) {
                               final sectionKey = content.keys.elementAt(index);
                               final section = content[sectionKey];
-                              final syllabusTitle = syllabusSections[index]['title'] as String;
-                              final cleanedTitle = syllabusTitle.replaceFirst(RegExp(r'^[IVXLC]+\.\s'), '');
+                              final syllabusTitle =
+                                  syllabusSections[index]['title'] as String;
+                              final cleanedTitle = syllabusTitle.replaceFirst(
+                                  RegExp(r'^[IVXLC]+\.\s'), '');
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: SectionCard(
@@ -360,16 +367,18 @@ class ContenidoScreenState extends State<ContenidoScreen>
                                     Navigator.push(
                                       context,
                                       PageRouteBuilder(
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
+                                        pageBuilder: (context, animation,
+                                                secondaryAnimation) =>
                                             targetScreen,
-                                        transitionsBuilder:
-                                            (context, animation, secondaryAnimation, child) {
+                                        transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) {
                                           return FadeTransition(
                                             opacity: animation,
                                             child: child,
                                           );
                                         },
-                                        transitionDuration: const Duration(milliseconds: 300),
+                                        transitionDuration:
+                                            const Duration(milliseconds: 300),
                                       ),
                                     );
                                   },
@@ -423,13 +432,15 @@ class ContenidoScreenState extends State<ContenidoScreen>
                       color: AppColors.cardBackground,
                       child: Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.progressActive),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.progressActive),
                         ),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
                       color: AppColors.cardBackground,
-                      child: Icon(Icons.menu_book, size: 50, color: AppColors.textSecondary),
+                      child: Icon(Icons.menu_book,
+                          size: 50, color: AppColors.textSecondary),
                     ),
                   ),
                   Container(
@@ -574,7 +585,8 @@ class ContenidoScreenState extends State<ContenidoScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
               ),
               child: Text(
                 'Volver',
@@ -609,7 +621,8 @@ class SectionCard extends StatefulWidget {
   State<SectionCard> createState() => _SectionCardState();
 }
 
-class _SectionCardState extends State<SectionCard> with SingleTickerProviderStateMixin {
+class _SectionCardState extends State<SectionCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
@@ -661,7 +674,9 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: _isPressed ? AppColors.glassmorphicBackground : AppColors.cardBackground,
+            color: _isPressed
+                ? AppColors.glassmorphicBackground
+                : AppColors.cardBackground,
             border: Border.all(color: AppColors.glassmorphicBorder),
             boxShadow: _isPressed
                 ? []
@@ -684,7 +699,8 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.progressBrightBlue.withAlpha(51), // 0.2 opacity
+                        color: AppColors.progressBrightBlue
+                            .withAlpha(51), // 0.2 opacity
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: AppColors.progressBrightBlue,
