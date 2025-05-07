@@ -5,7 +5,61 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
+import 'package:siapp/theme/app_colors.dart';
+
+// Pantalla para mostrar la imagen en pantalla completa con área maximizada
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenImage({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundDark,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: InteractiveViewer(
+          minScale: 0.1,
+          maxScale: 6.0,
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              height: double.infinity,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: AppColors.backgroundDark,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen: $imagePath\n$error',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                    softWrap: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class Tema2 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -71,7 +125,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al cargar el contenido: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -83,7 +137,8 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       _showVideo = true;
       try {
         _youtubeController = YoutubePlayerController(
-          initialVideoId: _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
+          initialVideoId:
+              _contentData?['video']?['id']?.toString() ?? 'walAu_skXHA',
           flags: const YoutubePlayerFlags(
             autoPlay: false,
             mute: true,
@@ -135,16 +190,16 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: AppColors.backgroundDark,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: AppColors.backgroundDark,
                   child: Center(
                     child: Text(
                       'Error al cargar la imagen',
                       style: GoogleFonts.poppins(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -156,14 +211,14 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
             )
           else
             Container(
-              color: const Color(0xFF1E40AF),
+              color: AppColors.backgroundDark,
               height: 220,
               width: double.infinity,
               child: Center(
                 child: Text(
                   'Imagen no disponible',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -175,19 +230,13 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
             height: 220,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Color.fromRGBO(30, 64, 175, 0.8),
-                ],
-              ),
+              gradient: AppColors.headerSection,
             ),
           ),
           Positioned(
             bottom: 20,
             left: 20,
+            right: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -198,24 +247,23 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       shadows: [
                         Shadow(
                           blurRadius: 10,
-                          color: Color.fromRGBO(0, 0, 0, 0.5),
+                          color: AppColors.shadowColor,
                           offset: const Offset(2, 2),
                         ),
                       ],
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
+                    softWrap: true,
                   ),
                 ),
                 Text(
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Color.fromRGBO(255, 255, 255, 0.9),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -228,7 +276,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
 
   List<Widget> formatContent(String? content, {bool isIntro = false}) {
     if (content == null || content.isEmpty) return [const SizedBox.shrink()];
-    
+
     return content.split('\n').map((paragraph) {
       final trimmed = paragraph.trim();
       if (trimmed.isEmpty) return const SizedBox(height: 12);
@@ -238,7 +286,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
           trimmed,
           style: GoogleFonts.poppins(
             fontSize: isIntro ? 16 : 15,
-            color: isIntro ? Colors.white : Color.fromRGBO(255, 255, 255, 0.9),
+            color: isIntro ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: isIntro ? FontWeight.w500 : FontWeight.normal,
             height: 1.5,
           ),
@@ -253,16 +301,20 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 16),
         height: 350,
-        color: const Color(0xFF1E3A8A),
+        color: AppColors.neutralCard,
         child: Center(
-          child: Text(
-            'Diagrama no disponible',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Diagrama no disponible',
+              style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              softWrap: true,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       );
@@ -273,22 +325,38 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width - 32,
       ),
-      child: Image.asset(
-        imagePath,
-        fit: BoxFit.contain,
-        height: 350,
-        errorBuilder: (context, error, stackTrace) => Container(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullScreenImage(imagePath: imagePath),
+            ),
+          );
+        },
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
           height: 350,
-          color: const Color(0xFF1E3A8A),
-          child: Center(
-            child: Text(
-              'Error al cargar el diagrama: $imagePath',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Container(
+            height: 350,
+            color: AppColors.neutralCard,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Error al cargar el diagrama: $imagePath\n$error',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                  maxLines: null,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ),
@@ -303,11 +371,12 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
         child: Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: AppColors.backgroundDark,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
-            child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+            child:
+                Icon(Icons.play_arrow, color: AppColors.textPrimary, size: 50),
           ),
         ),
       );
@@ -319,18 +388,23 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Color.fromRGBO(30, 64, 175, 0.3),
+              color: AppColors.glassmorphicBackground,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const Icon(Icons.error_outline,
+                    color: AppColors.error, size: 40),
                 const SizedBox(height: 8),
-                Text(
-                  'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.7)),
-                  textAlign: TextAlign.center,
-                  softWrap: true,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
+                    style: GoogleFonts.poppins(
+                        fontSize: 14, color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
                 ),
               ],
             ),
@@ -344,10 +418,10 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       child: YoutubePlayer(
         controller: _youtubeController!,
         showVideoProgressIndicator: true,
-        progressIndicatorColor: Colors.blueAccent,
-        progressColors: const ProgressBarColors(
-          playedColor: Colors.blue,
-          handleColor: Colors.blueAccent,
+        progressIndicatorColor: AppColors.progressBrightBlue,
+        progressColors: ProgressBarColors(
+          playedColor: AppColors.progressActive,
+          handleColor: AppColors.progressBrightBlue,
         ),
         onReady: () {
           _youtubeController!.unMute();
@@ -359,12 +433,84 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     );
   }
 
+  Widget buildCodeBox(String code, String language) {
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'java':
+        highlightLanguage = 'java';
+        break;
+      case 'c++':
+        highlightLanguage = 'cpp';
+        break;
+      case 'pseudocode':
+        highlightLanguage = 'text';
+        break;
+      default:
+        highlightLanguage = 'text';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.codeBoxBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.codeBoxBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.codeBoxLabel,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              'Pseudocódigo',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.textPrimary,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: HighlightView(
+                code,
+                language: highlightLanguage,
+                theme: githubTheme,
+                padding: const EdgeInsets.all(12),
+                textStyle: GoogleFonts.sourceCodePro(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void navigateNext() {
     widget.onComplete(widget.sectionIndex);
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ContenidoScreen(
           moduleData: widget.moduleData,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -386,7 +532,8 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ContenidoScreen(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ContenidoScreen(
             moduleData: widget.moduleData,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -401,7 +548,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
 
   Widget buildSectionHeader(String? title) {
     if (title == null || title.isEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
       child: Row(
@@ -409,7 +556,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
           Container(
             height: 2,
             width: 40,
-            color: const Color(0xFF93C5FD),
+            color: AppColors.chipTopic,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -418,7 +565,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
               softWrap: true,
             ),
@@ -431,12 +578,18 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
   Widget buildExampleCard(Map<String, dynamic>? example) {
     if (example == null) return const SizedBox.shrink();
 
+    final isLoopExample =
+        example['title']?.toString().contains('bucle') ?? false;
+    final pseudocode = isLoopExample
+        ? example['logic']?.toString().split('Pseudocódigo:').last.trim()
+        : null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.2),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.3)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -448,9 +601,10 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 children: [
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
+                        color: AppColors.primaryButton,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -458,9 +612,9 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                       ),
                     ),
                   ),
@@ -472,14 +626,18 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 example['problem']?.toString() ?? '',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
                 softWrap: true,
               ),
             ],
             const SizedBox(height: 10),
-            ...formatContent(example['logic']?.toString()),
+            if (isLoopExample && pseudocode != null) ...[
+              buildCodeBox(pseudocode, 'pseudocode'),
+            ] else ...[
+              ...formatContent(example['logic']?.toString()),
+            ],
             if (example['diagram_description'] != null)
               ...formatContent(example['diagram_description']?.toString()),
             if (example['diagram'] != null)
@@ -494,11 +652,11 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
 
   Widget buildNoteCard(String? content, {Color? color, String? title}) {
     if (content == null || content.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color ?? Color.fromRGBO(30, 64, 175, 0.3),
+        color: color ?? AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -514,7 +672,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   softWrap: true,
                 ),
@@ -534,13 +692,15 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: color != null
-            ? Color.fromRGBO(color.red, color.green, color.blue, 0.3)
-            : Color.fromRGBO(30, 64, 175, 0.3),
+            ? Color.fromRGBO(
+                color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.3)
+            : AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: color != null
-              ? Color.fromRGBO(color.red, color.green, color.blue, 0.5)
-              : Color.fromRGBO(59, 130, 246, 0.5),
+              ? Color.fromRGBO(
+                  color.r.toInt(), color.g.toInt(), color.b.toInt(), 0.5)
+              : AppColors.glassmorphicBorder,
         ),
       ),
       child: Column(
@@ -554,7 +714,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
                 softWrap: true,
               ),
@@ -571,35 +731,41 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     final colorString = note['color']?.toString();
     final color = colorString != null && colorString.isNotEmpty
         ? Color(int.parse(colorString.replaceAll('#', '0xFF')))
-        : const Color(0xFF1E40AF);
-    
+        : AppColors.backgroundDark;
+
     final opacity = (note['opacity']?.toDouble() ?? 0.3).clamp(0.0, 1.0);
 
     return note['type'] == 'highlight'
         ? buildHighlightBox(
             note['content']?.toString(),
-            color: Color.fromRGBO(color.red, color.green, color.blue, opacity),
+            color: Color.fromRGBO(
+                color.r.toInt(), color.g.toInt(), color.b.toInt(), opacity),
             title: note['title']?.toString(),
           )
         : buildNoteCard(
             note['content']?.toString(),
-            color: Color.fromRGBO(color.red, color.green, color.blue, opacity),
+            color: Color.fromRGBO(
+                color.r.toInt(), color.g.toInt(), color.b.toInt(), opacity),
             title: note['title']?.toString(),
           );
   }
 
-  Widget buildSubsectionPage(Map<String, dynamic>? sectionData, int index, int totalPages) {
+  Widget buildSubsectionPage(
+      Map<String, dynamic>? sectionData, int index, int totalPages) {
     if (sectionData == null) {
       return Center(
-        child: Text(
-          'No hay datos disponibles para esta sección',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'No hay datos disponibles para esta sección',
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            softWrap: true,
           ),
-          textAlign: TextAlign.center,
-          softWrap: true,
         ),
       );
     }
@@ -607,69 +773,134 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     final examples = sectionData['examples'] as List<dynamic>? ?? [];
     final notes = sectionData['notes'] as List<dynamic>? ?? [];
 
+    final exampleMapping = {
+      'Condicional if':
+          'Ejemplo: Algoritmo para verificar si un número es positivo',
+      'Condicional if-else':
+          'Ejemplo: Algoritmo para aplicar un descuento según el monto de compra',
+      'Condicional if-else anidados':
+          'Ejemplo: Algoritmo para clasificar una calificación numérica',
+      'Condicional switch':
+          'Ejemplo: Algoritmo para mostrar el día de la semana según un número',
+      'Condicional switch sin break':
+          'Ejemplo: Algoritmo para mostrar una cuenta regresiva a partir de un número del 1 al 3',
+      'Bucle for':
+          'Ejemplo con bucle for: Mostrar los primeros 5 números pares',
+      'Bucle while': 'Ejemplo con bucle while: Contar del 1 al 5',
+      'Bucle do-while':
+          'Ejemplo con bucle do-while: Solicitar un número hasta que sea mayor que 10',
+    };
+
+    List<Widget> contentWidgets = [];
+
+    if (index == 0) {
+      contentWidgets.addAll([
+        FadeTransition(
+          opacity: Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
+          ),
+          child: buildSectionImage(),
+        ),
+        const SizedBox(height: 24),
+        FadeTransition(
+          opacity: Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(
+                parent: _controller, curve: const Interval(0.1, 0.4)),
+          ),
+          child: buildNoteCard(
+            _contentData?['welcomeText']?.toString(),
+            color: AppColors.glassmorphicBackground,
+          ),
+        ),
+        const SizedBox(height: 16),
+        buildNoteCard(
+          _contentData?['introText1']?.toString(),
+          color: AppColors.glassmorphicBackground,
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            _contentData?['introText2']?.toString() ?? '',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+            softWrap: true,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ]);
+    }
+
+    contentWidgets.add(buildSectionHeader(sectionData['title']?.toString()));
+
+    if (sectionData['title'] == 'Condicionales (if, else, switch)' ||
+        sectionData['title'] == 'Bucles (while, for, do-while)') {
+      for (var note in notes) {
+        final noteData = note as Map<String, dynamic>?;
+        if (noteData == null) continue;
+
+        contentWidgets.add(buildNoteCardFromJson(noteData));
+
+        final noteTitle = noteData['title']?.toString();
+        if (noteTitle != null && exampleMapping.containsKey(noteTitle)) {
+          final exampleTitle = exampleMapping[noteTitle];
+          final matchingExample = examples.firstWhere(
+            (example) => example['title'] == exampleTitle,
+            orElse: () => null,
+          );
+          if (matchingExample != null) {
+            contentWidgets.add(
+                buildExampleCard(matchingExample as Map<String, dynamic>?));
+          }
+        }
+
+        final nestedNotes = noteData['notes'] as List<dynamic>? ?? [];
+        for (var nestedNote in nestedNotes) {
+          contentWidgets
+              .add(buildNoteCardFromJson(nestedNote as Map<String, dynamic>?));
+        }
+      }
+    } else {
+      contentWidgets.addAll(notes
+          .map((note) => buildNoteCardFromJson(note as Map<String, dynamic>?)));
+      contentWidgets.addAll(examples.map((example) {
+        final exampleData = example as Map<String, dynamic>?;
+        if (exampleData == null) return const SizedBox.shrink();
+        return buildExampleCard(exampleData);
+      }));
+    }
+
+    if (index == totalPages - 1) {
+      contentWidgets.addAll([
+        const SizedBox(height: 16),
+        buildSectionHeader(_contentData?['video']?['title']?.toString()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            _contentData?['video']?['description']?.toString() ?? '',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+            softWrap: true,
+          ),
+        ),
+        const SizedBox(height: 12),
+        buildVideoPlayer(),
+      ]);
+    }
+
+    contentWidgets.add(const SizedBox(height: 80));
+
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (index == 0) ...[
-            FadeTransition(
-              opacity: Tween<double>(begin: 0, end: 1).animate(
-                CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
-              ),
-              child: buildSectionImage(),
-            ),
-            const SizedBox(height: 24),
-            FadeTransition(
-              opacity: Tween<double>(begin: 0, end: 1).animate(
-                CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
-              ),
-              child: buildNoteCard(
-                _contentData?['welcomeText']?.toString(),
-                color: Color.fromRGBO(30, 64, 175, 0.3),
-              ),
-            ),
-            const SizedBox(height: 16),
-            buildNoteCard(
-              _contentData?['introText1']?.toString(),
-              color: Color.fromRGBO(30, 64, 175, 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _contentData?['introText2']?.toString() ?? '',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-              softWrap: true,
-            ),
-            const SizedBox(height: 16),
-          ],
-          buildSectionHeader(sectionData['title']?.toString()),
-          ...notes.map((note) => buildNoteCardFromJson(note as Map<String, dynamic>?)),
-          ...examples.map((example) {
-            final exampleData = example as Map<String, dynamic>?;
-            if (exampleData == null) return const SizedBox.shrink();
-            return buildExampleCard(exampleData);
-          }),
-          if (index == totalPages - 1) ...[
-            const SizedBox(height: 16),
-            buildSectionHeader(_contentData?['video']?['title']?.toString()),
-            Text(
-              _contentData?['video']?['description']?.toString() ?? '',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Color.fromRGBO(255, 255, 255, 0.9),
-              ),
-              softWrap: true,
-            ),
-            const SizedBox(height: 12),
-            buildVideoPlayer(),
-          ],
-          const SizedBox(height: 80),
-        ],
+        children: contentWidgets,
       ),
     );
   }
@@ -689,33 +920,36 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (_errorMessage != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF1E40AF),
+        backgroundColor: AppColors.backgroundDark,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
                 Icons.error_outline,
-                color: Colors.red,
+                color: AppColors.error,
                 size: 50,
               ),
               const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  _errorMessage!,
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
                 ),
-                textAlign: TextAlign.center,
-                softWrap: true,
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF1E40AF),
+                  backgroundColor: AppColors.textPrimary,
+                  foregroundColor: AppColors.backgroundDark,
                 ),
                 child: Text(
                   'Volver',
@@ -729,9 +963,9 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     }
 
     if (_contentData == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF1E40AF),
-        body: Center(
+      return Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -740,21 +974,29 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
     final totalPages = subsections.length;
 
-    return WillPopScope(
-      onWillPop: navigateBack,
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          await navigateBack();
+        }
+      },
       child: Scaffold(
-        backgroundColor: const Color(0xFF1E40AF),
+        backgroundColor: AppColors.backgroundDark,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text(
             widget.sectionTitle,
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary),
+            softWrap: true,
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () async {
               await navigateBack();
             },
@@ -765,7 +1007,8 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
               child: Center(
                 child: Text(
                   '${widget.sectionIndex + 1}/${widget.totalSections}',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.9)),
+                  style: GoogleFonts.poppins(
+                      fontSize: 14, color: AppColors.textSecondary),
                 ),
               ),
             ),
@@ -773,8 +1016,8 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _handleContinue,
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1E40AF),
+          backgroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.backgroundDark,
           icon: const Icon(Icons.arrow_forward),
           label: Text(
             _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',

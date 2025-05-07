@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +8,7 @@ import 'package:siapp/screens/module2screens/tema1.dart';
 import 'package:siapp/screens/module2screens/tema2.dart';
 import 'package:siapp/screens/module2screens/tema3.dart';
 import 'package:siapp/screens/module2screens/tema4.dart';
+import 'package:siapp/theme/app_colors.dart';
 
 class ContenidoScreen extends StatefulWidget {
   final Map<String, dynamic> moduleData;
@@ -16,14 +16,13 @@ class ContenidoScreen extends StatefulWidget {
   const ContenidoScreen({super.key, required this.moduleData});
 
   @override
-  _ContenidoScreenState createState() => _ContenidoScreenState();
+  ContenidoScreenState createState() => ContenidoScreenState();
 }
 
-class _ContenidoScreenState extends State<ContenidoScreen>
+class ContenidoScreenState extends State<ContenidoScreen>
     with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<Color?> _colorAnimation;
   late Animation<double> _progressAnimation;
   final List<AnimationController> _progressControllers = [];
   double _progress = 0.0;
@@ -49,14 +48,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
       ),
     );
-
-    _colorAnimation = ColorTween(
-      begin: const Color(0xFF0D47A1),
-      end: const Color(0xFF1976D2),
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
 
     _progressAnimation = Tween<double>(begin: 0, end: _progress).animate(
       CurvedAnimation(
@@ -127,7 +118,8 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       if (progressDoc.exists) {
         final data = progressDoc.data();
         final savedProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
-        final completedSections = (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
+        final completedSections =
+            (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
         setState(() {
           _progress = savedProgress / 100;
           completedSections.forEach((key, value) {
@@ -144,30 +136,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
     }
   }
 
-  Future<bool> _hasCompletedModule() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return false;
-
-      final progressDoc = await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module2')
-          .get();
-
-      if (progressDoc.exists) {
-        final data = progressDoc.data();
-        final progressPercentage = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
-        return progressPercentage >= 100.0;
-      }
-      return false;
-    } catch (e) {
-      debugPrint('Error checking module progress: $e');
-      return false;
-    }
-  }
-
   Future<void> _updateModuleProgress(int sectionIndex) async {
     if (_completedSections[sectionIndex] == true) return;
 
@@ -178,8 +146,8 @@ class _ContenidoScreenState extends State<ContenidoScreen>
       }
 
       _completedSections[sectionIndex] = true;
-      final totalSections = widget.moduleData['content']?.length ?? 4;
-      final completedSections = _completedSections.values.where((completed) => completed).length;
+      final completedSections =
+          _completedSections.values.where((completed) => completed).length;
       final newProgress = (completedSections * 25.0) / 100.0; // 25% por sección
 
       await FirebaseFirestore.instance
@@ -188,13 +156,14 @@ class _ContenidoScreenState extends State<ContenidoScreen>
           .collection('modules')
           .doc(widget.moduleData['id'] ?? 'module2')
           .set({
-            'porcentaje': newProgress * 100,
-            'last_updated': FieldValue.serverTimestamp(),
-            'module_id': widget.moduleData['id'] ?? 'module2',
-            'module_title': widget.moduleData['module_title'] ?? 'Módulo',
-            'completed': newProgress >= 1.0,
-            'completed_sections': _completedSections.map((key, value) => MapEntry(key.toString(), value)),
-          }, SetOptions(merge: true));
+        'porcentaje': newProgress * 100,
+        'last_updated': FieldValue.serverTimestamp(),
+        'module_id': widget.moduleData['id'] ?? 'module2',
+        'module_title': widget.moduleData['module_title'] ?? 'Módulo',
+        'completed': newProgress >= 1.0,
+        'completed_sections': _completedSections
+            .map((key, value) => MapEntry(key.toString(), value)),
+      }, SetOptions(merge: true));
 
       final progressController = AnimationController(
         vsync: this,
@@ -205,11 +174,12 @@ class _ContenidoScreenState extends State<ContenidoScreen>
 
       setState(() {
         _progress = newProgress;
-        _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: newProgress)
-            .animate(CurvedAnimation(
-              parent: progressController,
-              curve: Curves.easeOutQuart,
-            ));
+        _progressAnimation =
+            Tween<double>(begin: _progressAnimation.value, end: newProgress)
+                .animate(CurvedAnimation(
+          parent: progressController,
+          curve: Curves.easeOutQuart,
+        ));
       });
 
       progressController.forward();
@@ -225,7 +195,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al guardar el progreso: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -249,7 +219,8 @@ class _ContenidoScreenState extends State<ContenidoScreen>
     }
 
     final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
-    final syllabusSections = (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
+    final syllabusSections =
+        (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
     final moduleImage = widget.moduleData['image'] as String? ??
         'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
 
@@ -266,10 +237,10 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 22,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: AppColors.shadowColor,
                       blurRadius: 4,
                       offset: const Offset(1, 1),
                     ),
@@ -280,7 +251,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: AppColors.buttonText),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
               onPressed: () => Navigator.pop(context),
@@ -297,19 +268,8 @@ class _ContenidoScreenState extends State<ContenidoScreen>
             ],
           ),
           body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _colorAnimation.value!,
-                  Color.fromRGBO(
-                      _colorAnimation.value!.red,
-                      _colorAnimation.value!.green,
-                      _colorAnimation.value!.blue,
-                      0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundDynamic,
             ),
             child: content.isEmpty
                 ? _buildEmptyContent()
@@ -335,8 +295,10 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                             (context, index) {
                               final sectionKey = content.keys.elementAt(index);
                               final section = content[sectionKey];
-                              final syllabusTitle = syllabusSections[index]['title'] as String;
-                              final cleanedTitle = syllabusTitle.replaceFirst(RegExp(r'^[IVXLC]+\.\s'), '');
+                              final syllabusTitle =
+                                  syllabusSections[index]['title'] as String;
+                              final cleanedTitle = syllabusTitle.replaceFirst(
+                                  RegExp(r'^[IVXLC]+\.\s'), '');
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: SectionCard(
@@ -405,16 +367,18 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                                     Navigator.push(
                                       context,
                                       PageRouteBuilder(
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
+                                        pageBuilder: (context, animation,
+                                                secondaryAnimation) =>
                                             targetScreen,
-                                        transitionsBuilder:
-                                            (context, animation, secondaryAnimation, child) {
+                                        transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) {
                                           return FadeTransition(
                                             opacity: animation,
                                             child: child,
                                           );
                                         },
-                                        transitionDuration: const Duration(milliseconds: 300),
+                                        transitionDuration:
+                                            const Duration(milliseconds: 300),
                                       ),
                                     );
                                   },
@@ -449,7 +413,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: AppColors.shadowColor,
                   blurRadius: 10,
                   spreadRadius: 2,
                   offset: const Offset(0, 4),
@@ -465,28 +429,23 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      color: Color.fromRGBO(255, 255, 255, 0.1),
-                      child: const Center(
+                      color: AppColors.cardBackground,
+                      child: Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.progressActive),
                         ),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: Color.fromRGBO(255, 255, 255, 0.1),
-                      child: const Icon(Icons.menu_book, size: 50, color: Colors.white),
+                      color: AppColors.cardBackground,
+                      child: Icon(Icons.menu_book,
+                          size: 50, color: AppColors.textSecondary),
                     ),
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                      ),
+                      gradient: AppColors.headerSection,
                     ),
                   ),
                   Positioned(
@@ -501,7 +460,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                           style: GoogleFonts.poppins(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         if (widget.moduleData['subtitle'] != null)
@@ -509,7 +468,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                             widget.moduleData['subtitle'],
                             style: GoogleFonts.poppins(
                               fontSize: 16,
-                              color: Color.fromRGBO(255, 255, 255, 0.9),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                       ],
@@ -539,7 +498,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                     'Tu progreso',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Color.fromRGBO(255, 255, 255, 0.9),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   Text(
@@ -547,7 +506,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -558,7 +517,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                   Container(
                     height: 10,
                     decoration: BoxDecoration(
-                      color: Color.fromRGBO(255, 255, 255, 0.2),
+                      color: AppColors.progressInactive,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -568,11 +527,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                     width: double.infinity,
                     height: 10,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.white, Color(0xFF64B5F6)],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
+                      gradient: AppColors.progressBar,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: FractionallySizedBox(
@@ -583,7 +538,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blueAccent.withOpacity(0.4),
+                              color: AppColors.progressShadow,
                               blurRadius: 6,
                               spreadRadius: 2,
                             ),
@@ -611,31 +566,33 @@ class _ContenidoScreenState extends State<ContenidoScreen>
             Icon(
               Icons.menu_book_rounded,
               size: 60,
-              color: Color.fromRGBO(255, 255, 255, 0.5),
+              color: AppColors.textSecondary,
             ),
             const SizedBox(height: 20),
             Text(
               'No hay contenido disponible',
               style: GoogleFonts.poppins(
                 fontSize: 18,
-                color: Color.fromRGBO(255, 255, 255, 0.7),
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.blue[800],
+                backgroundColor: AppColors.primaryButton,
+                foregroundColor: AppColors.buttonText,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
               ),
               child: Text(
                 'Volver',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w500,
+                  color: AppColors.buttonText,
                 ),
               ),
             ),
@@ -653,18 +610,19 @@ class SectionCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const SectionCard({
-    Key? key,
+    super.key,
     required this.index,
     required this.title,
     required this.description,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<SectionCard> createState() => _SectionCardState();
 }
 
-class _SectionCardState extends State<SectionCard> with SingleTickerProviderStateMixin {
+class _SectionCardState extends State<SectionCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
@@ -716,12 +674,15 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.white.withOpacity(_isPressed ? 0.2 : 0.15),
+            color: _isPressed
+                ? AppColors.glassmorphicBackground
+                : AppColors.cardBackground,
+            border: Border.all(color: AppColors.glassmorphicBorder),
             boxShadow: _isPressed
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: AppColors.shadowColor,
                       blurRadius: 10,
                       spreadRadius: 1,
                       offset: const Offset(0, 4),
@@ -738,10 +699,11 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: AppColors.progressBrightBlue
+                            .withAlpha(51), // 0.2 opacity
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
+                          color: AppColors.progressBrightBlue,
                           width: 1.5,
                         ),
                       ),
@@ -750,7 +712,7 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -761,7 +723,7 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -769,7 +731,7 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
                     ),
                     Icon(
                       Icons.chevron_right_rounded,
-                      color: Colors.white.withOpacity(0.7),
+                      color: AppColors.textSecondary,
                     ),
                   ],
                 ),
@@ -779,7 +741,7 @@ class _SectionCardState extends State<SectionCard> with SingleTickerProviderStat
                     widget.description,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: AppColors.textSecondary,
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
