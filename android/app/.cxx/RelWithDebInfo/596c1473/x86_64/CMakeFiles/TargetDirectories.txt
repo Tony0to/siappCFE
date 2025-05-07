@@ -1,0 +1,2 @@
+C:/Users/angel/OneDrive/Documentos/Nueva carpeta/siappCFE/siappCFE/android/app/.cxx/RelWithDebInfo/596c1473/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/angel/OneDrive/Documentos/Nueva carpeta/siappCFE/siappCFE/android/app/.cxx/RelWithDebInfo/596c1473/x86_64/CMakeFiles/rebuild_cache.dir

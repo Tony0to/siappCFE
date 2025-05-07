@@ -10,7 +10,6 @@ import '../theme/app_colors.dart'; // Import AppColors
 import 'module1.dart';
 import 'module2.dart';
 import 'module3.dart';
-import 'module4.dart';
 
 class ModulesScreen extends StatefulWidget {
   const ModulesScreen({Key? key}) : super(key: key);
@@ -19,7 +18,8 @@ class ModulesScreen extends StatefulWidget {
   State<ModulesScreen> createState() => _ModulesScreenState();
 }
 
-class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProviderStateMixin {
+class _ModulesScreenState extends State<ModulesScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   final ScrollController _scrollController = ScrollController();
   late AnimationController _controller;
@@ -27,48 +27,46 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
 
   final List<Map<String, dynamic>> _modules = [
     {
-      'image': 'https://cecytebcs.edu.mx/wp-content/uploads/2022/02/programacion.jpeg',
+      'image':
+          'https://cecytebcs.edu.mx/wp-content/uploads/2022/02/programacion.jpeg',
       'title': 'Módulo 1: Introducción a la Programación',
       'subtitle': 'Conceptos básicos de programación',
       'activities': 4,
       'id': 'module1',
-      'summary': 'Aprende los fundamentos de la programación, variables y estructuras de control para comenzar tu viaje en el desarrollo de software.',
+      'summary':
+          'Aprende los fundamentos de la programación, variables y estructuras de control para comenzar tu viaje en el desarrollo de software.',
     },
     {
-      'image': 'https://adrianvegaonline.wordpress.com/wp-content/uploads/2020/06/3964906.jpg',
+      'image':
+          'https://adrianvegaonline.wordpress.com/wp-content/uploads/2020/06/3964906.jpg',
       'title': 'Módulo 2: Lógica de programación',
       'subtitle': 'Fundamentos de lógica para programar',
       'activities': 4,
       'id': 'module2',
-      'summary': 'Domina el pensamiento lógico y las habilidades de resolución de problemas esenciales para escribir código eficiente.',
+      'summary':
+          'Domina el pensamiento lógico y las habilidades de resolución de problemas esenciales para escribir código eficiente.',
     },
     {
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
+      'image':
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
       'title': 'Módulo 3: Algoritmos',
       'subtitle': 'Diseño y análisis de algoritmos',
       'activities': 4,
       'id': 'module3',
-      'summary': 'Explora técnicas de diseño de algoritmos y analiza su eficiencia para aplicaciones en el mundo real.',
-    },
-    {
-      'image': 'https://matiasgandolfo.com/wp-content/uploads/2019/12/Paradigma-Blog.jpeg',
-      'title': 'Módulo 4: Paradigmas',
-      'subtitle': 'Diferentes enfoques de programación',
-      'activities': 4,
-      'id': 'module4',
-      'summary': 'Comprende varios paradigmas de programación como orientado a objetos y programación funcional.',
+      'summary':
+          'Explora técnicas de diseño de algoritmos y analiza su eficiencia para aplicaciones en el mundo real.',
     },
   ];
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
     )..repeat(reverse: true);
-    
+
     _gradientAnimation = ColorTween(
       begin: AppColors.backgroundGradientTop,
       end: AppColors.backgroundGradientBottom,
@@ -82,10 +80,12 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  Future<void> _addModuleDetailsAndNavigate(BuildContext context, Map<String, dynamic> module) async {
+  Future<void> _addModuleDetailsAndNavigate(
+      BuildContext context, Map<String, dynamic> module) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const LoginScreen()));
       return;
     }
 
@@ -145,13 +145,13 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
       'module1': (ctx) => Module1IntroScreen(module: module),
       'module2': (ctx) => Module2IntroScreen(module: module),
       'module3': (ctx) => Module3IntroScreen(module: module),
-      'module4': (ctx) => Module4IntroScreen(module: module),
     };
 
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => routes[module['id']]!(context),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            routes[module['id']]!(context),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -177,17 +177,20 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20.0, horizontal: 16.0),
                       child: Column(
                         children: [
                           Align(
                             alignment: Alignment.centerLeft,
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                              icon: const Icon(Icons.arrow_back,
+                                  color: AppColors.textPrimary),
                               onPressed: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                  MaterialPageRoute(
+                                      builder: (context) => const HomeScreen()),
                                 );
                               },
                             ),
@@ -215,7 +218,8 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                               child: Image.asset(
                                 'assets/siaap.png',
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
                                   Icons.school,
                                   size: 50,
                                   color: AppColors.textPrimary,
@@ -244,7 +248,8 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -252,7 +257,8 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                           return ModuleCard(
                             key: ValueKey(module['id']),
                             module: module,
-                            onNavigate: () => _addModuleDetailsAndNavigate(context, module),
+                            onNavigate: () =>
+                                _addModuleDetailsAndNavigate(context, module),
                           );
                         },
                         childCount: _modules.length,
@@ -285,9 +291,13 @@ class _ModulesScreenState extends State<ModulesScreen> with SingleTickerProvider
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => ProgressScreen(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(opacity: animation, child: child);
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  ProgressScreen(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
                           },
                         ),
                       );
@@ -333,7 +343,8 @@ class ModuleCard extends StatefulWidget {
   State<ModuleCard> createState() => _ModuleCardState();
 }
 
-class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateMixin {
+class _ModuleCardState extends State<ModuleCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _expandController;
   late Animation<double> _heightAnimation;
   late Animation<double> _fadeAnimation;
@@ -418,9 +429,11 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                   imageUrl: widget.module['image'],
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(color: AppColors.progressActive),
+                                    child: CircularProgressIndicator(
+                                        color: AppColors.progressActive),
                                   ),
-                                  errorWidget: (context, url, error) => const Icon(
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
                                     Icons.menu_book,
                                     size: 40,
                                     color: AppColors.textSecondary,
@@ -486,7 +499,8 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                       child: FadeTransition(
                         opacity: _fadeAnimation,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                          padding:
+                              const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                           child: Column(
                             children: [
                               const SizedBox(height: 8),
@@ -501,10 +515,12 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                                     color: AppColors.neutralCard,
                                     height: 120,
                                     child: const Center(
-                                      child: CircularProgressIndicator(color: AppColors.progressActive),
+                                      child: CircularProgressIndicator(
+                                          color: AppColors.progressActive),
                                     ),
                                   ),
-                                  errorWidget: (context, url, error) => Container(
+                                  errorWidget: (context, url, error) =>
+                                      Container(
                                     color: AppColors.neutralCard,
                                     height: 120,
                                     child: const Icon(
@@ -518,7 +534,8 @@ class _ModuleCardState extends State<ModuleCard> with SingleTickerProviderStateM
                               const SizedBox(height: 12),
                               Text(
                                 widget.module['summary'],
-                                style: const TextStyle(color: AppColors.textSecondary),
+                                style: const TextStyle(
+                                    color: AppColors.textSecondary),
                               ),
                               const SizedBox(height: 16),
                               Align(

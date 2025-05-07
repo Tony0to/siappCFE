@@ -13,7 +13,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
@@ -21,12 +22,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double _progress = 0.0;
   bool _isInitializing = false;
   String? _initializationError;
-  final int totalModules = 4;
+  final int totalModules = 3;
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -89,10 +90,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         final data = module.data();
         debugPrint('Module ${module.id} data: $data');
 
-        final porcentaje = (data.containsKey('porcentaje') && data['porcentaje'] != null)
-            ? (data['porcentaje'] as num).toDouble()
-            : 0.0;
-        final quizCompleted = (data.containsKey('quiz_completed') && data['quiz_completed'] != null)
+        final porcentaje =
+            (data.containsKey('porcentaje') && data['porcentaje'] != null)
+                ? (data['porcentaje'] as num).toDouble()
+                : 0.0;
+        final quizCompleted = (data.containsKey('quiz_completed') &&
+                data['quiz_completed'] != null)
             ? data['quiz_completed'] as bool
             : false;
 
@@ -103,7 +106,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
       setState(() {
         _progress = completedModules / totalModules;
-        debugPrint('Progress updated: completedModules=$completedModules, totalModules=$totalModules, progress=$_progress');
+        debugPrint(
+            'Progress updated: completedModules=$completedModules, totalModules=$totalModules, progress=$_progress');
       });
     } catch (e) {
       debugPrint('Error cargando progreso: $e');
@@ -136,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         final progressDoc = await transaction.get(progressRef);
-        
+
         if (!progressDoc.exists) {
           transaction.set(progressRef, {
             'mcompleto': [],
@@ -154,7 +158,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       debugPrint('Stack trace: $stackTrace');
       setState(() {
         _isInitializing = false;
-        _initializationError = 'Error al inicializar datos. Por favor, reinicia la aplicación.';
+        _initializationError =
+            'Error al inicializar datos. Por favor, reinicia la aplicación.';
       });
     }
   }
@@ -163,12 +168,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     try {
       await _initializeUserData();
       if (!mounted) return;
-      
+
       Navigator.push(
         context,
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => const ModulesScreen(),
-          transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
+          transitionsBuilder: (_, a, __, c) =>
+              FadeTransition(opacity: a, child: c),
         ),
       );
     } catch (e) {
@@ -212,7 +218,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     context,
                     PageRouteBuilder(
                       pageBuilder: (_, __, ___) => const AuthScreen(),
-                      transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
+                      transitionsBuilder: (_, a, __, c) =>
+                          FadeTransition(opacity: a, child: c),
                     ),
                     (Route<dynamic> route) => false,
                   );
@@ -297,7 +304,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: InkWell(
                 borderRadius: BorderRadius.circular(30),
                 onTap: onPressed,
-                splashColor: border ? AppColors.glassmorphicBorder : AppColors.progressActive,
+                splashColor: border
+                    ? AppColors.glassmorphicBorder
+                    : AppColors.progressActive,
                 highlightColor: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -413,7 +422,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                           const SizedBox(height: 40),
                           if (_isInitializing)
-                            const CircularProgressIndicator(color: AppColors.progressActive)
+                            const CircularProgressIndicator(
+                                color: AppColors.progressActive)
                           else
                             _buildActionButton(
                               title: 'Explorar Módulos',
@@ -454,8 +464,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     borderRadius: BorderRadius.circular(10),
                                     child: LinearProgressIndicator(
                                       value: _progress,
-                                      backgroundColor: AppColors.progressInactive,
-                                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.progressActive),
+                                      backgroundColor:
+                                          AppColors.progressInactive,
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                              AppColors.progressActive),
                                       minHeight: 10,
                                     ),
                                   ),

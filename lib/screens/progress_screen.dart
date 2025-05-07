@@ -7,7 +7,6 @@ import 'package:siapp/screens/ModulesScreen.dart';
 import 'package:siapp/screens/module1.dart';
 import 'package:siapp/screens/module2.dart';
 import 'package:siapp/screens/module3.dart';
-import 'package:siapp/screens/module4.dart';
 import '../theme/app_colors.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -17,10 +16,11 @@ class ProgressScreen extends StatefulWidget {
   _ProgressScreenState createState() => _ProgressScreenState();
 }
 
-class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStateMixin {
+class _ProgressScreenState extends State<ProgressScreen>
+    with TickerProviderStateMixin {
   double progress = 0.0;
   int completedModules = 0;
-  int totalModules = 4;
+  int totalModules = 3;
   int _currentIndex = 1;
   String? _errorMessage;
   bool _isLoading = true;
@@ -44,26 +44,23 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
     {
       'title': 'Módulo 1: Introducción a la Programación',
       'id': 'module1',
-      'image': 'https://cecytebcs.edu.mx/wp-content/uploads/2022/02/programacion.jpeg',
+      'image':
+          'https://cecytebcs.edu.mx/wp-content/uploads/2022/02/programacion.jpeg',
       'summary': 'Conceptos básicos de programación',
     },
     {
       'title': 'Módulo 2: Lógica de programación',
       'id': 'module2',
-      'image': 'https://adrianvegaonline.wordpress.com/wp-content/uploads/2020/06/3964906.jpg',
+      'image':
+          'https://adrianvegaonline.wordpress.com/wp-content/uploads/2020/06/3964906.jpg',
       'summary': 'Fundamentos de lógica para programar',
     },
     {
       'title': 'Módulo 3: Algoritmos',
       'id': 'module3',
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
+      'image':
+          'https://encrypted-tbn0.gstatic.com/images?q\limits:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
       'summary': 'Diseño y análisis de algoritmos',
-    },
-    {
-      'title': 'Módulo 4: Paradigmas',
-      'id': 'module4',
-      'image': 'https://matiasgandolfo.com/wp-content/uploads/2019/12/Paradigma-Blog.jpeg',
-      'summary': 'Diferentes enfoques de programación',
     },
   ];
 
@@ -139,7 +136,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
 
       if (moduleDetails.docs.isEmpty) {
         setState(() {
-          _errorMessage = 'No se encontraron datos de progreso para este usuario.';
+          _errorMessage =
+              'No se encontraron datos de progreso para este usuario.';
           _isLoading = false;
         });
         debugPrint('No progress data found for userId: $userId');
@@ -155,10 +153,12 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
         final data = module.data();
         debugPrint('Module ${module.id} data: $data');
 
-        final porcentaje = (data.containsKey('porcentaje') && data['porcentaje'] != null)
-            ? (data['porcentaje'] as num).toDouble()
-            : 0.0;
-        final quizCompleted = (data.containsKey('quiz_completed') && data['quiz_completed'] != null)
+        final porcentaje =
+            (data.containsKey('porcentaje') && data['porcentaje'] != null)
+                ? (data['porcentaje'] as num).toDouble()
+                : 0.0;
+        final quizCompleted = (data.containsKey('quiz_completed') &&
+                data['quiz_completed'] != null)
             ? data['quiz_completed'] as bool
             : false;
         final grade = (data.containsKey('calf') && data['calf'] != null)
@@ -169,7 +169,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
         tempQuizCompleted[module.id] = quizCompleted;
         tempPercentages[module.id] = porcentaje;
 
-        debugPrint('Module ${module.id}: porcentaje=$porcentaje, quiz_completed=$quizCompleted, grade=$grade');
+        debugPrint(
+            'Module ${module.id}: porcentaje=$porcentaje, quiz_completed=$quizCompleted, grade=$grade');
 
         if (porcentaje == 100 && quizCompleted) {
           modulosCompletados++;
@@ -183,7 +184,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
         moduleQuizCompleted = tempQuizCompleted;
         modulePercentages = tempPercentages;
         _isLoading = false;
-        debugPrint('Updated state: completedModules=$completedModules, progress=$progress');
+        debugPrint(
+            'Updated state: completedModules=$completedModules, progress=$progress');
         debugPrint('moduleScores=$moduleScores');
         debugPrint('moduleQuizCompleted=$moduleQuizCompleted');
         debugPrint('modulePercentages=$modulePercentages');
@@ -214,13 +216,13 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
       'module1': (ctx) => Module1IntroScreen(module: module),
       'module2': (ctx) => Module2IntroScreen(module: module),
       'module3': (ctx) => Module3IntroScreen(module: module),
-      'module4': (ctx) => Module4IntroScreen(module: module),
     };
 
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => routes[module['id']]!(context),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            routes[module['id']]!(context),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -327,7 +329,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                       'Quiz: ${quizCompleted ? 'Completado' : 'No completado'}',
                       style: TextStyle(
                         fontSize: 14,
-                        color: quizCompleted ? AppColors.success : AppColors.error,
+                        color:
+                            quizCompleted ? AppColors.success : AppColors.error,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -347,7 +350,9 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                   ),
                   child: Icon(
                     isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                    color: isCompleted ? AppColors.success : AppColors.textSecondary,
+                    color: isCompleted
+                        ? AppColors.success
+                        : AppColors.textSecondary,
                     size: 28,
                   ),
                 ),
@@ -378,7 +383,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                 const SizedBox(height: 16),
                 Text(
                   'Cargando progreso...',
-                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                  style:
+                      TextStyle(fontSize: 16, color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -435,17 +441,21 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20.0, horizontal: 16.0),
                     child: Column(
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                            icon: const Icon(Icons.arrow_back,
+                                color: AppColors.textPrimary),
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (context) => const ModulesScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ModulesScreen()),
                               );
                             },
                           ),
@@ -473,7 +483,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                             child: Image.asset(
                               'assets/siaap.png',
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
                                 Icons.bar_chart,
                                 size: 50,
                                 color: AppColors.textPrimary,
@@ -540,7 +551,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                                           return CircularProgressIndicator(
                                             value: _progressAnimation.value,
                                             strokeWidth: 12,
-                                            backgroundColor: AppColors.progressInactive,
+                                            backgroundColor:
+                                                AppColors.progressInactive,
                                             color: AppColors.progressActive,
                                           );
                                         },
@@ -572,8 +584,10 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
-                                  transitionBuilder: (Widget child, Animation<double> animation) {
-                                    return ScaleTransition(scale: animation, child: child);
+                                  transitionBuilder: (Widget child,
+                                      Animation<double> animation) {
+                                    return ScaleTransition(
+                                        scale: animation, child: child);
                                   },
                                 ),
                               ],
@@ -590,7 +604,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                       final module = modules[index];
                       final moduleId = module['id'];
                       final percentage = modulePercentages[moduleId] ?? 0.0;
-                      final quizCompleted = moduleQuizCompleted[moduleId] ?? false;
+                      final quizCompleted =
+                          moduleQuizCompleted[moduleId] ?? false;
                       final isCompleted = percentage == 100 && quizCompleted;
 
                       return Padding(
@@ -672,7 +687,8 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.emoji_events, color: AppColors.buttonText),
+                              Icon(Icons.emoji_events,
+                                  color: AppColors.buttonText),
                               SizedBox(width: 10),
                               Text(
                                 '¡Tú puedes!',
@@ -715,9 +731,13 @@ class _ProgressScreenState extends State<ProgressScreen> with TickerProviderStat
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const ModulesScreen(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(opacity: animation, child: child);
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const ModulesScreen(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
                           },
                         ),
                       );
