@@ -15,14 +15,14 @@
           "title": "Ejemplo 1: Secuencia simple",
           "problem": "Problema: Calcular el área de un rectángulo.",
           "logic": "Lógica: Leer base y altura, multiplicarlas, mostrar el resultado.",
-          "diagram": "assets/module1photos/diag1.png",
+          "diagram": "assets/module2photos/diag1.png",
           "explanation": "Este ejercicio es sencillo porque se basa en un concepto básico de la lógica de programación: la división y el uso del operador módulo (%) para determinar si un número es par o impar."
         },
         {
           "title": "Ejemplo 2: Condicional",
           "problem": "Problema: Determinar si un número ingresado por el usuario es par o impar.",
           "logic": "Lógica de solución:\n• Leer un número desde la entrada del usuario.\n• Calcular el residuo de dividir ese número entre 2 (usando el operador módulo %).\n• Si el residuo es igual a 0, entonces el número es par.\n• En caso contrario, el número es impar.\n• Mostrar el resultado correspondiente.",
-          "diagram": "assets/module1photos/diag2.png",
+          "diagram": "assets/module2photos/diag2.png",
           "quiz": {
             "logic": "\"Se lee un número. Si el número dividido entre 2 da un residuo de 0, se muestra 'Es par'. En caso contrario, se muestra 'Es impar'.\"",
             "text": "Pregunta: ¿Cuál de los siguientes números mostrará \"Es impar\"?",
@@ -41,7 +41,7 @@
           "title": "Ejemplo 3: Bucle (ciclo)",
           "problem": "Problema: Mostrar los números del 1 al 5.",
           "logic": "Lógica de solución:\n• Inicializar una variable i con el valor 1.\n• Mientras i sea menor o igual a 5, hacer lo siguiente:\n  • Mostrar el valor de i.\n  • Incrementar i en 1.\n• Repetir el paso 2 hasta que i ya no cumpla la condición.",
-          "diagram": "assets/module1photos/diag3.png",
+          "diagram": "assets/module2photos/diag3.png",
           "notes": [
             {
               "content": "El concepto de un ciclo while o for es fundamental, pero al ser un ciclo con una condición fija (1 a 5), no presenta desafíos complejos. Ideal solo para introducir la idea de iteración, pero poco desafiante.",
@@ -59,7 +59,7 @@
           "title": "Ejemplo 4: Condicional múltiple",
           "problem": "Problema: Determinar si un número es positivo, negativo o cero.",
           "logic": "Lógica de solución:\n• Leer el número ingresado por el usuario.\n• Si el número es mayor que 0, entonces es positivo.\n• Si el número es menor que 0, entonces es negativo.\n• Si el número no es mayor ni menor que 0, entonces es cero.\n• Mostrar el resultado correspondiente: \"Positivo\", \"Negativo\" o \"Cero\".",
-          "diagram": "assets/module1photos/diag4.png",
+          "diagram": "assets/module2photos/diag4.png",
           "notes": [
             {
               "content": "Aplicados a la lógica de programación, los diagramas de flujo permiten representar decisiones, ciclos y secuencias de manera intuitiva. Son especialmente útiles para introducir a los estudiantes en los conceptos básicos de programación, como las estructuras condicionales y los bucles.",
@@ -78,7 +78,7 @@
           "title": "Ejemplo 1: Verificar si un número está dentro de un rango",
           "problem": "Situación: Un programa debe verificar si un número ingresado por el usuario está dentro de un rango específico, digamos entre 10 y 20.",
           "logic": "¿Cuándo usar operadores lógicos y relacionales?\nEste caso requiere el uso de operadores relacionales (como <, >, >=, <=) para comparar el número con los límites del rango. Además, se utilizarán operadores lógicos (como AND) para combinar las condiciones.\n\nImplementación:\n• Leer número.\n• Comprobar si el número es mayor o igual a 10 y menor o igual a 20.\n• Si se cumple la condición, mostrar \"Número dentro del rango\".\n• Si no, mostrar \"Número fuera del rango\".",
-          "diagram": "assets/module1photos/diag5.png",
+          "diagram": "assets/module2photos/diag5.png",
           "explanation": "Operadores utilizados:\n• Relacionales: >=, <= para comparar el número con los límites del rango.\n• Lógicos: AND para combinar las dos condiciones (número >= 10 y número <= 20).",
           "notes": [
             {
@@ -92,7 +92,7 @@
           "title": "Ejemplo 2: Verificar si un estudiante aprueba o reprueba",
           "problem": "Situación: El programa debe verificar si un estudiante aprueba un curso basado en su calificación y asistencia. El estudiante aprueba si su calificación es mayor o igual a 6 y si tiene una asistencia superior al 80%.",
           "logic": "¿Cuándo usar operadores lógicos y relacionales?\nEste caso implica dos condiciones: la calificación del estudiante y su porcentaje de asistencia. Aquí, se usan operadores lógicos (AND) para verificar si ambas condiciones se cumplen, y operadores relacionales para comparar los valores.\n\nImplementación:\n• Leer calificación.\n• Leer porcentaje de asistencia.\n• Comprobar si la calificación es mayor o igual a 6 y la asistencia es mayor a 80%.\n• Si se cumple, mostrar \"Aprobado\".\n• Si no, mostrar \"Reprobado\".",
-          "diagram": "assets/module1photos/diag6.png",
+          "diagram": "assets/module2photos/diag6.png",
           "explanation": "Operadores utilizados:\n• Relacionales: >=, > para comparar la calificación y la asistencia.\n• Lógicos: AND para combinar las dos condiciones de aprobación.",
           "notes": []
         }
@@ -103,24 +103,10 @@
       "content": "Una expresión booleana es cualquier expresión cuyo resultado es un valor booleano: verdadero (true) o falso (false). Los operadores lógicos (como AND, OR, NOT) se utilizan para combinar, comparar o negar condiciones en una expresión booleana.\n\nEste tipo de expresiones son utilizadas en lenguajes de programación, debido a que son más complejas y no se puede utilizar como tal en un diagrama de flujo.",
       "examples": [
         {
-          "title": "Ejemplo 1: Verificar si un estudiante aprobó el curso",
-          "problem": "Problema: Un estudiante aprueba el curso si su promedio es mayor a 70. Si el promedio es mayor a 70, la variable booleana aprobado será true; de lo contrario, será false.",
-          "logic": "Solución:\npromedio = 75\naprobado = (promedio > 70)\nprint(aprobado)",
-          "diagram": "assets/module1photos/diag7.png",
-          "explanation": "Análisis del funcionamiento:\n• Se define el promedio.\n• Se evalúa la condición promedio > 70.\n• Si la condición es verdadera, la variable aprobado se asigna como true.",
-          "notes": [
-            {
-              "content": "Este es un ejemplo muy básico de uso de operadores relacionales con condiciones booleanas. La condición solo compara si un valor es mayor que otro, y según este resultado, se establece el valor de una variable booleana.",
-              "color": "#2563EB",
-              "opacity": 0.3
-            }
-          ]
-        },
-        {
           "title": "Ejemplo 2: Verificar si un usuario tiene acceso a un sistema",
           "problem": "Problema: Un usuario tiene acceso al sistema solo si su rol es \"administrador\" y la contraseña es correcta. Definimos la variable booleana acceso que será true si ambas condiciones se cumplen.",
           "logic": "Solución:\nrol = \"administrador\"\ncontraseña_correcta = True\nacceso = (rol == \"administrador\") and (contraseña_correcta)\nprint(acceso)",
-          "diagram": "assets/module1photos/diag8.png",
+          "diagram": "assets/module2photos/diag7.png",
           "explanation": "Análisis del funcionamiento:\n• Se evalúa si el rol es \"administrador\".\n• Si esta condición es verdadera, se evalúa la condición de si la contraseña_correcta es True.\n• Si ambas condiciones son verdaderas, el acceso se concede.",
           "notes": [
             {

@@ -1,6 +1,6 @@
 {
   "sectionTitle": "II. Estructuras de control con datos primitivos",
-  "sectionImage": "https://img.freepik.com/free-vector/decision-making-abstract-concept_23-2148607598.jpg",
+  "sectionImage": "https://assets2-programarya-com.juandmegon.com/img/Cursos/Fundamentacion/Estructuras-de-Control/Estructuras-de-Control-header.png",
   "welcomeText": "Las estructuras de control son fundamentales para tomar decisiones y repetir acciones dentro de un programa. Cuando las combinamos con datos primitivos, logramos que nuestros algoritmos sean dinámicos, adaptables y capaces de responder a distintas situaciones.",
   "introText1": "A través de estas herramientas, podrás crear algoritmos que reaccionen ante distintos escenarios, realicen comparaciones y ejecuten instrucciones específicas según los datos de entrada. Dominar las estructuras de control con datos primitivos te permitirá escribir programas más inteligentes y eficientes.",
   "introText2": "¡Prepárate para desarrollar lógica más precisa y tomar el control de tus decisiones en código!",
@@ -73,7 +73,7 @@
           "problem": "Este algoritmo utiliza una estructura secuencial, ya que las instrucciones se ejecutan una tras otra, sin tomar decisiones ni repetir pasos. Utilizaremos datos primitivos como números decimales (float) y operadores matemáticos para calcular el área.",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer la base del triángulo (Entrada)\n\nLeer la altura del triángulo (Entrada)\n\nCalcular el área con la fórmula: área = (base × altura) / 2 (Proceso matemático)\n\nMostrar el área calculada (Salida)\n\nFin",
           "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Representado por un óvalo.\n\nLeer base: Paralelogramo (entrada).\n\nLeer altura: Paralelogramo (entrada).\n\nCalcular área: Rectángulo con la fórmula (base * altura) / 2.\n\nMostrar área: Paralelogramo (salida).\n\nFin: Óvalo.",
-          "diagram": "assets/module1photos/diag9.png",
+          "diagram": "assets/module2photos/diag8.png",
           "explanation": "Este ejemplo muestra cómo se pueden encadenar instrucciones secuenciales de entrada, proceso y salida utilizando operadores aritméticos y datos primitivos como float o int."
         }
       ]
@@ -174,35 +174,35 @@
           "problem": "Este algoritmo evalúa si un número ingresado por el usuario es positivo. Si la condición se cumple, se muestra un mensaje; si no, simplemente no se hace nada más. Se utiliza una estructura condicional simple con if, sin incluir una alternativa (else), y se trabaja con datos primitivos numéricos (enteros).",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer un número (Entrada)\n\nEvaluar si el número es mayor que cero (Condición con if)\n\nSi la condición es verdadera, mostrar “El número es positivo” (Salida)\n\nFin",
           "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nLeer número: Paralelogramo (entrada).\n\nEvaluar condición (número > 0): Rombos para decisión.\n\nSi verdadero: Flecha hacia un paralelogramo que muestra “El número es positivo”.\n\nSi falso: Flecha que se dirige directamente al fin sin realizar ninguna acción.\n\nFin: Óvalo.",
-          "diagram": "assets/module1photos/diag10.png"
+          "diagram": "assets/module2photos/diag9.png"
         },
         {
           "title": "Ejemplo: Algoritmo para aplicar un descuento según el monto de compra",
           "problem": "Este algoritmo solicita el monto total de una compra y determina si se debe aplicar un descuento. Si el monto es mayor o igual a 1000, se aplica un 10% de descuento; de lo contrario, no se aplica ningún descuento. Utiliza operadores aritméticos y relacionales.",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer el monto de la compra (Entrada)\n\nEvaluar si el monto es mayor o igual a 1000\n\nSi la condición es verdadera:\n\nCalcular el 10% de descuento\n\nRestar el descuento al monto original\n\nMostrar “Se aplicó un descuento. Total a pagar: [monto final]”\n\nSi la condición es falsa:\n\nMostrar “No hay descuento. Total a pagar: [monto original]”\n\nFin",
           "diagram_description": "Estructura del diagrama de flujo:\n\nInicio: Óvalo\n\nLeer monto: Paralelogramo\n\nCondición: Rombo con “¿monto >= 1000?”\n\nSi sí:\n\nRectángulo: Calcular descuento\n\nRectángulo: Restar descuento\n\nParalelogramo: Mostrar monto con descuento\n\nSi no:\n\nParalelogramo: Mostrar monto sin descuento\n\nFin: Óvalo",
-          "diagram": "assets/module1photos/diag11.png"
+          "diagram": "assets/module2photos/diag10.png"
         },
         {
           "title": "Ejemplo: Algoritmo para clasificar una calificación numérica",
           "problem": "Este algoritmo permite clasificar una calificación ingresada por el usuario (dato primitivo tipo float) en tres categorías: Aprobado, Regular o Reprobado, utilizando una estructura condicional if-else anidada.",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer la calificación (Entrada)\n\nEvaluar si la calificación es mayor o igual a 8\n\nSi es verdadero, mostrar “Aprobado” (Salida)\n\nSi es falso, evaluar si la calificación es mayor o igual a 6\n\nSi es verdadero, mostrar “Regular” (Salida)\n\nSi es falso, mostrar “Reprobado” (Salida)\n\nFin",
           "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Óvalo.\n\nLeer calificación: Paralelogramo (entrada).\n\nEvaluar si calificación ≥ 8: Rombo (decisión).\n\nSí: Paralelogramo → “Aprobado”.\n\nNo:\n\nEvaluar si calificación ≥ 6: Segundo rombo.\n\nSí: Paralelogramo → “Regular”.\n\nNo: Paralelogramo → “Reprobado”.\n\nFin: Óvalo.",
-          "diagram": "assets/module1photos/diag12.png"
+          "diagram": "assets/module2photos/diag11.png"
         },
         {
           "title": "Ejemplo: Algoritmo para mostrar el día de la semana según un número",
           "problem": "Este algoritmo solicita al usuario un número entero del 1 al 7 y, utilizando una estructura switch, muestra el nombre correspondiente del día de la semana. Solo se emplean datos primitivos tipo entero (int).",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer un número del 1 al 7 (Entrada)\n\nEvaluar el número con la estructura switch:\n\nCaso 1: Mostrar “Lunes”\n\nCaso 2: Mostrar “Martes”\n\nCaso 3: Mostrar “Miércoles”\n\nCaso 4: Mostrar “Jueves”\n\nCaso 5: Mostrar “Viernes”\n\nCaso 6: Mostrar “Sábado”\n\nCaso 7: Mostrar “Domingo”\n\nDefault: Mostrar “Número inválido”\n\nFin",
           "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Óvalo.\n\nLeer número: Paralelogramo (entrada).\n\nDecisión múltiple (switch):\n\n1 → Paralelogramo: “Lunes”\n\n2 → Paralelogramo: “Martes”\n\n3 → Paralelogramo: “Miércoles”\n\n4 → Paralelogramo: “Jueves”\n\n5 → Paralelogramo: “Viernes”\n\n6 → Paralelogramo: “Sábado”\n\n7 → Paralelogramo: “Domingo”\n\nOtro valor → Paralelogramo: “Número inválido”\n\nFin: Todas las salidas convergen hacia el óvalo final.",
-          "diagram": "assets/module1photos/diag13.png"
+          "diagram": "assets/module2photos/diag12.png"
         },
         {
           "title": "Ejemplo: Algoritmo para mostrar una cuenta regresiva a partir de un número del 1 al 3",
           "problem": "Este algoritmo muestra una serie de mensajes según el número que el usuario ingrese (1, 2 o 3). Como no se incluyen sentencias break, se ejecutan todas las instrucciones de los casos siguientes después de la coincidencia. Esto permite, por ejemplo, crear una cuenta regresiva de varios pasos sin repetir lógica.",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer un número del 1 al 3 (Entrada)\n\nEvaluar con switch sin break:\n\nCaso 1: Mostrar “Tres”\n\nCaso 2: Mostrar “Dos”\n\nCaso 3: Mostrar “Uno”\n\nDefault: Mostrar “Número fuera del rango”\n\nFin\n\nEjemplo de comportamiento:\n\nSi el usuario ingresa 1, se mostrarán:\n\n“Tres”\n\n“Dos”\n\n“Uno”\n\nSi el usuario ingresa 2, se mostrarán:\n\n“Dos”\n\n“Uno”\n\nSi el usuario ingresa 3, se mostrará:\n\n“Uno”",
           "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Óvalo\n\nLeer número: Paralelogramo (entrada)\n\nDecisión múltiple (switch sin break):\n\nCaso 1 → Mostrar “Tres”\n\n↓\n\nCaso 2 → Mostrar “Dos”\n\n↓\n\nCaso 3 → Mostrar “Uno”\n\n↓\n\nFin\n\nDefault: Mostrar “Número fuera del rango”",
-          "diagram": "assets/module1photos/diag14.png"
+          "diagram": "assets/module2photos/diag13.png"
         }
       ]
     },
@@ -298,21 +298,21 @@
           "problem": "",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nPara i desde 1 hasta 5:\n\nCalcular par = i * 2\n\nMostrar par\n\nFin\n\nPseudocódigo:\n\nInicio\n\n  para i desde 1 hasta 5 hacer\n\n    par ← i * 2\n\n    mostrar par\n\nFin",
           "diagram_description": "Diagrama de flujo",
-          "diagram": "assets/module1photos/diag15.png"
+          "diagram": "assets/module2photos/for.png"
         },
         {
           "title": "Ejemplo con bucle while: Contar del 1 al 5",
           "problem": "",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nInicializar variable contador en 1\n\nMientras contador sea menor o igual a 5:\n\nMostrar el valor de contador\n\nIncrementar contador en 1\n\nFin\n\nPseudocódigo:\n\nInicio\n\n  contador ← 1\n\n  mientras contador <= 5 hacer\n\n    mostrar contador\n\n    contador ← contador + 1\n\nFin",
           "diagram_description": "",
-          "diagram": "assets/module1photos/diag16.png"
+          "diagram": "assets/module2photos/diag14.png"
         },
         {
           "title": "Ejemplo con bucle do-while: Solicitar un número hasta que sea mayor que 10",
           "problem": "",
           "logic": "Pasos del algoritmo:\n\nInicio\n\nHacer:\n\nLeer número\n\nMientras el número sea menor o igual a 10\n\nMostrar “Número aceptado”\n\nFin\n\nPseudocódigo:\n\nInicio\n\n  repetir\n\n    leer número\n\n  hasta que número > 10\n\n  mostrar \"Número aceptado\"\n\nFin",
           "diagram_description": "",
-          "diagram": "assets/module1photos/diag17.png"
+          "diagram": "assets/module2photos/diag15.png"
         }
       ]
     }

@@ -43,6 +43,7 @@ flutter:
   assets:
     - assets/
     - assets/data/module1.json  
+    - assets/module1photos/
     - assets/data/module2.json
     - assets/data/module3.json
     - assets/data/module4.json  
@@ -57,6 +58,7 @@ flutter:
     - assets/data/module4/tema4.json
     - assets/data/module4/actividades.json
     - assets/animations/loading.json
+    - assets/module2photos/
 
 flutter_icons:
   android: true  # Ícono adaptativo para Android

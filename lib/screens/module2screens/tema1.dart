@@ -5,7 +5,6 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
 
 class Tema1 extends StatefulWidget {
   final Map<String, dynamic> section;
