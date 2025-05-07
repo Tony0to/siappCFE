@@ -2,10 +2,64 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:siapp/screens/module2screens/tema2.dart';
-import 'package:siapp/screens/module2screens/flowcharts.dart';
+import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/github.dart';
+import 'package:siapp/theme/app_colors.dart';
+
+// Pantalla para mostrar la imagen en pantalla completa con área maximizada
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenImage({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundDark,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: InteractiveViewer(
+          minScale: 0.1, // Permite reducir más para diagramas largos
+          maxScale: 6.0, // Mayor zoom para detalles
+          child: Center(
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit
+                  .contain, // Asegura que el diagrama sea completamente visible
+              width: double.infinity,
+              height: double.infinity, // Ocupa todo el espacio disponible
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: AppColors.backgroundDark,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen: $imagePath\n$error',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class Tema1 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -34,11 +88,15 @@ class Tema1 extends StatefulWidget {
 class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
   late AnimationController _controller;
   String? _selectedAnswer;
-  String? _correctAnswer;
-  late YoutubePlayerController _youtubeController;
+  YoutubePlayerController? _youtubeController;
   bool _videoError = false;
+  bool _showVideo = false;
   final _scrollController = ScrollController();
   Map<String, dynamic>? _contentData;
+  String? _errorMessage;
+  bool _quizAnswered = false;
+  final _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -49,54 +107,74 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     )..forward();
 
     _loadJsonContent();
-
-    try {
-      _youtubeController = YoutubePlayerController(
-        initialVideoId: 'u6fusP6JLgg',
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: true,
-          disableDragSeek: false,
-          loop: false,
-          enableCaption: true,
-          hideThumbnail: false,
-        ),
-      )..addListener(() {
-          if (_youtubeController.value.hasError && !_videoError) {
-            setState(() {
-              _videoError = true;
-            });
-          }
-        });
-    } catch (e) {
-      setState(() {
-        _videoError = true;
-      });
-    }
   }
 
   Future<void> _loadJsonContent() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/data/module2/tema1.json');
+      final String jsonString = await rootBundle
+          .loadString('assets/data/module2/tema1.json')
+          .timeout(const Duration(seconds: 5));
       final data = json.decode(jsonString);
       setState(() {
         _contentData = data;
       });
     } catch (e) {
       debugPrint('Error loading JSON: $e');
+      setState(() {
+        _errorMessage = 'No se pudo cargar el contenido: $e';
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar el contenido: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
+  }
+
+  void _initializeVideo() {
+    setState(() {
+      _showVideo = true;
+      try {
+        _youtubeController = YoutubePlayerController(
+          initialVideoId: 'u6fusP6JLgg',
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: true,
+            disableDragSeek: false,
+            loop: false,
+            enableCaption: true,
+            hideThumbnail: false,
+          ),
+        )..addListener(() {
+            if (_youtubeController!.value.hasError && !_videoError) {
+              setState(() {
+                _videoError = true;
+              });
+            }
+          });
+      } catch (e) {
+        setState(() {
+          _videoError = true;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _youtubeController.dispose();
+    _youtubeController?.pause();
+    _youtubeController?.dispose();
     _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
-  Widget _buildSectionImage() {
-    final imageUrl = _contentData?['sectionImage'] as String?;
+  Widget buildSectionImage() {
+    final imageUrl = _contentData?['sectionImage'];
     return Container(
       height: 220,
       decoration: BoxDecoration(
@@ -113,12 +191,41 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: AppColors.backgroundDark,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFF1E40AF),
-                  child: const Icon(Icons.image_not_supported, size: 50, color: Colors.white),
+                  color: AppColors.backgroundDark,
+                  child: Center(
+                    child: Text(
+                      'Error al cargar la imagen',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: null,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              color: AppColors.backgroundDark,
+              height: 220,
+              width: double.infinity,
+              child: Center(
+                child: Text(
+                  'Imagen no disponible',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: null,
                 ),
               ),
             ),
@@ -126,20 +233,14 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
             height: 220,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Color.fromRGBO(30, 64, 175, 0.8),
-                ],
-              ),
+              gradient: AppColors.headerSection,
             ),
           ),
           Positioned(
             bottom: 20,
             left: 20,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -147,22 +248,26 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     shadows: [
                       Shadow(
                         blurRadius: 10,
-                        color: Colors.black.withOpacity(0.5),
+                        color: AppColors.shadowColor,
                         offset: const Offset(2, 2),
                       ),
                     ],
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
                 Text(
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    color: AppColors.textSecondary,
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ],
             ),
@@ -172,9 +277,9 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  List<Widget> _formatContent(String? content, {bool isIntro = false}) {
+  List<Widget> formatContent(String? content, {bool isIntro = false}) {
     if (content == null || content.isEmpty) return [const SizedBox.shrink()];
-    
+
     return content.split('\n').map((paragraph) {
       final trimmed = paragraph.trim();
       if (trimmed.isEmpty) return const SizedBox(height: 12);
@@ -184,80 +289,139 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           trimmed,
           style: GoogleFonts.poppins(
             fontSize: isIntro ? 16 : 15,
-            color: isIntro ? Colors.white : Colors.white.withOpacity(0.9),
+            color: isIntro ? AppColors.textPrimary : AppColors.textSecondary,
             fontWeight: isIntro ? FontWeight.w500 : FontWeight.normal,
             height: 1.5,
           ),
+          maxLines: null,
+          overflow: TextOverflow.visible,
         ),
       );
     }).toList();
   }
 
-  Widget _buildFlowchart(String? flowchartId) {
-    if (flowchartId == null) return const SizedBox.shrink();
-
-    final flowchartConfig = {
-      'rectangulo': {'scale': 0.65, 'height': 350.0},
-      'par_impar': {'scale': 0.6, 'height': 400.0},
-      'bucle': {'scale': 0.6, 'height': 400.0},
-      'condicional_multiple': {'scale': 0.5, 'height': 450.0},
-      'rango_numeros': {'scale': 0.6, 'height': 400.0},
-      'aprobacion_estudiante': {'scale': 0.6, 'height': 450.0},
-    };
-
-    final config = flowchartConfig[flowchartId] ?? {'scale': 0.7, 'height': 350.0};
+  Widget buildDiagramImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: 350,
+        color: AppColors.neutralCard,
+        child: Center(
+          child: Text(
+            'Diagrama no disponible',
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: null,
+          ),
+        ),
+      );
+    }
 
     return Container(
-      height: (config['height'] as double?) ?? 350.0,
-      padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Diagrama de Flujo',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullScreenImage(imagePath: imagePath),
             ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: InteractiveViewer(
-              boundaryMargin: const EdgeInsets.all(20),
-              minScale: 0.1,
-              maxScale: 4.0,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Transform.scale(
-                    scale: (config['scale'] as double?) ?? 0.7,
-                    alignment: Alignment.topCenter,
-                    child: FlowCharts.getFlowChart(flowchartId),
-                  ),
+          );
+        },
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
+          height: 350,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Container(
+            height: 350,
+            color: AppColors.neutralCard,
+            child: Center(
+              child: Text(
+                'Error al cargar el diagrama: $imagePath\n$error',
+                style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: null,
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Pellizca para hacer zoom • Desliza para mover',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.white70,
-              fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
+
+  Widget buildCodeBox(String code, String language) {
+    String highlightLanguage;
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        highlightLanguage = 'javascript';
+        break;
+      case 'python':
+        highlightLanguage = 'python';
+        break;
+      case 'java':
+        highlightLanguage = 'java';
+        break;
+      case 'c++':
+        highlightLanguage = 'cpp';
+        break;
+      case 'pseudocode':
+        highlightLanguage = 'text';
+        break;
+      default:
+        highlightLanguage = 'text';
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.codeBoxBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.codeBoxBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.codeBoxLabel,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              'Pseudocódigo',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.textPrimary,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: HighlightView(
+                code,
+                language: highlightLanguage,
+                theme: githubTheme,
+                padding: const EdgeInsets.all(12),
+                textStyle: GoogleFonts.sourceCodePro(fontSize: 14),
+              ),
             ),
           ),
         ],
@@ -265,29 +429,33 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildQuiz(Map<String, dynamic>? question) {
+  Widget buildQuiz(Map<String, dynamic>? question) {
     if (question == null) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.3),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 24),
+              const Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
               const SizedBox(width: 8),
-              Text(
-                'Evaluación de conocimiento',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+              Expanded(
+                child: Text(
+                  'Evaluación de conocimiento',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
             ],
@@ -296,16 +464,18 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Color.fromRGBO(30, 58, 138, 0.3),
+              color: AppColors.neutralCard,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               question['logic']?.toString() ?? '',
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: const Color(0xFFBFDBFE),
+                color: AppColors.textSecondary,
                 fontStyle: FontStyle.italic,
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ),
           const SizedBox(height: 12),
@@ -313,32 +483,51 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
             question['text']?.toString() ?? '',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w500,
             ),
+            maxLines: null,
+            overflow: TextOverflow.visible,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          if (_selectedAnswer != null) ...[
+            Text(
+              _selectedAnswer == question['correct']
+                  ? '¡Correcto!'
+                  : 'Incorrecto, la respuesta correcta es ${question['correct']}',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: _selectedAnswer == question['correct']
+                    ? AppColors.success
+                    : AppColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
+            ),
+            const SizedBox(height: 12),
+          ],
           ...(question['options'] as List<dynamic>? ?? []).map((option) {
             final optionText = option?.toString() ?? '';
             final isSelected = _selectedAnswer == optionText;
             final isCorrect = optionText == question['correct']?.toString();
-            Color textColor = Colors.white;
-            Color borderColor = Color.fromRGBO(59, 130, 246, 0.5);
-            Color bgColor = Color.fromRGBO(30, 64, 175, 0.2);
+            Color textColor = AppColors.textPrimary;
+            Color borderColor = AppColors.glassmorphicBorder;
+            Color bgColor = AppColors.glassmorphicBackground;
 
             if (_selectedAnswer != null) {
               if (isSelected && !isCorrect) {
-                textColor = Colors.white;
-                borderColor = const Color(0xFFEF4444);
-                bgColor = Color.fromRGBO(153, 27, 27, 0.2);
+                textColor = AppColors.textPrimary;
+                borderColor = AppColors.error;
+                bgColor = AppColors.answerIncorrectBg;
               } else if (isSelected && isCorrect) {
-                textColor = Colors.white;
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                textColor = AppColors.textPrimary;
+                borderColor = AppColors.answerCorrect;
+                bgColor = AppColors.answerCorrectBg;
               } else if (isCorrect) {
-                textColor = Colors.white;
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                textColor = AppColors.textPrimary;
+                borderColor = AppColors.answerCorrect;
+                bgColor = AppColors.answerCorrectBg;
               }
             }
 
@@ -346,32 +535,17 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(bottom: 8),
               child: InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  setState(() {
-                    _selectedAnswer = optionText;
-                    _correctAnswer = question['correct']?.toString();
-                    if (optionText == _correctAnswer) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('¡Correcto!', style: GoogleFonts.poppins()),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Incorrecto, la respuesta correcta es ${question['correct']}',
-                            style: GoogleFonts.poppins(),
-                          ),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  });
-                },
+                onTap: _quizAnswered
+                    ? null
+                    : () {
+                        setState(() {
+                          _selectedAnswer = optionText;
+                          _quizAnswered = true;
+                        });
+                      },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(8),
@@ -390,7 +564,9 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                             ? Icon(
                                 isCorrect ? Icons.check : Icons.close,
                                 size: 16,
-                                color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                color: isCorrect
+                                    ? AppColors.answerCorrect
+                                    : AppColors.error,
                               )
                             : null,
                       ),
@@ -402,6 +578,8 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                             fontSize: 15,
                             color: textColor,
                           ),
+                          maxLines: null,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                     ],
@@ -415,24 +593,46 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildVideoPlayer() {
+  Widget buildVideoPlayer() {
+    if (!_showVideo) {
+      return GestureDetector(
+        onTap: _initializeVideo,
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: AppColors.backgroundDark,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child:
+                Icon(Icons.play_arrow, color: AppColors.textPrimary, size: 50),
+          ),
+        ),
+      );
+    }
+
     if (_videoError) {
       return Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Color.fromRGBO(30, 64, 175, 0.3),
+              color: AppColors.glassmorphicBackground,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const Icon(Icons.error_outline,
+                    color: AppColors.error, size: 40),
                 const SizedBox(height: 8),
                 Text(
                   'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                  style: GoogleFonts.poppins(
+                      fontSize: 14, color: AppColors.textSecondary),
                   textAlign: TextAlign.center,
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ],
             ),
@@ -444,39 +644,31 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: YoutubePlayer(
-        controller: _youtubeController,
+        controller: _youtubeController!,
         showVideoProgressIndicator: true,
-        progressIndicatorColor: Colors.blueAccent,
-        progressColors: const ProgressBarColors(
-          playedColor: Colors.blue,
-          handleColor: Colors.blueAccent,
+        progressIndicatorColor: AppColors.progressActive,
+        progressColors: ProgressBarColors(
+          playedColor: AppColors.progressActive,
+          handleColor: AppColors.progressBrightBlue,
         ),
         onReady: () {
-          _youtubeController.unMute();
+          _youtubeController!.unMute();
         },
         onEnded: (metaData) {
-          _youtubeController.pause();
+          _youtubeController!.pause();
         },
       ),
     );
   }
 
-  void _navigateNext() {
+  void navigateNext() {
     widget.onComplete(widget.sectionIndex);
-    final nextIndex = widget.sectionIndex + 1;
-    final nextSectionKey = widget.content.keys.elementAt(nextIndex);
-    final nextSection = widget.content[nextSectionKey];
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => Tema2(
-          section: nextSection,
-          sectionTitle: nextSection['title'] ?? 'Sección ${nextIndex + 1}',
-          sectionIndex: nextIndex,
-          totalSections: widget.totalSections,
-          content: widget.content,
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ContenidoScreen(
           moduleData: widget.moduleData,
-          onComplete: widget.onComplete,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -486,9 +678,34 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSectionHeader(String? title) {
+  Future<bool> navigateBack() async {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return false; // Prevent default pop
+    } else {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ContenidoScreen(
+            moduleData: widget.moduleData,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+      return true; // Allow pop to proceed
+    }
+  }
+
+  Widget buildSectionHeader(String? title) {
     if (title == null || title.isEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -496,17 +713,19 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           Container(
             height: 2,
             width: 40,
-            color: const Color(0xFF93C5FD),
+            color: AppColors.chipTopic,
           ),
           const SizedBox(width: 12),
-          Flexible(
+          Expanded(
             child: Text(
               title,
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ),
         ],
@@ -514,36 +733,48 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildExampleCard(Map<String, dynamic>? example) {
+  Widget buildExampleCard(Map<String, dynamic>? example) {
     if (example == null) return const SizedBox.shrink();
+
+    final isLoopExample =
+        example['title']?.toString().contains('Bucle') ?? false;
+    final pseudocode = isLoopExample
+        ? example['logic']?.toString().split('Lógica de solución:').last.trim()
+        : null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.2),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.3)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (example['title'] != null)
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      example['title']?.toString() ?? 'Ejemplo',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryButton,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        example['title']?.toString() ?? 'Ejemplo',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: null,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ),
@@ -555,36 +786,42 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                 example['problem']?.toString() ?? '',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
+                maxLines: null,
+                overflow: TextOverflow.visible,
               ),
             ],
             const SizedBox(height: 10),
-            ..._formatContent(example['logic']?.toString()),
+            if (isLoopExample && pseudocode != null) ...[
+              buildCodeBox(pseudocode, 'pseudocode'),
+            ] else ...[
+              ...formatContent(example['logic']?.toString()),
+            ],
+            if (example['diagram'] != null)
+              buildDiagramImage(example['diagram']?.toString()),
             const SizedBox(height: 10),
-            if (example['flowchartId'] != null)
-              _buildFlowchart(example['flowchartId']?.toString()),
-            const SizedBox(height: 10),
-            ..._formatContent(example['explanation']?.toString()),
+            ...formatContent(example['explanation']?.toString()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNoteCard(String? content, {Color? color, String? title}) {
+  Widget buildNoteCard(String? content, {Color? color, String? title}) {
     if (content == null || content.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color ?? Color.fromRGBO(30, 64, 175, 0.3),
+        color: color ?? AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (title != null && title.isNotEmpty)
@@ -595,172 +832,284 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
-            ..._formatContent(content),
+            ...formatContent(content),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNoteCardFromJson(Map<String, dynamic>? note) {
+  Widget buildNoteCardFromJson(Map<String, dynamic>? note) {
     if (note == null) return const SizedBox.shrink();
 
     final colorString = note['color']?.toString();
     final color = colorString != null && colorString.isNotEmpty
-      ? Color(int.parse(colorString.replaceAll('#', '0xFF')))
-      : const Color(0xFF1E40AF);
-    
-    final opacity = note['opacity']?.toDouble() ?? 0.3;
+        ? Color(int.parse(colorString.replaceAll('#', '0xFF')))
+        : AppColors.backgroundDark;
 
-    return _buildNoteCard(
+    final opacity = (note['opacity']?.toDouble() ?? 0.3).clamp(0.0, 1.0);
+
+    return buildNoteCard(
       note['content']?.toString(),
       color: Color.fromRGBO(
-        color.red,
-        color.green,
-        color.blue,
+        color.r.toInt(),
+        color.g.toInt(),
+        color.b.toInt(),
         opacity,
       ),
       title: note['title']?.toString(),
     );
   }
 
+  Widget buildSubsectionPage(
+      Map<String, dynamic>? sectionData, int index, int totalPages) {
+    if (sectionData == null) {
+      return Center(
+        child: Text(
+          'No hay datos disponibles para esta sección',
+          style: GoogleFonts.poppins(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: null,
+          overflow: TextOverflow.visible,
+        ),
+      );
+    }
+
+    final examples = sectionData['examples'] as List<dynamic>? ?? [];
+    final finalNote = sectionData['finalNote'] as Map<String, dynamic>?;
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (index == 0) ...[
+            FadeTransition(
+              opacity: Tween<double>(begin: 0, end: 1).animate(
+                CurvedAnimation(
+                    parent: _controller, curve: const Interval(0, 0.3)),
+              ),
+              child: buildSectionImage(),
+            ),
+            const SizedBox(height: 24),
+            FadeTransition(
+              opacity: Tween<double>(begin: 0, end: 1).animate(
+                CurvedAnimation(
+                    parent: _controller, curve: const Interval(0.1, 0.4)),
+              ),
+              child: buildNoteCard(
+                _contentData?['welcomeText']?.toString(),
+                color: AppColors.glassmorphicBackground,
+              ),
+            ),
+            const SizedBox(height: 16),
+            buildNoteCard(
+              _contentData?['introText1']?.toString(),
+              color: AppColors.glassmorphicBackground,
+            ),
+            const SizedBox(height: 16),
+            buildNoteCard(
+              _contentData?['introText2']?.toString(),
+              color: AppColors.answerCorrectBg,
+            ),
+          ],
+          buildSectionHeader(sectionData['title']?.toString()),
+          buildNoteCard(sectionData['content']?.toString()),
+          const SizedBox(height: 8),
+          ...examples.map((example) {
+            final exampleData = example as Map<String, dynamic>?;
+            if (exampleData == null) return const SizedBox.shrink();
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildExampleCard(exampleData),
+                if (exampleData['quiz'] != null)
+                  buildQuiz(exampleData['quiz'] as Map<String, dynamic>?),
+                ...(exampleData['notes'] as List<dynamic>? ?? []).map((note) {
+                  return buildNoteCardFromJson(note as Map<String, dynamic>?);
+                }),
+              ],
+            );
+          }),
+          if (finalNote != null) buildNoteCardFromJson(finalNote),
+          if (index == totalPages - 1) ...[
+            const SizedBox(height: 16),
+            buildSectionHeader(_contentData?['video']?['title']?.toString()),
+            Text(
+              _contentData?['video']?['description']?.toString() ?? '',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
+            ),
+            const SizedBox(height: 12),
+            buildVideoPlayer(),
+          ],
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  void _handleContinue() {
+    if (_currentPage < (_contentData?['subsections']?.length ?? 0) - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      navigateNext();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_contentData == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF1E40AF),
+    if (_errorMessage != null) {
+      return Scaffold(
+        backgroundColor: AppColors.backgroundDark,
         body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: AppColors.error,
+                size: 50,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: null,
+                overflow: TextOverflow.visible,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.textPrimary,
+                  foregroundColor: AppColors.backgroundDark,
+                ),
+                child: Text(
+                  'Volver',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_contentData == null) {
+      return Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E40AF),
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          widget.sectionTitle,
-          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                '${widget.sectionIndex + 1}/${widget.totalSections}',
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white.withOpacity(0.9)),
+    final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
+    final totalPages = subsections.length;
+
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          await navigateBack();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: Text(
+            widget.sectionTitle,
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            onPressed: () async {
+              await navigateBack();
+            },
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: Text(
+                  '${widget.sectionIndex + 1}/${widget.totalSections}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateNext,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E40AF),
-        icon: const Icon(Icons.arrow_forward),
-        label: Text(
-          'Siguiente tema',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ],
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FadeTransition(
-                opacity: Tween<double>(begin: 0, end: 1).animate(
-                  CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
-                ),
-                child: _buildSectionImage(),
-              ),
-              const SizedBox(height: 24),
-              FadeTransition(
-                opacity: Tween<double>(begin: 0, end: 1).animate(
-                  CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
-                ),
-                child: _buildNoteCard(
-                  _contentData?['introText']?.toString(),
-                  color: Color.fromRGBO(30, 64, 175, 0.3),
-                ),
-              ),
-              
-              // Construir cada subsección del JSON
-              ...(_contentData?['subsections'] as List<dynamic>? ?? []).map((section) {
-                final sectionData = section as Map<String, dynamic>?;
-                if (sectionData == null) return const SizedBox.shrink();
-
-                final examples = sectionData['examples'] as List<dynamic>? ?? [];
-                final notes = sectionData['notes'] as List<dynamic>? ?? [];
-                final finalNote = sectionData['finalNote'] as Map<String, dynamic>?;
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    _buildSectionHeader(sectionData['title']?.toString()),
-                    _buildNoteCard(sectionData['content']?.toString()),
-                    const SizedBox(height: 8),
-                    
-                    // Construir ejemplos
-                    ...examples.map((example) {
-                      final exampleData = example as Map<String, dynamic>?;
-                      if (exampleData == null) return const SizedBox.shrink();
-
-                      return Column(
-                        children: [
-                          _buildExampleCard(exampleData),
-                          
-                          // Mostrar quiz si existe
-                          if (exampleData['quiz'] != null)
-                            _buildQuiz(exampleData['quiz'] as Map<String, dynamic>?),
-                          
-                          // Mostrar notas si existen
-                          ...(exampleData['notes'] as List<dynamic>? ?? []).map((note) {
-                            return _buildNoteCardFromJson(note as Map<String, dynamic>?);
-                          }),
-                        ],
-                      );
-                    }),
-                    
-                    // Mostrar nota final si existe
-                    if (finalNote != null)
-                      _buildNoteCardFromJson(finalNote),
-                  ],
-                );
-              }),
-              
-              // Video explicativo
-              const SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader(_contentData?['video']?['title']?.toString()),
-                  Text(
-                    _contentData?['video']?['description']?.toString() ?? '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildVideoPlayer(),
-                ],
-              ),
-              
-              const SizedBox(height: 80),
-            ],
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _handleContinue,
+          backgroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.backgroundDark,
+          icon: const Icon(Icons.arrow_forward),
+          label: Text(
+            _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+        body: SafeArea(
+          child: PageView.builder(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+                _quizAnswered = false;
+                _selectedAnswer = null;
+              });
+            },
+            itemCount: totalPages,
+            itemBuilder: (context, index) {
+              final sectionData = subsections[index] as Map<String, dynamic>?;
+              return buildSubsectionPage(sectionData, index, totalPages);
+            },
           ),
         ),
       ),

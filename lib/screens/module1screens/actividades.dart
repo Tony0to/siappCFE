@@ -3,14 +3,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:siapp/theme/app_colors.dart';
 import 'hardware_software_activity.dart';
 import 'order_steps_activity.dart';
 import 'flowchart_activity.dart';
 
 class ActividadesScreen extends StatefulWidget {
-  final Map<String, dynamic> moduleData;
+  final Map<String, dynamic> actividadesData;
 
-  const ActividadesScreen({Key? key, required this.moduleData}) : super(key: key);
+  const ActividadesScreen({Key? key, required this.actividadesData}) : super(key: key);
 
   @override
   _ActividadesScreenState createState() => _ActividadesScreenState();
@@ -34,7 +35,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1500),
     )..forward();
 
     _loadProgressFromFirestore();
@@ -65,7 +66,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module1')
+          .doc(widget.actividadesData['id'] ?? 'module1')
           .get();
 
       if (progressDoc.exists) {
@@ -87,7 +88,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             .collection('progress')
             .doc(user.uid)
             .collection('modules')
-            .doc(widget.moduleData['id'] ?? 'module1')
+            .doc(widget.actividadesData['id'] ?? 'module1')
             .set({
           'intentos': 3,
           'completed_activities': {
@@ -96,8 +97,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             'flowchart': false,
           },
           'last_updated': FieldValue.serverTimestamp(),
-          'module_id': widget.moduleData['id'] ?? 'module1',
-          'module_title': widget.moduleData['module_title'] ?? 'Módulo',
+          'module_id': widget.actividadesData['id'] ?? 'module1',
+          'module_title': widget.actividadesData['module_title'] ?? 'Módulo',
         }, SetOptions(merge: true));
 
         setState(() {
@@ -125,7 +126,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module1')
+          .doc(widget.actividadesData['id'] ?? 'module1')
           .set({
         'intentos': newAttempts,
         'last_updated': FieldValue.serverTimestamp(),
@@ -139,7 +140,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar los intentos: $e'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -154,7 +155,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module1')
+          .doc(widget.actividadesData['id'] ?? 'module1')
           .set({
         'completed_activities': {activityId: true},
         'last_updated': FieldValue.serverTimestamp(),
@@ -167,7 +168,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al registrar la actividad: $e'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -176,9 +177,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   void _navigateToActivity(Widget screen, String activityId) {
     if (_isAttemptsExhausted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Has agotado todos tus intentos. Contacta al soporte o intenta de nuevo más tarde.'),
-          backgroundColor: Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -186,9 +187,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
     if (_completedActivities[activityId]!) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Esta actividad ya está completada.'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppColors.progressBrightBlue,
         ),
       );
       return;
@@ -196,7 +197,16 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => screen),
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => screen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
     ).then((result) {
       if (result is bool) {
         if (result) {
@@ -214,23 +224,19 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
       return Scaffold(
         body: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppColors.backgroundDynamic,
           ),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircularProgressIndicator(color: Color(0xFFFFFFFF)),
+                CircularProgressIndicator(color: AppColors.progressActive),
                 const SizedBox(height: 16),
                 Text(
                   _errorMessage ?? 'Cargando progreso...',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: const Color(0xFFFFFFFF),
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
@@ -240,9 +246,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                   _buildAnimatedButton(
                     text: 'Reintentar',
                     onPressed: _loadProgressFromFirestore,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
-                    ),
+                    gradient: AppColors.primaryGradient,
                   ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
                 ],
               ],
@@ -257,11 +261,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppColors.backgroundDynamic,
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -271,11 +271,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
               children: [
                 GlassmorphicCard(
                   child: Text(
-                    'Actividades - ${widget.moduleData['module_title'] ?? 'Módulo'}',
+                    'Actividades - ${widget.actividadesData['module_title'] ?? 'Módulo'}',
                     style: GoogleFonts.poppins(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFFFFFFF),
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
@@ -288,7 +288,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                         'Intentos restantes',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
-                          color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       Text(
@@ -296,7 +296,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: _remainingAttempts > 0 ? const Color(0xFFFFFFFF) : const Color(0xFFEF4444),
+                          color: _remainingAttempts > 0 ? AppColors.textPrimary : AppColors.error,
                         ),
                       ),
                     ],
@@ -308,7 +308,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     'Progreso: $completedCount/3 actividades completadas',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ).animate().fadeIn(duration: 500.ms),
@@ -318,8 +318,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     'Actividades Complementarias',
                     style: GoogleFonts.poppins(
                       fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF4FC3F7),
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.progressBrightBlue,
                     ),
                   ),
                 ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
@@ -329,7 +329,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     height: 1.6,
-                    color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                    color: AppColors.textSecondary,
                   ),
                 ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
                 const SizedBox(height: 30),
@@ -374,22 +374,25 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isCompleted
-                ? [Colors.green.shade600, Colors.green.shade400]
-                : _isAttemptsExhausted
-                    ? [Colors.grey.shade600, Colors.grey.shade400]
-                    : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
-          ),
-          borderRadius: BorderRadius.circular(16),
+          gradient: isCompleted
+              ? LinearGradient(
+                  colors: [Colors.green.shade600, Colors.green.shade400],
+                )
+              : _isAttemptsExhausted
+                  ? LinearGradient(
+                      colors: [Colors.grey.shade600, Colors.grey.shade400],
+                    )
+                  : AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
+              color: AppColors.shadowColor,
+              blurRadius: 10,
+              spreadRadius: 2,
               offset: const Offset(0, 4),
             ),
           ],
@@ -402,13 +405,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFFFFFFFF),
+                color: AppColors.buttonText,
               ),
             ),
             if (isCompleted)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: Color(0xFFFFFFFF),
+                color: AppColors.buttonText,
                 size: 24,
               ),
           ],
@@ -424,16 +427,17 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
+              color: AppColors.shadowColor,
+              blurRadius: 10,
+              spreadRadius: 2,
               offset: const Offset(0, 4),
             ),
           ],
@@ -443,15 +447,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFFFFFFFF),
+            color: AppColors.buttonText,
           ),
         ),
       ),
     );
   }
 }
-
-
 
 class GlassmorphicCard extends StatelessWidget {
   final Widget child;
@@ -464,13 +466,14 @@ class GlassmorphicCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF).withOpacity(0.1),
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
+            color: AppColors.shadowColor,
+            blurRadius: 10,
+            spreadRadius: 2,
             offset: const Offset(0, 4),
           ),
         ],

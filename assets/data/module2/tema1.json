@@ -1,27 +1,28 @@
 {
-  "sectionTitle": "Estructuras de Control",
+  "sectionTitle": "I. Estructuras básicas de la lógica de programación",
   "sectionIndex": 0,
   "totalSections": 3,
   "sectionImage": "https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg",
-  "introText": "Comprender cómo se controla el flujo de ejecución en un programa es clave para desarrollar soluciones lógicas y eficientes. Las estructuras de control permiten establecer decisiones, repetir instrucciones y representar visualmente el comportamiento de un algoritmo.\n\nEn este subtema, profundizaremos en el uso de diagramas de flujo como herramienta para representar la lógica de forma clara, aprenderemos a utilizar operadores lógicos y relacionales para construir condiciones precisas, y exploraremos cómo evaluar expresiones booleanas para tomar decisiones dentro del programa.\n\n¡Prepárate para dominar las herramientas que les dan vida a tus decisiones dentro del código!",
+  "welcomeText": "Comprender cómo se controla el flujo de ejecución en un programa es clave para desarrollar soluciones lógicas y eficientes. Las estructuras de control permiten establecer decisiones, repetir instrucciones y representar visualmente el comportamiento de un algoritmo.",
+  "introText1": "En este subtema, profundizaremos en el uso de diagramas de flujo como herramienta para representar la lógica de forma clara, aprenderemos a utilizar operadores lógicos y relacionales para construir condiciones precisas, y exploraremos cómo evaluar expresiones booleanas para tomar decisiones dentro del programa.",
+  "introText2": "¡Prepárate para dominar las herramientas que les dan vida a tus decisiones dentro del código!",
   "subsections": [
     {
-      "title": "Diagramas de flujo aplicados",
+      "title": "Diagramas de flujo aplicados a la lógica de programación",
       "content": "Ahora que conoces los fundamentos de los diagramas de flujo, es momento de aplicarlos en escenarios concretos de programación. A continuación, te presentamos ejemplos prácticos que muestran cómo se utilizan para representar estructuras de control como secuencias, decisiones y ciclos.",
       "examples": [
         {
           "title": "Ejemplo 1: Secuencia simple",
           "problem": "Problema: Calcular el área de un rectángulo.",
           "logic": "Lógica: Leer base y altura, multiplicarlas, mostrar el resultado.",
-          "flowchartId": "rectangulo",
-          "explanation": "Este diagrama representa una secuencia lineal de pasos. Comienza leyendo la base y la altura del rectángulo desde la entrada del usuario. Luego, calcula el área multiplicando ambos valores. Finalmente, muestra el resultado al usuario. Es un ejemplo simple que ilustra cómo las instrucciones se ejecutan una tras otra sin decisiones ni repeticiones."
+          "diagram": "assets/module2photos/diag1.png",
+          "explanation": "Este ejercicio es sencillo porque se basa en un concepto básico de la lógica de programación: la división y el uso del operador módulo (%) para determinar si un número es par o impar."
         },
         {
           "title": "Ejemplo 2: Condicional",
           "problem": "Problema: Determinar si un número ingresado por el usuario es par o impar.",
           "logic": "Lógica de solución:\n• Leer un número desde la entrada del usuario.\n• Calcular el residuo de dividir ese número entre 2 (usando el operador módulo %).\n• Si el residuo es igual a 0, entonces el número es par.\n• En caso contrario, el número es impar.\n• Mostrar el resultado correspondiente.",
-          "flowchartId": "par_impar",
-          "explanation": "El diagrama muestra una decisión condicional. Tras leer el número, se usa el operador módulo (%) para verificar si el residuo al dividirlo entre 2 es 0. Si es así, el flujo sigue hacia la izquierda, mostrando \"Par\". Si no, va a la derecha, mostrando \"Impar\". Esto representa una bifurcación en el flujo basada en una condición lógica.",
+          "diagram": "assets/module2photos/diag2.png",
           "quiz": {
             "logic": "\"Se lee un número. Si el número dividido entre 2 da un residuo de 0, se muestra 'Es par'. En caso contrario, se muestra 'Es impar'.\"",
             "text": "Pregunta: ¿Cuál de los siguientes números mostrará \"Es impar\"?",
@@ -40,14 +41,17 @@
           "title": "Ejemplo 3: Bucle (ciclo)",
           "problem": "Problema: Mostrar los números del 1 al 5.",
           "logic": "Lógica de solución:\n• Inicializar una variable i con el valor 1.\n• Mientras i sea menor o igual a 5, hacer lo siguiente:\n  • Mostrar el valor de i.\n  • Incrementar i en 1.\n• Repetir el paso 2 hasta que i ya no cumpla la condición.",
-          "flowchartId": "bucle",
-          "explanation": "Este diagrama ilustra un ciclo. Se inicializa i en 1, y mientras i sea menor o igual a 5, se muestra su valor y se incrementa en 1. El flujo regresa a la condición hasta que i > 5, momento en que termina. Esto demuestra cómo un bucle repite acciones hasta que una condición deja de cumplirse.",
+          "diagram": "assets/module2photos/diag3.png",
           "notes": [
             {
               "content": "El concepto de un ciclo while o for es fundamental, pero al ser un ciclo con una condición fija (1 a 5), no presenta desafíos complejos. Ideal solo para introducir la idea de iteración, pero poco desafiante.",
               "color": "#1D4ED8",
-              "opacity": 0.3,
-              "title": "Dato importante"
+              "opacity": 0.3
+            },
+            {
+              "content": "Ahora veamos un ejemplo más complejo, que introduce estructuras de decisión (condicionales) y permite practicar el análisis de múltiples condiciones. No es demasiado complejo, pero da una idea clara de cómo encadenar decisiones en un diagrama de flujo.",
+              "color": "#2563EB",
+              "opacity": 0.3
             }
           ]
         },
@@ -55,40 +59,42 @@
           "title": "Ejemplo 4: Condicional múltiple",
           "problem": "Problema: Determinar si un número es positivo, negativo o cero.",
           "logic": "Lógica de solución:\n• Leer el número ingresado por el usuario.\n• Si el número es mayor que 0, entonces es positivo.\n• Si el número es menor que 0, entonces es negativo.\n• Si el número no es mayor ni menor que 0, entonces es cero.\n• Mostrar el resultado correspondiente: \"Positivo\", \"Negativo\" o \"Cero\".",
-          "flowchartId": "condicional_multiple",
-          "explanation": "El diagrama representa múltiples decisiones encadenadas. Primero, verifica si el número es mayor que 0; si es así, muestra \"Positivo\" y termina. Si no, comprueba si es menor que 0; si lo es, muestra \"Negativo\". Si ninguna condición se cumple, muestra \"Cero\". Esto muestra cómo manejar varias condiciones en un solo flujo.",
+          "diagram": "assets/module2photos/diag4.png",
           "notes": [
             {
-              "content": "Ahora veamos un ejemplo más complejo, que introduce estructuras de decisión (condicionales) y permite practicar el análisis de múltiples condiciones. No es demasiado complejo, pero da una idea clara de cómo encadenar decisiones en un diagrama de flujo.",
-              "color": "#2563EB",
+              "content": "Aplicados a la lógica de programación, los diagramas de flujo permiten representar decisiones, ciclos y secuencias de manera intuitiva. Son especialmente útiles para introducir a los estudiantes en los conceptos básicos de programación, como las estructuras condicionales y los bucles.",
+              "color": "#065F46",
               "opacity": 0.3
             }
           ]
         }
-      ],
-      "finalNote": {
-        "content": "Aplicados a la lógica de programación, los diagramas de flujo permiten representar decisiones, ciclos y secuencias de manera intuitiva. Son especialmente útiles para introducir a los estudiantes en los conceptos básicos de programación, como las estructuras condicionales y los bucles.",
-        "color": "#065F46",
-        "opacity": 0.3
-      }
+      ]
     },
     {
       "title": "Operadores lógicos y relacionales",
       "content": "En el Módulo 1 se abordaron los diferentes tipos de operadores utilizados en diagramas de flujo, pero es crucial entender que estos operadores no solo se limitan a ese contexto.\n\nEn la programación cotidiana, los operadores lógicos y relacionales son herramientas fundamentales, ya que permiten realizar comparaciones, tomar decisiones y controlar el flujo de ejecución de los programas de manera eficiente. Son esenciales para construir algoritmos que respondan a condiciones y situaciones dinámicas, permitiendo una programación más estructurada y funcional.",
       "examples": [
         {
-          "title": "Ejemplo 1: Verificar rango de números",
-          "problem": "Problema: Verificar si un número está dentro del rango 10-20.",
-          "logic": "Lógica de solución:\n• Leer número ingresado por el usuario\n• Comprobar si número >= 10 Y número <= 20\n• Si se cumple: Mostrar \"Número dentro del rango\"\n• Si no: Mostrar \"Número fuera del rango\"",
-          "flowchartId": "rango_numeros",
-          "explanation": "Operadores utilizados:\n• Relacionales: >= (mayor o igual), <= (menor o igual)\n• Lógico: AND (&&) para combinar las dos condiciones\n\nEl manejo adecuado de condicionales y operadores es clave para resolver problemas de programación, sin importar lo complejos que puedan parecer. Al dominarlos, podrás abordar tareas cada vez más desafiantes con mayor claridad y eficiencia."
+          "title": "Ejemplo 1: Verificar si un número está dentro de un rango",
+          "problem": "Situación: Un programa debe verificar si un número ingresado por el usuario está dentro de un rango específico, digamos entre 10 y 20.",
+          "logic": "¿Cuándo usar operadores lógicos y relacionales?\nEste caso requiere el uso de operadores relacionales (como <, >, >=, <=) para comparar el número con los límites del rango. Además, se utilizarán operadores lógicos (como AND) para combinar las condiciones.\n\nImplementación:\n• Leer número.\n• Comprobar si el número es mayor o igual a 10 y menor o igual a 20.\n• Si se cumple la condición, mostrar \"Número dentro del rango\".\n• Si no, mostrar \"Número fuera del rango\".",
+          "diagram": "assets/module2photos/diag5.png",
+          "explanation": "Operadores utilizados:\n• Relacionales: >=, <= para comparar el número con los límites del rango.\n• Lógicos: AND para combinar las dos condiciones (número >= 10 y número <= 20).",
+          "notes": [
+            {
+              "content": "El manejo adecuado de condicionales y operadores es clave para resolver problemas de programación, sin importar lo complejos que puedan parecer. Al dominarlos, podrás abordar tareas cada vez más desafiantes con mayor claridad y eficiencia.",
+              "color": "#2563EB",
+              "opacity": 0.3
+            }
+          ]
         },
         {
-          "title": "Ejemplo 2: Aprobación de estudiante",
-          "problem": "Problema: Verificar si un estudiante aprueba basado en calificación (>=6) y asistencia (>80%).",
-          "logic": "Lógica de solución:\n• Leer calificación del estudiante\n• Leer porcentaje de asistencia\n• Comprobar si calificación >= 6 Y asistencia > 80%\n• Si se cumple: Mostrar \"Aprobado\"\n• Si no: Mostrar \"Reprobado\"",
-          "flowchartId": "aprobacion_estudiante",
-          "explanation": "Operadores utilizados:\n• Relacionales: >= (mayor o igual), > (mayor que)\n• Lógico: AND (&&) para combinar las condiciones de calificación y asistencia"
+          "title": "Ejemplo 2: Verificar si un estudiante aprueba o reprueba",
+          "problem": "Situación: El programa debe verificar si un estudiante aprueba un curso basado en su calificación y asistencia. El estudiante aprueba si su calificación es mayor o igual a 6 y si tiene una asistencia superior al 80%.",
+          "logic": "¿Cuándo usar operadores lógicos y relacionales?\nEste caso implica dos condiciones: la calificación del estudiante y su porcentaje de asistencia. Aquí, se usan operadores lógicos (AND) para verificar si ambas condiciones se cumplen, y operadores relacionales para comparar los valores.\n\nImplementación:\n• Leer calificación.\n• Leer porcentaje de asistencia.\n• Comprobar si la calificación es mayor o igual a 6 y la asistencia es mayor a 80%.\n• Si se cumple, mostrar \"Aprobado\".\n• Si no, mostrar \"Reprobado\".",
+          "diagram": "assets/module2photos/diag6.png",
+          "explanation": "Operadores utilizados:\n• Relacionales: >=, > para comparar la calificación y la asistencia.\n• Lógicos: AND para combinar las dos condiciones de aprobación.",
+          "notes": []
         }
       ]
     },
@@ -97,23 +103,30 @@
       "content": "Una expresión booleana es cualquier expresión cuyo resultado es un valor booleano: verdadero (true) o falso (false). Los operadores lógicos (como AND, OR, NOT) se utilizan para combinar, comparar o negar condiciones en una expresión booleana.\n\nEste tipo de expresiones son utilizadas en lenguajes de programación, debido a que son más complejas y no se puede utilizar como tal en un diagrama de flujo.",
       "examples": [
         {
-          "title": "Ejemplo 1: Aprobación por promedio",
-          "problem": "Problema: Verificar si un estudiante aprueba (promedio > 70)",
-          "logic": "Solución en código:\npromedio = 75\naprobado = (promedio > 70)\nprint(aprobado)  # Output: True",
-          "explanation": "Análisis:\n1. Se define el promedio como 75\n2. Se evalúa la condición (promedio > 70) → True\n3. La variable aprobado recibe el valor True\n\nEste es un ejemplo muy básico de uso de operadores relacionales con condiciones booleanas. La condición solo compara si un valor es mayor que otro, y según este resultado, se establece el valor de una variable booleana."
-        },
-        {
-          "title": "Ejemplo 2: Acceso al sistema",
-          "problem": "Problema: Verificar acceso si rol es \"administrador\" Y contraseña es correcta",
-          "logic": "Solución en código:\nrol = \"administrador\"\ncontraseña_correcta = True\nacceso = (rol == \"administrador\") and (contraseña_correcta)\nprint(acceso)  # Output: True",
-          "explanation": "Análisis:\n1. Se verifica rol == \"administrador\" → True\n2. Se verifica contraseña_correcta → True\n3. Ambas condiciones unidas con AND → True\n\nEste ejemplo involucra una combinación de dos condiciones con el operador lógico AND. Ambas condiciones deben cumplirse para que el resultado final sea true. El uso de AND implica que, si alguna de las condiciones falla, el resultado final será false. Este es un ejemplo más realista, donde varias condiciones deben ser evaluadas juntas antes de tomar una decisión."
+          "title": "Ejemplo 2: Verificar si un usuario tiene acceso a un sistema",
+          "problem": "Problema: Un usuario tiene acceso al sistema solo si su rol es \"administrador\" y la contraseña es correcta. Definimos la variable booleana acceso que será true si ambas condiciones se cumplen.",
+          "logic": "Solución:\nrol = \"administrador\"\ncontraseña_correcta = True\nacceso = (rol == \"administrador\") and (contraseña_correcta)\nprint(acceso)",
+          "diagram": "assets/module2photos/diag7.png",
+          "explanation": "Análisis del funcionamiento:\n• Se evalúa si el rol es \"administrador\".\n• Si esta condición es verdadera, se evalúa la condición de si la contraseña_correcta es True.\n• Si ambas condiciones son verdaderas, el acceso se concede.",
+          "notes": [
+            {
+              "content": "Este ejemplo involucra una combinación de dos condiciones con el operador lógico and. Ambas condiciones deben cumplirse para que el resultado final sea true. El uso de and implica que, si alguna de las condiciones falla, el resultado final será false. Este es un ejemplo más realista, donde varias condiciones deben ser evaluadas juntas antes de tomar una decisión.",
+              "color": "#2563EB",
+              "opacity": 0.3
+            },
+            {
+              "content": "Mediante el uso de operadores lógicos y relacionales, los programadores pueden construir algoritmos que reaccionan a diferentes situaciones de manera dinámica, adaptándose a las condiciones que se les presenten.",
+              "color": "#2563EB",
+              "opacity": 0.3
+            },
+            {
+              "content": "Estos ejercicios muestran cómo se pueden utilizar condiciones booleanas en situaciones de programación para verificar si ciertas condiciones se cumplen, y cómo estructurar un diagrama de flujo para representar esas decisiones lógicas de manera clara.",
+              "color": "#065F46",
+              "opacity": 0.3
+            }
+          ]
         }
-      ],
-      "finalNote": {
-        "content": "Mediante el uso de operadores lógicos y relacionales, los programadores pueden construir algoritmos que reaccionan a diferentes situaciones de manera dinámica, adaptándose a las condiciones que se les presenten.\n\nEstos ejercicios muestran cómo se pueden utilizar condiciones booleanas en situaciones de programación para verificar si ciertas condiciones se cumplen, y cómo estructurar un diagrama de flujo para representar esas decisiones lógicas de manera clara.",
-        "color": "#065F46",
-        "opacity": 0.3
-      }
+      ]
     }
   ],
   "video": {

@@ -255,9 +255,9 @@
     },
     {
       "name": "flutter_launcher_icons",
-      "rootUri": "file:///C:/Users/nenuk/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_launcher_icons-0.13.1",
+      "rootUri": "file:///C:/Users/nenuk/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_launcher_icons-0.14.3",
       "packageUri": "lib/",
-      "languageVersion": "2.18"
+      "languageVersion": "3.0"
     },
     {
       "name": "flutter_lints",
@@ -674,7 +674,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-04-27T23:10:28.277025Z",
+  "generated": "2025-05-07T03:29:12.383340Z",
   "generator": "pub",
   "generatorVersion": "3.6.1",
   "flutterRoot": "file:///C:/Users/nenuk/dev/flutter",

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:siapp/screens/loading_screen.dart';
 
 // Extension to add a key to a widget after animation
 extension KeyedWidget on Widget {
@@ -39,10 +40,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   late AnimationController _controller;
   late ConfettiController _confettiController;
   int _remainingAttempts = 3; // Default value before Firestore load
-  bool _isAttemptsLoading = true;
   bool _isAttemptsExhausted = false;
   // Track available code blocks for each question in exercise id == 2
   late List<List<List<int>>> availableCodeBlocks;
+  late Future<void> _loadContentFuture;
 
   @override
   void initState() {
@@ -50,8 +51,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     _controller = AnimationController(vsync: this);
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     debugPrint('ActividadesScreen initState: actividadesData = ${widget.actividadesData}');
-    _loadAttemptsFromFirestore(); // Load attempts from Firestore
-    _loadJsonContent();
+    // Initialize the future for loading content and attempts
+    _loadContentFuture = _loadContentWithDelay();
   }
 
   @override
@@ -61,19 +62,26 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     super.dispose();
   }
 
-  Future<void> _loadAttemptsFromFirestore() async {
-    setState(() {
-      _isAttemptsLoading = true;
-    });
+  Future<void> _loadContentWithDelay() async {
+    try {
+      await Future.wait([
+        _loadJsonContent(),
+        _loadAttemptsFromFirestore(),
+        Future.delayed(const Duration(seconds: 1)), // Ensure minimum 1-second delay
+      ]);
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar el contenido: $e';
+      });
+      rethrow;
+    }
+  }
 
+  Future<void> _loadAttemptsFromFirestore() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        setState(() {
-          _errorMessage = 'Usuario no autenticado.';
-          _isAttemptsLoading = false;
-        });
-        return;
+        throw Exception('Usuario no autenticado.');
       }
 
       final progressDoc = await FirebaseFirestore.instance
@@ -89,7 +97,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         setState(() {
           _remainingAttempts = attempts;
           _isAttemptsExhausted = attempts <= 0;
-          _isAttemptsLoading = false;
         });
       } else {
         await FirebaseFirestore.instance
@@ -107,14 +114,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         setState(() {
           _remainingAttempts = 3;
           _isAttemptsExhausted = false;
-          _isAttemptsLoading = false;
         });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Error al cargar los intentos: $e';
-        _isAttemptsLoading = false;
-      });
+      throw Exception('Error al cargar los intentos: $e');
     }
   }
 
@@ -135,14 +138,14 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             'last_updated': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
 
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
 
       setState(() {
         _remainingAttempts = newAttempts;
         _isAttemptsExhausted = newAttempts <= 0;
       });
     } catch (e) {
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar los intentos: $e'),
@@ -174,7 +177,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         await _decrementAttempts();
       }
     } catch (e) {
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al guardar la calificación: $e'),
@@ -215,10 +218,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     } catch (e, stackTrace) {
       final error = 'Error loading JSON: $e\nStackTrace: $stackTrace';
       debugPrint(error);
-      setState(() {
-        _contentData = null;
-        _errorMessage = 'Error al cargar el contenido: $e\nVerifica assets/data/module4/actividades.json y pubspec.yaml.';
-      });
+      throw Exception('Error al cargar el contenido: $e\nVerifica assets/data/module4/actividades.json y pubspec.yaml.');
     }
   }
 
@@ -235,13 +235,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         final quizLength = (exercises[i]['quiz'] as List<dynamic>?)?.length ?? 0;
         debugPrint('Exercise $i quiz length: $quizLength');
         if (exercises[i]['id'] == 2) {
-          // Para "Desafío de Código Estructurado", inicializamos los slots vacíos
           return List<List<int?>>.generate(quizLength, (j) {
-            // Extraemos las líneas de código de la pregunta
             final questionText = exercises[i]['quiz'][j]['question'] as String;
             final lines = questionText.split('\n').where((line) => line.trim().startsWith(RegExp(r'\d+\.'))).toList();
             final codeLinesCount = lines.length;
-            // Inicializamos los slots como vacíos (null) y cada posición representa un slot
             return List<int?>.filled(codeLinesCount, null);
           });
         }
@@ -257,7 +254,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
       },
     );
 
-    // Inicializar availableCodeBlocks para cada pregunta en exercise id == 2
     availableCodeBlocks = List<List<List<int>>>.generate(
       exercises.length,
       (i) {
@@ -266,13 +262,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           if (exercises[i]['id'] != 2) {
             return [];
           }
-          // Extraemos las líneas de código de la pregunta
           final questionText = exercises[i]['quiz'][j]['question'] as String;
           final lines = questionText.split('\n').where((line) => line.trim().startsWith(RegExp(r'\d+\.'))).toList();
           final codeLinesCount = lines.length;
-          // Generamos una lista de índices (0, 1, 2, ...) y la mezclamos
           List<int> indices = List.generate(codeLinesCount, (index) => index)..shuffle();
-          return indices; // Returns List<int>
+          return indices;
         });
       },
     );
@@ -283,140 +277,137 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building ActividadesScreen, _contentData: ${_contentData != null}, _errorMessage: $_errorMessage');
-    if (_contentData == null || _isAttemptsLoading) {
-      return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return FutureBuilder<void>(
+      future: _loadContentFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: LoadingScreen(
+              message: 'Cargando actividades...',
             ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Lottie.asset(
-                  'assets/animations/loading.json',
-                  width: 100,
-                  height: 100,
-                  controller: _controller,
-                  onLoaded: (composition) {
-                    _controller
-                      ..duration = composition.duration
-                      ..repeat();
-                  },
+          );
+        } else if (snapshot.hasError) {
+          return Scaffold(
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    _errorMessage ?? 'Cargando actividades...',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fadeIn(duration: 500.ms),
-                ),
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  _buildAnimatedButton(
-                    text: 'Reintentar',
-                    onPressed: () {
-                      _loadAttemptsFromFirestore();
-                      _loadJsonContent();
-                    },
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
-                    ),
-                  ).animate()
-                    .scale(
-                      delay: 300.ms,
-                      duration: 400.ms,
-                      curve: Curves.easeOutBack,
-                    ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (exercises.isEmpty) {
-      debugPrint('No exercises found');
-      return _buildNoExercisesScreen();
-    }
-
-    final currentExercise = exercises[currentExerciseIndex];
-    debugPrint('Rendering exercise ${currentExercise['id']}');
-
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+              ),
+              child: Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildProgressHeader().animate().slideY(begin: -0.2, end: 0, duration: 600.ms, curve: Curves.easeOut),
-                    const SizedBox(height: 20),
-                    _buildAttemptsIndicator().animate().fadeIn(duration: 500.ms),
-                    const SizedBox(height: 20),
-                    _buildExerciseTitle(currentExercise).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
-                    const SizedBox(height: 20),
-                    Text(
-                      _contentData?['sectionDescription']?.toString() ?? 'Descripción no disponible',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Colors.white.withAlpha(70),
-                        height: 1.5,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        _errorMessage ?? 'Error desconocido al cargar las actividades.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ).animate().fadeIn(duration: 500.ms),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildAnimatedButton(
+                      text: 'Reintentar',
+                      onPressed: () {
+                        setState(() {
+                          _loadContentFuture = _loadContentWithDelay();
+                        });
+                      },
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
                       ),
-                    ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-                    const SizedBox(height: 20),
-                    Text(
-                      currentExercise['description']?.toString() ?? 'Descripción no disponible',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Colors.white.withAlpha(70),
-                        height: 1.5,
+                    ).animate()
+                      .scale(
+                        delay: 300.ms,
+                        duration: 400.ms,
+                        curve: Curves.easeOutBack,
                       ),
-                    ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
-                    const SizedBox(height: 20),
-                    _buildQuizQuestions(currentExercise).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2, end: 0),
-                    const SizedBox(height: 20),
-                    _buildRelatedTopics(currentExercise).animate().fadeIn(delay: 900.ms).slideY(begin: 0.2, end: 0),
-                    const SizedBox(height: 30),
-                    _buildNavigationControls().animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2, end: 0),
                   ],
                 ),
               ),
-              Positioned(
-                top: 16,
-                right: 16,
-                child: FloatingActionButton(
-                  onPressed: _showGradingInfo,
-                  backgroundColor: const Color(0xFF3B82F6),
-                  child: const Icon(Icons.score, color: Colors.white),
-                ).animate().scale(delay: 200.ms, duration: 400.ms, curve: Curves.easeOutBack),
+            ),
+          );
+        }
+
+        if (exercises.isEmpty) {
+          debugPrint('No exercises found');
+          return _buildNoExercisesScreen();
+        }
+
+        final currentExercise = exercises[currentExerciseIndex];
+        debugPrint('Rendering exercise ${currentExercise['id']}');
+
+        return Scaffold(
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
+            ),
+            child: SafeArea(
+              child: Stack(
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildProgressHeader().animate().slideY(begin: -0.2, end: 0, duration: 600.ms, curve: Curves.easeOut),
+                        const SizedBox(height: 20),
+                        _buildAttemptsIndicator().animate().fadeIn(duration: 500.ms),
+                        const SizedBox(height: 20),
+                        _buildExerciseTitle(currentExercise).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+                        const SizedBox(height: 20),
+                        Text(
+                          _contentData?['sectionDescription']?.toString() ?? 'Descripción no disponible',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: Colors.white.withAlpha(70),
+                            height: 1.5,
+                          ),
+                        ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                        const SizedBox(height: 20),
+                        Text(
+                          currentExercise['description']?.toString() ?? 'Descripción no disponible',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: Colors.white.withAlpha(70),
+                            height: 1.5,
+                          ),
+                        ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+                        const SizedBox(height: 20),
+                        _buildQuizQuestions(currentExercise).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2, end: 0),
+                        const SizedBox(height: 20),
+                        _buildRelatedTopics(currentExercise).animate().fadeIn(delay: 900.ms).slideY(begin: 0.2, end: 0),
+                        const SizedBox(height: 30),
+                        _buildNavigationControls().animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2, end: 0),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: FloatingActionButton(
+                      onPressed: _showGradingInfo,
+                      backgroundColor: const Color(0xFF3B82F6),
+                      child: const Icon(Icons.score, color: Colors.white),
+                    ).animate().scale(delay: 200.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -614,17 +605,14 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             final isAnswered = answeredQuestions[currentExerciseIndex][questionIndex];
 
             if (exercise['id'] == 2) {
-              // Lógica para "Desafío de Código Estructurado" con Drag-and-Drop
               final questionText = question['question'] as String;
               final lines = questionText.split('\n').where((line) => line.trim().startsWith(RegExp(r'\d+\.'))).toList();
               final correctAnswer = List<int>.from(question['correctAnswer'] ?? []);
               final slots = List<int?>.from(userAnswers[currentExerciseIndex][questionIndex] as List<int?>);
               final availableBlocks = List<int>.from(availableCodeBlocks[currentExerciseIndex][questionIndex]);
 
-              // Extraer el título de la pregunta (antes de las líneas de código)
               final questionTitle = questionText.split('\n').firstWhere((line) => !line.trim().startsWith(RegExp(r'\d+\.')));
 
-              // Debugging: Log the current slots and available blocks
               debugPrint('Question $questionIndex: lines=$lines, slots=$slots, availableBlocks=$availableBlocks, correctAnswer=$correctAnswer');
 
               return Column(
@@ -639,10 +627,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     ),
                   ).animate().fadeIn(delay: (100 * questionIndex).ms),
                   const SizedBox(height: 12),
-                  // Slots (Drag Targets)
                   ...slots.asMap().entries.map((slotEntry) {
                     final slotIndex = slotEntry.key;
-                    final int? codeLineIndex = slotEntry.value; // Puede ser null si el slot está vacío
+                    final int? codeLineIndex = slotEntry.value;
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -652,10 +639,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                           if (isAnswered || _isAttemptsExhausted) return;
 
                           setState(() {
-                            // Actualizar el slot con el índice de la línea de código
                             slots[slotIndex] = droppedIndex;
                             userAnswers[currentExerciseIndex][questionIndex] = slots;
-                            // Remover el bloque de los disponibles
                             availableBlocks.remove(droppedIndex);
                             availableCodeBlocks[currentExerciseIndex][questionIndex] = availableBlocks;
                             debugPrint('Dropped code line $droppedIndex into slot $slotIndex');
@@ -665,7 +650,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                         },
                         builder: (context, candidateData, rejectedData) {
                           if (codeLineIndex == null) {
-                            // Slot vacío
                             return Container(
                               height: 60,
                               decoration: BoxDecoration(
@@ -692,19 +676,16 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                                   curve: Curves.easeOutBack,
                                 );
                           } else {
-                            // Slot ocupado
                             final codeLineText = lines[codeLineIndex];
                             return GestureDetector(
                               onDoubleTap: () {
                                 if (isAnswered || _isAttemptsExhausted) return;
 
                                 setState(() {
-                                  // Devolver el bloque a los disponibles
                                   if (codeLineIndex != null) {
                                     availableBlocks.add(codeLineIndex);
                                     availableBlocks.sort();
                                     availableCodeBlocks[currentExerciseIndex][questionIndex] = availableBlocks;
-                                    // Vaciar el slot
                                     slots[slotIndex] = null;
                                     userAnswers[currentExerciseIndex][questionIndex] = slots;
                                     debugPrint('Removed code line $codeLineIndex from slot $slotIndex');
@@ -775,7 +756,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     );
                   }),
                   const SizedBox(height: 20),
-                  // Available Code Blocks (Draggables)
                   if (availableBlocks.isNotEmpty) ...[
                     Text(
                       'Líneas de código disponibles:',
@@ -878,7 +858,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     _buildAnimatedButton(
                       text: 'Verificar orden',
                       onPressed: slots.any((slot) => slot == null)
-                          ? null // Deshabilitar si hay slots vacíos
+                          ? null
                           : () {
                               setState(() {
                                 answeredQuestions[currentExerciseIndex][questionIndex] = true;
@@ -928,7 +908,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                 ],
               );
             } else {
-              // Lógica original para otros ejercicios
               final options = List<String>.from(question['options'] ?? []);
               final correctAnswer = question['correctAnswer'] as int?;
               final isIncomplete = userAnswers[currentExerciseIndex][questionIndex] == null;
@@ -1328,8 +1307,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // Close the dialog
-                    Navigator.pop(context); // Pop ActividadesScreen to return to module4.dart
+                    Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                   child: Text(
                     'Continuar',
@@ -1370,10 +1349,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         final quiz = List<Map<String, dynamic>>.from(exercise['quiz'] ?? []);
         for (var j = 0; j < quiz.length; j++) {
           if (exercise['id'] == 2) {
-            // Para "Desafío de Código Estructurado"
             final correctAnswer = List<int>.from(quiz[j]['correctAnswer'] ?? []);
             final userSlots = userAnswers[i][j] as List<int?>;
-            // Convertir slots a una lista de índices, ignorando nulls (si los hay)
             final userOrder = userSlots.map((slot) => slot ?? -1).toList();
             if (userOrder.toString() == correctAnswer.toString()) {
               correct++;

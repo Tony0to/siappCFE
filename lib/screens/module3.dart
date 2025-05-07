@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:siapp/screens/module3screens/actividades.dart';
 import 'package:siapp/screens/module3screens/contenido_screen.dart';
+import 'module3screens/actividades.dart';
+import 'package:siapp/screens/module3screens/actividades.dart';
 import 'package:siapp/screens/ModulesScreen.dart';
+import 'package:siapp/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Module3Content {
   static Map<String, dynamic>? _content;
@@ -44,18 +47,11 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
   late Future<void> _loadContentFuture;
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
-  // Colores
-  static const Color darkBlue = Color(0xFF00171F);
-  static const Color navyBlue = Color(0xFF003459);
-  static const Color mediumBlue = Color(0xFF007EA7);
-  static const Color brightCyan = Color(0xFF00A8E8);
-  static const Color lightCyan = Color(0xFF4FC3F7); // Color para el temario
-  static const Color white = Color(0xFFFFFFFF);
-
-  // URL de la imagen
+  // URL de la imagen para el Módulo 3
   final String moduleImageUrl =
-      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
+      'https://images.unsplash.com/photo-1508313880080-c4bef0730395?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
 
   @override
   void initState() {
@@ -64,17 +60,24 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1500),
     );
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
+      ),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.forward();
-    });
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _controller.forward();
   }
 
   @override
@@ -90,10 +93,27 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: darkBlue,
-            body: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(brightCyan),
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.backgroundDynamic,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: AppColors.progressActive,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Cargando módulo...',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -101,12 +121,55 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
 
         if (snapshot.hasError) {
           return Scaffold(
-            backgroundColor: darkBlue,
-            body: Center(
-              child: Text(
-                'Error: ${snapshot.error.toString()}',
-                style: TextStyle(fontSize: 16, color: brightCyan),
-                textAlign: TextAlign.center,
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.backgroundDynamic,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 50,
+                      color: AppColors.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error: ${snapshot.error.toString()}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.error,
+                        textStyle: const TextStyle(height: 1.5),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _loadContentFuture = Module3Content.initialize();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryButton,
+                        foregroundColor: AppColors.buttonText,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: Text(
+                        'Reintentar',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.buttonText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -114,203 +177,389 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
 
         final moduleContent = Module3Content.content;
 
-        return Scaffold(
-          floatingActionButton: _buildFloatingActionButton(),
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  navyBlue,
-                  navyBlue.withOpacity(0.9),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: _buildContent(moduleContent),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFloatingActionButton() {
-    return FloatingActionButton(
-      mini: true,
-      backgroundColor: navyBlue.withOpacity(0.8),
-      onPressed: () {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const ModulesScreen()),
-          (route) => route.isFirst || route.settings.name == '/modules',
-        );
-      },
-      child: const Icon(Icons.arrow_back, color: white),
-    );
-  }
-
-  Widget _buildContent(Map<String, dynamic> moduleContent) {
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Container(
-            padding: const EdgeInsets.only(top: 70, bottom: 20),
-            child: Text(
-              moduleContent['module_title'] ?? 'Módulo 3',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: white,
-              ),
-            ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return _buildHeroImage(moduleContent);
-            },
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.all(20),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              Text(
-                moduleContent['welcome']?['description'] ??
-                    'Explora el fascinante mundo de los algoritmos y aprende a resolver problemas de manera lógica y eficiente.',
-                style: TextStyle(
-                  fontSize: 16,
-                  height: 1.6,
-                  color: white.withOpacity(0.9),
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Scaffold(
+              floatingActionButton: ScaleTransition(
+                scale: _scaleAnimation,
+                child: FloatingActionButton(
+                  mini: true,
+                  backgroundColor: AppColors.primaryButton,
+                  foregroundColor: AppColors.buttonText,
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ModulesScreen()),
+                      (route) => route.isFirst || route.settings.name == '/modules',
+                    );
+                  },
+                  child: Icon(Icons.arrow_back, color: AppColors.buttonText),
                 ),
               ),
-              const SizedBox(height: 30),
-              _buildSyllabusSection(moduleContent),
-              const SizedBox(height: 30),
-              _buildLearningPointsSection(moduleContent),
-              const SizedBox(height: 30),
-              _buildMotivationCard(moduleContent),
-              const SizedBox(height: 40),
-              _buildActionButtons(moduleContent),
-            ]),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeroImage(Map<String, dynamic> moduleContent) {
-    return RepaintBoundary(
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Container(
-          height: 220,
-          child: CachedNetworkImage(
-            imageUrl: moduleImageUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: darkBlue.withOpacity(0.5),
-              child: Center(child: CircularProgressIndicator(color: brightCyan)),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: darkBlue,
-              child: Icon(Icons.error, color: brightCyan),
-            ),
-            imageBuilder: (context, imageProvider) => Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: imageProvider,
-                  fit: BoxFit.cover,
+              body: Container(
+                decoration: const BoxDecoration(
+                  gradient: AppColors.backgroundDynamic,
                 ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      darkBlue.withOpacity(0.8),
-                      Colors.transparent,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(top: 70, bottom: 20),
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Text(
+                            moduleContent['module_title'] ?? 'Módulo 3',
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: Container(
+                          height: 220,
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                CachedNetworkImage(
+                                  imageUrl: moduleImageUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: AppColors.cardBackground,
+                                    child: Center(
+                                      child: CircularProgressIndicator(color: AppColors.progressActive),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: AppColors.cardBackground,
+                                    child: Icon(Icons.image_not_supported, size: 50, color: AppColors.textSecondary),
+                                  ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.headerSection,
+                                  ),
+                                ),
+                                Center(
+                                  child: FadeTransition(
+                                    opacity: _fadeAnimation,
+                                    child: Text(
+                                      moduleContent['welcome']?['title'] ?? '¡Bienvenido al Módulo 3!',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary,
+                                        shadows: [
+                                          Shadow(
+                                            blurRadius: 10,
+                                            color: AppColors.shadowColor,
+                                            offset: const Offset(2, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(-0.5, 0),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: _controller,
+                                  curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
+                                )),
+                                child: Text(
+                                  moduleContent['welcome']?['details'] ??
+                                      'Exploraremos los conceptos fundamentales de los algoritmos y estudiaremos técnicas clave como la búsqueda, el ordenamiento y la recursividad.',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    height: 1.6,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            ScaleTransition(
+                              scale: _scaleAnimation,
+                              child: Card(
+                                elevation: 8,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                color: AppColors.cardBackground,
+                                shadowColor: AppColors.shadowColor,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppColors.glassmorphicBorder),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.list_alt,
+                                              color: AppColors.progressBrightBlue,
+                                              size: 28,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              moduleContent['syllabus']?['title'] ?? 'Temario',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 15),
+                                        ...List<Map<String, dynamic>>.from(
+                                                moduleContent['syllabus']?['sections'] ?? [])
+                                            .map((section) => _buildSyllabusSection(section))
+                                            .toList(),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: Text(
+                                moduleContent['learning_points']?['title'] ?? 'Lo que aprenderás',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            ...List<Map<String, dynamic>>.from(
+                                    moduleContent['learning_points']?['points'] ?? [])
+                                .map((point) => _buildLearningPoint(
+                                      icon: _getIcon(point['icon'] ?? ''),
+                                      title: point['title'] ?? 'Sin título',
+                                      description: point['description'] ?? 'Sin descripción',
+                                    ))
+                                .toList(),
+                            const SizedBox(height: 30),
+                            ScaleTransition(
+                              scale: _scaleAnimation,
+                              child: Card(
+                                elevation: 8,
+                                color: AppColors.cardBackground,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppColors.glassmorphicBorder),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          _getIcon(moduleContent['motivation']?['icon'] ?? 'emoji_objects'),
+                                          size: 50,
+                                          color: AppColors.progressBrightBlue,
+                                        ),
+                                        const SizedBox(height: 15),
+                                        Text(
+                                          moduleContent['motivation']?['text'] ??
+                                              '¡Transforma problemas en soluciones elegantes y eficientes!',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontStyle: FontStyle.italic,
+                                            color: AppColors.textSecondary,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ScaleTransition(
+                                    scale: _scaleAnimation,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width * 0.8,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        gradient: AppColors.primaryGradient,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.shadowColor,
+                                            blurRadius: 10,
+                                            spreadRadius: 2,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                                  ContenidoScreen(moduleData: moduleContent),
+                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                return FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                );
+                                              },
+                                              transitionDuration: const Duration(milliseconds: 300),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          foregroundColor: AppColors.buttonText,
+                                          shadowColor: Colors.transparent,
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.play_arrow, color: AppColors.buttonText, size: 24),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              moduleContent['button_text'] ?? 'Comenzar Módulo',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.buttonText,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  FadeTransition(
+                                    opacity: _fadeAnimation,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width * 0.8,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppColors.glassmorphicBorder,
+                                          width: 1.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.shadowColor,
+                                            blurRadius: 10,
+                                            spreadRadius: 2,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                                  Module3ActividadesScreen(moduleData: moduleContent),
+                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                return FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                );
+                                              },
+                                              transitionDuration: const Duration(milliseconds: 300),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.cardBackground,
+                                          foregroundColor: AppColors.textPrimary,
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.assignment, color: AppColors.progressBrightBlue, size: 24),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              'Actividades Prácticas',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 80),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    moduleContent['welcome']?['title'] ?? '¡Bienvenido al Módulo 3!',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: white,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10,
-                          color: darkBlue,
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
-            ),
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildSyllabusSection(Map<String, dynamic> moduleContent) {
-    final sections = List<Map<String, dynamic>>.from(
-        moduleContent['syllabus']?['sections'] ?? []);
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      color: lightCyan.withOpacity(0.4),
-      shadowColor: brightCyan.withOpacity(0.3),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.list_alt,
-                  color: brightCyan,
-                  size: 28,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  moduleContent['syllabus']?['title'] ?? 'Temario',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: white,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: sections.length,
-              itemBuilder: (context, index) {
-                return _buildSyllabusItem(sections[index]);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSyllabusItem(Map<String, dynamic> section) {
+  Widget _buildSyllabusSection(Map<String, dynamic> section) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -318,10 +567,10 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
         children: [
           Text(
             section['title'] ?? 'Sección sin título',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: white,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -334,16 +583,16 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
                         Icon(
                           Icons.circle,
                           size: 8,
-                          color: brightCyan,
+                          color: AppColors.progressBrightBlue,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             item,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 15,
                               height: 1.4,
-                              color: white.withOpacity(0.8),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ),
@@ -351,173 +600,6 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
                     ),
                   ))
               .toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLearningPointsSection(Map<String, dynamic> moduleContent) {
-    final points = List<Map<String, dynamic>>.from(
-        moduleContent['learning_points']?['points'] ?? []);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Lo que aprenderás',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: white,
-          ),
-        ),
-        const SizedBox(height: 15),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: points.length,
-          itemBuilder: (context, index) {
-            final point = points[index];
-            return _buildLearningPoint(
-              icon: _getIcon(point['icon'] ?? ''),
-              title: point['title'] ?? 'Sin título',
-              description: point['description'] ?? 'Sin descripción',
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMotivationCard(Map<String, dynamic> moduleContent) {
-    return Card(
-      elevation: 6,
-      color: mediumBlue.withOpacity(0.4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Icon(
-              _getIcon(moduleContent['motivation']?['icon'] ?? 'emoji_objects'),
-              size: 50,
-              color: brightCyan,
-            ),
-            const SizedBox(height: 15),
-            Text(
-              moduleContent['motivation']?['text'] ??
-                  '¡Domina los algoritmos y resuelve problemas con lógica y precisión!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(Map<String, dynamic> moduleContent) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              gradient: LinearGradient(
-                colors: [
-                  brightCyan,
-                  mediumBlue,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Module3ContenidoScreen(moduleData: moduleContent),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.play_arrow, color: white, size: 24),
-                  const SizedBox(width: 10),
-                  Text(
-                    moduleContent['button_text'] ?? 'Comenzar Módulo',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: brightCyan.withOpacity(0.5),
-                width: 2,
-              ),
-            ),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Module3ActividadesScreen(moduleData: moduleContent),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: navyBlue.withOpacity(0.3),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.assignment, color: white.withOpacity(0.9), size: 24),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Actividades Prácticas',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -531,50 +613,57 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Card(
-        elevation: 3,
-        color: navyBlue.withOpacity(0.3),
+        elevation: 8,
+        color: AppColors.cardBackground,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: brightCyan.withOpacity(0.2),
-                  shape: BoxShape.circle,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.glassmorphicBorder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.progressBrightBlue.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.progressBrightBlue, width: 1.5),
+                  ),
+                  child: Icon(icon, size: 24, color: AppColors.progressBrightBlue),
                 ),
-                child: Icon(icon, size: 24, color: brightCyan),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: white,
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: white.withOpacity(0.8),
-                        height: 1.4,
+                      const SizedBox(height: 5),
+                      Text(
+                        description,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -584,15 +673,13 @@ class _Module3IntroScreenState extends State<Module3IntroScreen>
   IconData _getIcon(String iconName) {
     switch (iconName) {
       case 'algorithm':
-        return Icons.account_tree;
+        return Icons.functions;
       case 'search':
         return Icons.search;
       case 'recursive':
         return Icons.loop;
       case 'real_world':
         return Icons.public;
-      case 'lightbulb_outline':
-        return Icons.lightbulb_outline;
       case 'emoji_objects':
         return Icons.emoji_objects;
       case 'list_alt':

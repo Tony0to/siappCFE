@@ -34,18 +34,20 @@ class Tema2 extends StatefulWidget {
 
 class Tema2State extends State<Tema2> with TickerProviderStateMixin {
   late AnimationController _controller;
-  late YoutubePlayerController _youtubeController;
-  late YoutubePlayerController _questionVideoController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  YoutubePlayerController? _youtubeController;
+  YoutubePlayerController? _questionVideoController;
   bool _videoError = false;
   bool _questionVideoError = false;
+  bool _showMainVideo = false;
+  bool _showQuestionVideo = false;
   final _scrollController = ScrollController();
   Map<String, dynamic>? _contentData;
   bool _isCompleted = false;
 
-  // State for multiple-choice questions
   final Map<int, String?> _selectedAnswers = {};
-  final Map<int, String?> _correctAnswers = {};
-  // Map to track visibility of explanations for each example
+  final Map<int, bool> _showFeedback = {};
   final Map<String, bool> _explanationVisibility = {};
 
   @override
@@ -54,59 +56,26 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
-    )..forward();
-
+    );
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0, 0.8)),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.3, 0.8, curve: Curves.easeInOut)),
+    );
     _loadJsonContent();
+    _controller.forward();
+  }
 
-    // Initialize the main video controller
-    try {
-      _youtubeController = YoutubePlayerController(
-        initialVideoId: 'qfNCH9ajjOA',
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: true,
-          disableDragSeek: false,
-          loop: false,
-          enableCaption: true,
-          hideThumbnail: false,
-        ),
-      )..addListener(() {
-          if (_youtubeController.value.hasError && !_videoError) {
-            setState(() {
-              _videoError = true;
-            });
-          }
-        });
-    } catch (e) {
-      setState(() {
-        _videoError = true;
-      });
-    }
-
-    // Initialize the question video controller
-    try {
-      _questionVideoController = YoutubePlayerController(
-        initialVideoId: 'XRBvb0HqDwM',
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: true,
-          disableDragSeek: false,
-          loop: false,
-          enableCaption: true,
-          hideThumbnail: false,
-        ),
-      )..addListener(() {
-          if (_questionVideoController.value.hasError && !_questionVideoError) {
-            setState(() {
-              _questionVideoError = true;
-            });
-          }
-        });
-    } catch (e) {
-      setState(() {
-        _questionVideoError = true;
-      });
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    _youtubeController?.pause();
+    _youtubeController?.dispose();
+    _questionVideoController?.pause();
+    _questionVideoController?.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadJsonContent() async {
@@ -118,19 +87,73 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
       });
     } catch (e) {
       debugPrint('Error loading JSON: $e');
+      setState(() {
+        _contentData = {};
+      });
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _youtubeController.dispose();
-    _questionVideoController.dispose();
-    _scrollController.dispose();
-    super.dispose();
+  void initializeMainVideo() {
+    setState(() {
+      _showMainVideo = true;
+      try {
+        _youtubeController = YoutubePlayerController(
+          initialVideoId: _contentData?['video']?['id']?.toString() ?? 'qfNCH9ajjOA',
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: true,
+            disableDragSeek: false,
+            loop: false,
+            enableCaption: true,
+            hideThumbnail: false,
+          ),
+        )..addListener(() {
+            if (_youtubeController!.value.hasError && !_videoError) {
+              setState(() {
+                _videoError = true;
+              });
+            }
+          });
+      } catch (e) {
+        debugPrint('Error initializing main video: $e');
+        setState(() {
+          _videoError = true;
+        });
+      }
+    });
   }
 
-  Widget _buildSectionImage() {
+  void initializeQuestionVideo() {
+    setState(() {
+      _showQuestionVideo = true;
+      try {
+        _questionVideoController = YoutubePlayerController(
+          initialVideoId: _contentData?['questionVideo']?['id']?.toString() ?? 'XRBvb0HqDwM',
+          flags: const YoutubePlayerFlags(
+            autoPlay: false,
+            mute: true,
+            disableDragSeek: false,
+            loop: false,
+            enableCaption: true,
+            hideThumbnail: false,
+          ),
+        )..addListener(() {
+            if (_questionVideoController!.value.hasError && !_questionVideoError) {
+              setState(() {
+                _questionVideoError = true;
+              });
+            }
+          });
+      } catch (e) {
+        debugPrint('Error initializing question video: $e');
+        setState(() {
+          _questionVideoError = true;
+        });
+      }
+    });
+  }
+
+  Widget buildSectionImage() {
     final imageUrl = _contentData?['sectionImage'] as String?;
     return Container(
       height: 240,
@@ -155,11 +178,11 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: Colors.blue[900],
                   child: const Center(child: CircularProgressIndicator(color: Colors.white)),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: Colors.blue[900],
                   child: const Icon(Icons.image_not_supported, size: 50, color: Colors.white),
                 ),
               ),
@@ -173,7 +196,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Color.fromRGBO(30, 64, 175, 0.9),
+                  Colors.blue[900]!.withValues(alpha: 0.9),
                 ],
               ),
             ),
@@ -215,7 +238,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
     );
   }
 
-  List<Widget> _formatContent(String? content, {bool isIntro = false}) {
+  List<Widget> formatContent(String? content, {bool isIntro = false}) {
     if (content == null || content.isEmpty) return [const SizedBox.shrink()];
     
     return content.split('\n').map((paragraph) {
@@ -236,70 +259,135 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
     }).toList();
   }
 
-  Widget _buildVideoPlayer({bool isQuestionVideo = false}) {
+  Widget buildVideoPlayer({bool isQuestionVideo = false}) {
+    final bool showVideo = isQuestionVideo ? _showQuestionVideo : _showMainVideo;
     final bool errorState = isQuestionVideo ? _questionVideoError : _videoError;
-    final YoutubePlayerController controller = isQuestionVideo ? _questionVideoController : _youtubeController;
+    final YoutubePlayerController? controller = isQuestionVideo ? _questionVideoController : _youtubeController;
 
-    if (errorState) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Color.fromRGBO(30, 64, 175, 0.3),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-            const SizedBox(height: 12),
-            Text(
-              'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.white.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w500,
-                height: 1.5,
+    if (!showVideo) {
+      return FadeTransition(
+        opacity: _fadeAnimation,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: GestureDetector(
+            onTap: isQuestionVideo ? initializeQuestionVideo : initializeMainVideo,
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
+              child: const Center(
+                child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+              ),
             ),
-          ],
+          ),
         ),
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: YoutubePlayer(
-        controller: controller,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: Colors.blueAccent,
-        progressColors: const ProgressBarColors(
-          playedColor: Colors.blue,
-          handleColor: Colors.blueAccent,
+    if (errorState) {
+      return FadeTransition(
+        opacity: _fadeAnimation,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.blue[900]!.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                const SizedBox(height: 12),
+                Text(
+                  'No se pudo cargar el video',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Por favor, intenta de nuevo más tarde.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: isQuestionVideo ? initializeQuestionVideo : initializeMainVideo,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Reintentar',
+                    style: GoogleFonts.poppins(fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        onReady: () {
-          controller.unMute();
-        },
-        onEnded: (metaData) {
-          controller.pause();
-        },
+      );
+    }
+
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: YoutubePlayer(
+            controller: controller!,
+            showVideoProgressIndicator: true,
+            progressIndicatorColor: Colors.blueAccent,
+            progressColors: const ProgressBarColors(
+              playedColor: Colors.blue,
+              handleColor: Colors.blueAccent,
+            ),
+            onReady: () {
+              controller.unMute();
+            },
+            onEnded: (metaData) {
+              controller.pause();
+            },
+          ),
+        ),
       ),
     );
   }
 
-  void _navigateNext() {
+  void navigateNext() {
     widget.onComplete(widget.sectionIndex);
     setState(() {
       _isCompleted = true;
     });
 
-    // Navigate to Tema3
     if (widget.sectionIndex + 1 < widget.totalSections) {
       final nextSectionKey = widget.content.keys.elementAt(widget.sectionIndex + 1);
       final nextSection = widget.content[nextSectionKey];
@@ -327,7 +415,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildSectionHeader(String? title) {
+  Widget buildSectionHeader(String? title) {
     if (title == null || title.isEmpty) return const SizedBox.shrink();
     
     return Padding(
@@ -338,7 +426,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
             height: 3,
             width: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFF93C5FD),
+              color: Colors.blueAccent,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -358,10 +446,9 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildExampleCard(Map<String, dynamic>? example, int sectionIndex, int exampleIndex) {
+  Widget buildExampleCard(Map<String, dynamic>? example, int sectionIndex, int exampleIndex) {
     if (example == null) return const SizedBox.shrink();
 
-    // Determinar el lenguaje según el título de la sección
     String? language;
     String? sectionTitle;
 
@@ -373,17 +460,16 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
 
     if (sectionTitle != null) {
       if (sectionTitle.contains("Programación Estructurada")) {
-        language = 'cpp'; // Código en C
+        language = 'cpp';
       } else if (sectionTitle.contains("Programación Modular")) {
-        language = 'cpp'; // Código en C
+        language = 'cpp';
       } else {
-        language = 'dart'; // Por defecto, Dart
+        language = 'dart';
       }
     } else {
-      language = 'dart'; // Si no se encuentra la sección, usar Dart por defecto
+      language = 'dart';
     }
 
-    // Create a unique key for this example to track its explanation visibility
     final explanationKey = '${sectionIndex}_$exampleIndex';
     final isExplanationVisible = _explanationVisibility[explanationKey] ?? false;
 
@@ -392,9 +478,9 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         color: example['color'] != null
             ? Color(int.parse(example['color'].replaceFirst('#', '0xFF'))).withValues(alpha: example['opacity'] ?? 1.0)
-            : Color.fromRGBO(30, 64, 175, 0.25),
+            : Colors.blue[900]!.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.4)),
+        border: Border.all(color: Colors.blue[400]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -414,7 +500,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB),
+                    color: Colors.blue[600],
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
@@ -448,13 +534,13 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                               color: Colors.white,
                             ),
                           ),
-                        ..._formatContent(item['text']?.toString()),
+                        ...formatContent(item['text']?.toString()),
                       ],
                     ),
                   );
                 })
               else if (example['content'] is String)
-                ..._formatContent(example['content']?.toString()),
+                ...formatContent(example['content']?.toString()),
             ],
             if (example['code'] != null) ...[
               const SizedBox(height: 16),
@@ -499,7 +585,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
+                    backgroundColor: Colors.blue[600],
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -523,9 +609,9 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(6, 95, 70, 0.2),
+                  color: Colors.green[900]!.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF10B981)),
+                  border: Border.all(color: Colors.green),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,7 +625,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ..._formatContent(example['explanation']?.toString()),
+                    ...formatContent(example['explanation']?.toString()),
                   ],
                 ),
               ),
@@ -550,13 +636,13 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildNoteCard(String? content, {Color? color, String? title}) {
+  Widget buildNoteCard(String? content, {Color? color, String? title}) {
     if (content == null || content.isEmpty) return const SizedBox.shrink();
     
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: color ?? Color.fromRGBO(30, 64, 175, 0.3),
+        color: color ?? Colors.blue[900]!.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -583,23 +669,23 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-            ..._formatContent(content),
+            ...formatContent(content),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPracticeQuestions(List<dynamic>? questions, int questionOffset) {
+  Widget buildPracticeQuestions(List<dynamic>? questions, int questionOffset) {
     if (questions == null || questions.isEmpty) return const SizedBox.shrink();
 
     return Container(
       margin: const EdgeInsets.only(top: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.3),
+        color: Colors.blue[900]!.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: Colors.blue[400]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.15),
@@ -613,7 +699,7 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
         children: [
           Row(
             children: [
-              const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 28),
+              const Icon(Icons.quiz, color: Colors.blueAccent, size: 28),
               const SizedBox(width: 12),
               Text(
                 'Práctica de Conocimiento',
@@ -630,6 +716,9 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
             final index = entry.key + questionOffset;
             final question = entry.value as Map<String, dynamic>;
             final questionText = question['text']?.toString() ?? '';
+            final selectedAnswer = _selectedAnswers[index];
+            final showFeedback = _showFeedback[index] ?? false;
+            final isCorrect = selectedAnswer == question['correct'].toString();
 
             final List<Widget> questionWidgets = [
               Padding(
@@ -648,25 +737,25 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                     const SizedBox(height: 12),
                     ...(question['options'] as List<dynamic>).map((option) {
                       final optionText = option.toString();
-                      final isSelected = _selectedAnswers[index] == optionText;
-                      final isCorrect = optionText == question['correct'].toString();
+                      final isSelected = selectedAnswer == optionText;
+                      final isOptionCorrect = optionText == question['correct'].toString();
                       Color textColor = Colors.white;
-                      Color borderColor = Color.fromRGBO(59, 130, 246, 0.5);
-                      Color bgColor = Color.fromRGBO(30, 64, 175, 0.2);
+                      Color borderColor = Colors.blue[400]!;
+                      Color bgColor = Colors.blue[900]!.withValues(alpha: 0.2);
 
-                      if (_selectedAnswers[index] != null) {
-                        if (isSelected && !isCorrect) {
+                      if (showFeedback) {
+                        if (isSelected && !isOptionCorrect) {
                           textColor = Colors.white;
-                          borderColor = const Color(0xFFEF4444);
-                          bgColor = Color.fromRGBO(153, 27, 27, 0.2);
-                        } else if (isSelected && isCorrect) {
+                          borderColor = Colors.red;
+                          bgColor = Colors.red[900]!.withValues(alpha: 0.2);
+                        } else if (isSelected && isOptionCorrect) {
                           textColor = Colors.white;
-                          borderColor = const Color(0xFF10B981);
-                          bgColor = Color.fromRGBO(6, 95, 70, 0.2);
-                        } else if (isCorrect) {
+                          borderColor = Colors.green;
+                          bgColor = Colors.green[900]!.withValues(alpha: 0.2);
+                        } else if (isOptionCorrect) {
                           textColor = Colors.white;
-                          borderColor = const Color(0xFF10B981);
-                          bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                          borderColor = Colors.green;
+                          bgColor = Colors.green[900]!.withValues(alpha: 0.2);
                         }
                       }
 
@@ -674,39 +763,14 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                         padding: const EdgeInsets.only(bottom: 10),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            setState(() {
-                              _selectedAnswers[index] = optionText;
-                              _correctAnswers[index] = question['correct'].toString();
-                              if (optionText == _correctAnswers[index]) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '¡Correcto!',
-                                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                                    ),
-                                    backgroundColor: Colors.green,
-                                    behavior: SnackBarBehavior.floating,
-                                    margin: const EdgeInsets.all(16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Incorrecto, la respuesta correcta es ${question['correct']}',
-                                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                                    ),
-                                    backgroundColor: Colors.red,
-                                    behavior: SnackBarBehavior.floating,
-                                    margin: const EdgeInsets.all(16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
-                              }
-                            });
-                          },
+                          onTap: showFeedback
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _selectedAnswers[index] = optionText;
+                                    _showFeedback[index] = true;
+                                  });
+                                },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -733,9 +797,9 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                                   ),
                                   child: isSelected
                                       ? Icon(
-                                          isCorrect ? Icons.check : Icons.close,
+                                          isOptionCorrect ? Icons.check : Icons.close,
                                           size: 16,
-                                          color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                          color: isOptionCorrect ? Colors.green : Colors.red,
                                         )
                                       : null,
                                 ),
@@ -756,16 +820,54 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                         ),
                       );
                     }),
+                    if (showFeedback)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          isCorrect ? '¡Correcto!' : 'Incorrecto',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isCorrect ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ),
+                    if (showFeedback && question['explanation'] != null && question['explanation'].toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.green[900]!.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Explicación',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ...formatContent(question['explanation'].toString()),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ];
 
-            // Add the video only after the specific question
             if (questionText == '¿Cuál de las siguientes es una estructura principal de la programación estructurada?') {
               questionWidgets.addAll([
                 const SizedBox(height: 20),
-                _buildVideoPlayer(isQuestionVideo: true),
+                buildVideoPlayer(isQuestionVideo: true),
               ]);
             }
 
@@ -779,16 +881,16 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (_contentData == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF1E40AF),
-        body: Center(
+      return Scaffold(
+        backgroundColor: Colors.blue[900],
+        body: const Center(
           child: CircularProgressIndicator(color: Colors.white),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1E40AF),
+      backgroundColor: Colors.blue[900],
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
@@ -804,9 +906,9 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateNext,
+        onPressed: navigateNext,
         backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E40AF),
+        foregroundColor: Colors.blue[900],
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         icon: const Icon(Icons.arrow_forward),
@@ -826,19 +928,15 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FadeTransition(
-                opacity: Tween<double>(begin: 0, end: 1).animate(
-                  CurvedAnimation(parent: _controller, curve: const Interval(0, 0.3)),
-                ),
-                child: _buildSectionImage(),
+                opacity: _fadeAnimation,
+                child: buildSectionImage(),
               ),
               const SizedBox(height: 28),
               FadeTransition(
-                opacity: Tween<double>(begin: 0, end: 1).animate(
-                  CurvedAnimation(parent: _controller, curve: const Interval(0.1, 0.4)),
-                ),
-                child: _buildNoteCard(
+                opacity: _fadeAnimation,
+                child: buildNoteCard(
                   _contentData?['introText']?.toString(),
-                  color: Color.fromRGBO(30, 64, 175, 0.35),
+                  color: Colors.blue[900]!.withValues(alpha: 0.35),
                 ),
               ),
               ...(_contentData?['subsections'] as List<dynamic>? ?? []).asMap().entries.map((entry) {
@@ -852,8 +950,14 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 28),
-                    _buildSectionHeader(sectionData['title']?.toString()),
-                    _buildNoteCard(sectionData['content']?.toString()),
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: buildSectionHeader(sectionData['title']?.toString()),
+                    ),
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: buildNoteCard(sectionData['content']?.toString()),
+                    ),
                     const SizedBox(height: 12),
                     ...examples.asMap().entries.map((exampleEntry) {
                       final exampleIndex = exampleEntry.key;
@@ -861,45 +965,39 @@ class Tema2State extends State<Tema2> with TickerProviderStateMixin {
                       if (exampleData == null) return const SizedBox.shrink();
 
                       return FadeTransition(
-                        opacity: Tween<double>(begin: 0, end: 1).animate(
-                          CurvedAnimation(parent: _controller, curve: const Interval(0.2, 0.5)),
-                        ),
-                        child: _buildExampleCard(exampleData, sectionIndex, exampleIndex),
+                        opacity: _fadeAnimation,
+                        child: buildExampleCard(exampleData, sectionIndex, exampleIndex),
                       );
                     }),
                     if (sectionData['questions'] != null && (sectionData['questions'] as List).isNotEmpty) ...[
                       const SizedBox(height: 28),
                       FadeTransition(
-                        opacity: Tween<double>(begin: 0, end: 1).animate(
-                          CurvedAnimation(parent: _controller, curve: const Interval(0.4, 0.7)),
-                        ),
-                        child: _buildPracticeQuestions(sectionData['questions'], sectionIndex * 100),
+                        opacity: _fadeAnimation,
+                        child: buildPracticeQuestions(sectionData['questions'], sectionIndex * 100),
                       ),
                     ],
                   ],
                 );
               }),
               const SizedBox(height: 28),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader(_contentData?['video']?['title']?.toString()),
-                  Text(
-                    _contentData?['video']?['description']?.toString() ?? '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      height: 1.5,
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildSectionHeader(_contentData?['video']?['title']?.toString()),
+                    Text(
+                      _contentData?['video']?['description']?.toString() ?? '',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  FadeTransition(
-                    opacity: Tween<double>(begin: 0, end: 1).animate(
-                      CurvedAnimation(parent: _controller, curve: Interval(0.3, 0.6)),
-                    ),
-                    child: _buildVideoPlayer(),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    buildVideoPlayer(),
+                  ],
+                ),
               ),
               const SizedBox(height: 80),
             ],

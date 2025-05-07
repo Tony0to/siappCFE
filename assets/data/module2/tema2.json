@@ -1,216 +1,320 @@
 {
-  "introduccion": {
-    "titulo": "",
-    "contenido": [
-      "Toda solución informática necesita almacenar, organizar y manipular información. Para lograrlo de forma eficiente, es fundamental conocer las distintas formas en las que los datos pueden representarse dentro de un programa.",
-      "En este subtema, exploraremos conceptos clave como las variables y sus tipos de datos, que permiten guardar información temporal. También abordaremos estructuras más complejas como arreglos, matrices y listas, herramientas esenciales para agrupar y gestionar múltiples valores de manera ordenada.",
-      "Dominar estas estructuras te permitirá escribir programas más potentes y organizados, capaces de manejar desde datos simples hasta colecciones más complejas."
-    ]
+  "sectionTitle": "II. Estructuras de control con datos primitivos",
+  "sectionImage": "https://assets2-programarya-com.juandmegon.com/img/Cursos/Fundamentacion/Estructuras-de-Control/Estructuras-de-Control-header.png",
+  "welcomeText": "Las estructuras de control son fundamentales para tomar decisiones y repetir acciones dentro de un programa. Cuando las combinamos con datos primitivos, logramos que nuestros algoritmos sean dinámicos, adaptables y capaces de responder a distintas situaciones.",
+  "introText1": "A través de estas herramientas, podrás crear algoritmos que reaccionen ante distintos escenarios, realicen comparaciones y ejecuten instrucciones específicas según los datos de entrada. Dominar las estructuras de control con datos primitivos te permitirá escribir programas más inteligentes y eficientes.",
+  "introText2": "¡Prepárate para desarrollar lógica más precisa y tomar el control de tus decisiones en código!",
+  "video": {
+    "title": "Video Explicativo",
+    "description": "Aprende más sobre estructuras de control con este video tutorial.",
+    "id": "walAu_skXHA"
   },
-  "subtema1": {
-    "titulo": "Variables y tipos de datos",
-    "contenido": [
-      "Las variables y los tipos de datos son conceptos fundamentales en cualquier lenguaje de programación, y Java no es la excepción. Comprender cómo funcionan te permitirá almacenar y manipular información en tus programas de manera efectiva."
-    ],
-    "secciones": [
-      {
-        "titulo": "¿Qué es una Variable?",
-        "contenido": "\"Una variable es un espacio en la memoria que se utiliza para almacenar un valor que puede cambiar durante la ejecución de un programa\".",
-        "tipo": "highlight",
-        "color": "green",
-        "items": [
-          "Declaración de Variables.",
-          "Inicialización de Variables."
-        ]
-      },
-      {
-        "titulo": "Convenciones de Nombres para Variables",
-        "contenido": "Las más importantes y que la mayoría de los lenguajes recomienda son las siguientes:",
-        "tipo": "highlight",
-        "color": "blue",
-        "items": [
-          "Usa nombres descriptivos.",
-          "Comienza con una letra minúscula (también puedes utilizar mayúsculas o algunos símbolos especiales).",
-          "Evita usar palabras reservadas como int, class, for, etc."
-        ]
-      },
-      {
-        "titulo": "¿Qué son los tipos de datos?",
-        "contenido": "\"Los tipos de datos son una forma de clasificar y organizar la información que una variable u objeto puede contener\".\n\nPueden incluir diferentes tipos de información, como números enteros, números con decimales, caracteres individuales, cadenas de caracteres (texto), valores booleanos (verdadero o falso), fechas y horas, y estructuras de datos complejas como matrices o tablas.\nSe pueden clasificar principalmente en:",
-        "tipo": "highlight",
-        "color": "green"
-      },
-      {
-        "titulo": "Datos primitivos.",
-        "contenido": "Cada lenguaje de programación tiene un conjunto de tipos de datos primitivos, que pueden variar ligeramente de un lenguaje a otro. Sin embargo, la mayoría de los lenguajes de programación modernos incluyen los siguientes tipos de datos primitivos: enteros, números de coma flotante, caracteres, booleanos y nulos.",
-        "tipo": "highlight",
-        "color": "purple",
-        "clasificacion": {
-          "titulo": "Clasificación",
-          "items": [
-            "Enteros: Son uno de los tipos de datos primitivos más comunes, se representan mediante la palabra clave 'int' o 'long', dependiendo del tamaño.",
-            "Números de coma flotante: Se utilizan para representar números que tienen una fracción decimal, se representan con la palabra clave \"flotante\" o \"doble\".",
-            "Caracteres: Se utilizan para representar letras, números y otros símbolos, están representados por la palabra clave 'char'.",
-            "Booleanos: Para representar valores de verdad. Sólo pueden tener uno de dos valores: verdadero o falso, se representan con la palabra clave \"bool\".",
-            "Nulos: El valor nulo es un tipo especial de valor que representa la ausencia de un valor. Representado por la palabra clave \"null\"."
+  "subsections": [
+    {
+      "title": "Secuenciales",
+      "notes": [
+        {
+          "title": "¿Qué son las estructuras de control?",
+          "content": "Las estructuras de control son un conjunto de reglas que hacen posible la gestión del flujo de ejecución de los programas, esto lo logran determinando el orden en que las instrucciones se ejecutan.\n\nLas estructuras de control se dividen en tres categorías: secuenciales, condicionales e iterativas. Veamos en qué consiste cada una.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "content": "“Las estructuras de control permiten que el código tome decisiones, repita acciones o bien siga su flujo de ejecución secuencial”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
           ]
         },
-        "ejemplos": [
-          "int edad = 25;",
-          "double altura = 1.75;",
-          "char inicial = 'A';",
-          "boolean esEstudiante = true;"
-        ],
-        "conclusion": "Se puede decir que son tipos de datos básicos que representan valores simples y se almacenan directamente en la memoria. Ya que no tienen métodos; no son objetos y además no necesitan una invocación para ser creados."
-      },
-      {
-        "titulo": "Datos no primitivos.",
-        "contenido": "Además de los tipos de datos primitivos, también existen otro tipo de datos, los no primitivos, son estructuras que almacenan valores o colecciones de valores, y que pueden ser más complejos que los tipos primitivos. Los tipos más comunes incluyen:",
-        "tipo": "highlight",
-        "color": "green",
-        "clasificacion": {
-          "titulo": "Clasificación",
-          "items": [
-            "String: Representa una secuencia de caracteres. Es una clase en Java, pero se usa como un tipo de dato básico.",
-            "Arrays: Una estructura que almacena múltiples valores del mismo tipo.",
-            "Clases: Puedes crear tus propios tipos de datos mediante clases."
+        {
+          "title": "Características clave de las estructuras",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "title": "Orden lógico",
+              "content": "Garantiza que las instrucciones se ejecuten de forma consecutiva y en el orden correcto, asegurando el procesamiento adecuado de los datos y operaciones.",
+              "type": "highlight",
+              "color": "#10B981",
+              "opacity": 0.3
+            },
+            {
+              "title": "Flujo predecible",
+              "content": "Asegura que las instrucciones sigan un camino lineal y que el programa produzca los mismos resultados con los mismos datos de entrada, evitando comportamientos impredecibles.",
+              "type": "highlight",
+              "color": "#3E92CC",
+              "opacity": 0.3
+            }
           ]
         },
-        "ejemplos": [
-          "String nombre = \"Juan\";",
-          "int[] numeros = {1, 2, 3, 4, 5};"
-        ],
-        "conclusion": "Por lo tanto, se puede concluir que son tipos de datos más complejos que hacen referencia a objetos almacenados en memoria. Estos objetos pueden almacenar conjuntos de datos, ya sean enteros o caracteres."
-      },
-      {
-        "titulo": "Clasificación de variables",
-        "contenido": "Ahora bien, una vez que ha quedado claro los tipos de datos, podemos enfocarnos en las variables, ya definimos lo que son, pero también hay una clasificación para estas:",
-        "items": [
-          "Las variables locales se declaran en un método y solo son accesibles dentro de ese método.",
-          "Las variables de instancia pertenecen a una instancia específica de una clase y se declaran dentro de la clase, pero fuera de cualquier método.",
-          "Las variables de clase son compartidas por todas las instancias de una clase y se declaran utilizando la palabra clave static."
-        ],
-        "conclusion": "Claro que la declaración de estas variables depende del lenguaje que se esté utilizando.\n\nEntender cómo funcionan las variables y los tipos de datos es un paso crucial en tu aprendizaje. Estos conceptos te permitirán gestionar y manipular información de manera eficiente en tus programas. A medida que sigas practicando, te familiarizarás con la variedad de tipos de datos que ofrece cada lenguaje y cómo utilizarlos para resolver problemas específicos."
-      }
-    ]
-  },
-  "subtema2": {
-    "titulo": "Arreglos, matrices y listas",
-    "contenido": [
-      "Son las más básicas e importantes también, ya que a partir de ellas se pueden formar otras estructuras de datos con un comportamiento más complejo o adecuado para alguna tarea particular."
-    ],
-    "secciones": [
-      {
-        "titulo": "Arreglos.",
-        "contenido": "\"Estructuras de datos compuestos en las que se utilizan uno o más subíndices para identificar los elementos individuales almacenados, a los que es posible tener acceso en cualquier orden\".",
-        "tipo": "highlight",
-        "color": "blue",
-        "ejemplos": [
-          "# Se define una lista de tareas\ntareas = [\"Despertar\", \"Preparar café\", \"Desayunar\", \"Leer noticias\"]",
-          "# Se define una tupla con las coordenadas de un punto\npunto = (10, 20)"
-        ],
-        "descripcion": "Permite acceder a cada elemento mediante un índice numérico, lo que facilita la manipulación de grandes volúmenes de información. Son imprescindibles y existen distintos tipos, vectores, tuplas, etc.",
-        "definicion": "En el contexto de los sistemas de cómputo, un arreglo es una estructura de datos que hace referencia a un grupo de casillas de memoria que se puede ver como una colección finita, homogénea y ordenada de elementos.",
-        "usos": [
-          "Almacenar grandes volúmenes de datos de manera eficiente.",
-          "Optimizar el rendimiento de algoritmos de búsqueda y ordenamiento.",
-          "Manejar datos en estructuras más complejas como grafos y listas enlazadas.",
-          "Facilitar el procesamiento de imágenes y señales en inteligencia artificial."
-        ],
-        "conclusion": "Por lo que es importante aprender a manejarlos."
-      },
-      {
-        "titulo": "Matrices.",
-        "contenido": "Además de las estructuras unidimensionales como arreglos o listas, existe una estructura más compleja llamada matriz, también conocida como arreglo bidimensional. Una matriz puede imaginarse como una tabla con filas y columnas, donde cada fila es en sí misma una secuencia ordenada de elementos.",
-        "tipo": "highlight",
-        "color": "green",
-        "ejemplos": [
-          "# Matriz 2x3 en lenguaje Python (2 filas, 3 columnas)\nmatriz_python = [\n    [1, 2, 3],\n    [4, 5, 6]\n]",
-          "# Matriz 2x3en lenguaje Java (2 filas, 3 columnas)\nint[][] matrizJava = {\n    {1, 2, 3},\n    {4, 5, 6}\n};"
-        ],
-        "operaciones": [
-          "Acceder a un elemento específico: matriz[fila][columna]",
-          "Recorrer una matriz con bucles anidados.",
-          "Modificar valores de celdas específicas.",
-          "Sumar, restar, multiplicar matrices.",
-          "Transponer (intercambiar filas por columnas)."
-        ],
-        "conclusion": "Desde el punto de vista de programación, una matriz es una secuencia de secuencias: un arreglo donde cada elemento es a su vez otro arreglo. Por esta razón, las matrices también pueden extenderse a más dimensiones (matrices tridimensionales, etc.), aunque lo más común es trabajar con matrices de dos dimensiones."
-      },
-      {
-        "titulo": "Listas.",
-        "contenido": "Una lista es una colección ordenada de elementos. Puede contener distintos tipos de datos y permite duplicados. En muchos lenguajes de programación, las listas son estructuras dinámicas que pueden cambiar de tamaño durante la ejecución.",
-        "tipo": "highlight",
-        "color": "blue",
-        "caracteristicas": [
-          "Tamaño variable.",
-          "Puede permitir distintos tipos de datos (como en Python).",
-          "Métodos integrados para agregar, eliminar, buscar u ordenar elementos."
-        ],
-        "ejemplo": "lista = [10, \"hola\", 3.14]\nlista.append(42)\nprint(lista[1])  # Imprime: hola",
-        "conclusion": "Son muy parecidas a los arreglos, pero no son lo mismo, mientras que los arreglos son ideales cuando conoces la cantidad fija de datos y buscas eficiencia, las listas son más flexibles para trabajar con información dinámica."
-      }
-    ]
-  },
-  "quiz": {
-    "titulo": "Cuestionario de Repaso",
-    "contenido": "Prueba tus conocimientos sobre variables, tipos de datos, arreglos, matrices y listas con las siguientes preguntas.",
-    "preguntas": [
-      {
-        "pregunta": "¿Qué es una variable en programación?",
-        "opciones": [
-          "Un espacio en la memoria que almacena un valor que puede cambiar durante la ejecución del programa.",
-          "Una función que realiza cálculos matemáticos.",
-          "Un tipo de dato que no puede modificarse.",
-          "Una estructura de datos para almacenar múltiples valores."
-        ],
-        "respuesta_correcta": "Un espacio en la memoria que almacena un valor que puede cambiar durante la ejecución del programa.",
-        "explicacion": "Una variable es un espacio en la memoria que se utiliza para almacenar un valor que puede cambiar durante la ejecución de un programa. Es fundamental para manipular datos en cualquier lenguaje de programación."
-      },
-      {
-        "pregunta": "¿Cuál de los siguientes es un tipo de dato primitivo en Java?",
-        "opciones": [
-          "String",
-          "int",
-          "Array",
-          "Clase"
-        ],
-        "respuesta_correcta": "int",
-        "explicacion": "En Java, los tipos de datos primitivos incluyen int, double, char, boolean, entre otros. String y Array son tipos no primitivos, y una Clase es una definición de un tipo de dato personalizado."
-      },
-      {
-        "pregunta": "¿Qué característica distingue a las listas de los arreglos en lenguajes como Python?",
-        "opciones": [
-          "Las listas tienen un tamaño fijo, mientras que los arreglos son dinámicos.",
-          "Las listas pueden contener diferentes tipos de datos, mientras que los arreglos son homogéneos.",
-          "Las listas no permiten duplicados, mientras que los arreglos sí.",
-          "Las listas son más lentas que los arreglos en todas las operaciones."
-        ],
-        "respuesta_correcta": "Las listas pueden contener diferentes tipos de datos, mientras que los arreglos son homogéneos.",
-        "explicacion": "En lenguajes como Python, las listas son estructuras dinámicas que pueden contener diferentes tipos de datos y cambiar de tamaño, mientras que los arreglos (como los de la biblioteca numpy) son homogéneos, es decir, todos sus elementos deben ser del mismo tipo."
-      },
-      {
-        "pregunta": "¿Cómo se accede a un elemento en una matriz bidimensional en Java?",
-        "opciones": [
-          "matriz[fila][columna]",
-          "matriz(columna, fila)",
-          "matriz[fila, columna]",
-          "matriz.get(fila, columna)"
-        ],
-        "respuesta_correcta": "matriz[fila][columna]",
-        "explicacion": "En Java, para acceder a un elemento en una matriz bidimensional, se utiliza la sintaxis matriz[fila][columna], donde el primer índice indica la fila y el segundo la columna."
-      },
-      {
-        "pregunta": "¿Cuál de las siguientes afirmaciones sobre las variables de clase en Java es correcta?",
-        "opciones": [
-          "Son accesibles solo dentro del método donde se declaran.",
-          "Pertenecen a una instancia específica de una clase.",
-          "Son compartidas por todas las instancias de una clase y se declaran con la palabra clave static.",
-          "No pueden ser modificadas después de su inicialización."
-        ],
-        "respuesta_correcta": "Son compartidas por todas las instancias de una clase y se declaran con la palabra clave static.",
-        "explicacion": "Las variables de clase en Java son declaradas con la palabra clave static y son compartidas por todas las instancias de una clase, lo que significa que tienen un único valor para todas las instancias."
-      }
-    ]
-  }
+        {
+          "content": "Las estructuras de control secuenciales son las más básicas. En este caso, las instrucciones se ejecutan una tras otra en el mismo orden en que están escritas.\n\nBasa su funcionamiento en tener acciones o instrucciones que sigan a otras de forma secuencial, se ejecutan en un orden específico, de arriba a abajo, una tras otra, sin bifurcaciones ni saltos, por lo que es unidireccional.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "content": "“Se refieren a la ejecución ordenada y secuencial de instrucciones, una tras otra, en el mismo orden en que fueron escritas”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
+          ]
+        },
+        {
+          "content": "Al seguir un flujo de ejecución estructurado y predecible, se pueden evitar errores comunes, mejorar la legibilidad del código y asegurar que el programa funcione de manera confiable.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        }
+      ],
+      "examples": [
+        {
+          "title": "Ejemplo: Algoritmo para calcular el área de un triángulo",
+          "problem": "Este algoritmo utiliza una estructura secuencial, ya que las instrucciones se ejecutan una tras otra, sin tomar decisiones ni repetir pasos. Utilizaremos datos primitivos como números decimales (float) y operadores matemáticos para calcular el área.",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer la base del triángulo (Entrada)\n\nLeer la altura del triángulo (Entrada)\n\nCalcular el área con la fórmula: área = (base × altura) / 2 (Proceso matemático)\n\nMostrar el área calculada (Salida)\n\nFin",
+          "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Representado por un óvalo.\n\nLeer base: Paralelogramo (entrada).\n\nLeer altura: Paralelogramo (entrada).\n\nCalcular área: Rectángulo con la fórmula (base * altura) / 2.\n\nMostrar área: Paralelogramo (salida).\n\nFin: Óvalo.",
+          "diagram": "assets/module2photos/diag8.png",
+          "explanation": "Este ejemplo muestra cómo se pueden encadenar instrucciones secuenciales de entrada, proceso y salida utilizando operadores aritméticos y datos primitivos como float o int."
+        }
+      ]
+    },
+    {
+      "title": "Condicionales (if, else, switch)",
+      "notes": [
+        {
+          "content": "Son otra de las estructuras básicas en la programación, permiten que el programa vaya tomando decisiones con base en ciertas condiciones.\n\nExisten varios tipos de estructuras condicionales, como los if o switch, y cada una de ellas se utiliza para ejecutar diferentes bloques de código, esto dependiendo de si una condición es verdadera o falsa.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "content": "“Las condicionales son estructuras fundamentales en la programación que permiten ejecutar instrucciones dependiendo de si una condición se cumple o no”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
+          ]
+        },
+        {
+          "title": "Condicional if",
+          "content": "Este condicional tiene dos casos particulares. El primero es cuando se emplea simplemente la condición if, donde se busca comprobar una relación y, si se cumple, ejecutar un bloque de código determinado.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Este tipo de condicional se usa cuando solo nos interesa realizar una acción si se cumple una condición, sin necesidad de manejar el caso contrario.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "title": "Condicional if-else",
+          "content": "Es el segundo caso de un if, este se da cuando se emplea la estructura if-else. En este caso, se evalúa una condición y, si es verdadera, se ejecuta un bloque de código; si es falsa, se ejecuta otro bloque alternativo.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Este tipo de estructura es útil cuando siempre se desea ejecutar una acción, ya sea si se cumple o no una condición.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "title": "Condicional if-else anidados",
+          "content": "También se pueden utilizar de forma anidada, es decir, un if dentro de otro. En algunos casos, se pueden anidar múltiples if-else para evaluar más de dos condiciones, ya que nos permiten manejar varios casos y tomar decisiones más complejas.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Este tipo de estructura permite realizar múltiples evaluaciones secuenciales dentro de una sola condición principal, útil para clasificadores más complejos.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "El condicional if-else es fundamental en la programación porque permite la toma de decisiones dentro de un programa. Su correcta implementación es clave para el flujo lógico del software, permitiendo ejecutar diferentes bloques de código según las condiciones evaluadas.",
+          "type": "highlight",
+          "color": "#10B981",
+          "opacity": 0.3
+        },
+        {
+          "title": "Condicional switch",
+          "content": "El condicional switch es una estructura de control utilizada cuando una variable puede tomar distintos valores y, según cada valor, se ejecuta una acción específica. A diferencia del if-else, que evalúa condiciones lógicas, el switch compara el valor de una variable con diferentes casos predefinidos.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Esta estructura es ideal cuando necesitas tomar decisiones basadas en un solo valor con múltiples opciones conocidas y limitadas.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "title": "Condicional switch sin break",
+          "content": "Es la segunda versión del condicional switch, en este caso no se utiliza el break. Si no se usa break, se ejecutarán todos los casos siguientes hasta encontrar uno que sí lo tenga. Esto puede ser útil en ciertos escenarios.\n\nEl siguiente ejemplo, toma una variable llamada letra y la evalúa para determinar si un carácter almacenado en esta variable es una vocal o no.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Este tipo de uso del switch puede be útil en ciertos casos como acumulaciones, cadenas de acciones o efectos secuenciales, pero debe usarse con precaución para evitar errores lógicos.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Este condicional puede sustituir al condicional if, solo en casos donde sea necesario. Esto no quiere decir que siempre es mejor aplicar un condicional switch, al contrario, depende de la situación y el problema.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "title": "¿Cuándo usar switch en lugar de if-else?",
+          "content": "Cuando se tiene una variable con múltiples valores predefinidos.\n\nCuando las comparaciones son directas y no dependen de expresiones complejas.\n\nCuando se quiere hacer el código más claro y organizado.\n\nNo es recomendable cuando se necesitan evaluar rangos de valores (<, >, <=, >=) o condiciones compuestas (&&, ||). En estos casos, es mejor usar if-else.\n\nEl condicional switch es una herramienta útil para estructurar decisiones múltiples de forma clara y eficiente, especialmente cuando se trata de valores discretos y definidos.",
+          "type": "highlight",
+          "color": "#10B981",
+          "opacity": 0.3
+        }
+      ],
+      "examples": [
+        {
+          "title": "Ejemplo: Algoritmo para verificar si un número es positivo",
+          "problem": "Este algoritmo evalúa si un número ingresado por el usuario es positivo. Si la condición se cumple, se muestra un mensaje; si no, simplemente no se hace nada más. Se utiliza una estructura condicional simple con if, sin incluir una alternativa (else), y se trabaja con datos primitivos numéricos (enteros).",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer un número (Entrada)\n\nEvaluar si el número es mayor que cero (Condición con if)\n\nSi la condición es verdadera, mostrar “El número es positivo” (Salida)\n\nFin",
+          "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nLeer número: Paralelogramo (entrada).\n\nEvaluar condición (número > 0): Rombos para decisión.\n\nSi verdadero: Flecha hacia un paralelogramo que muestra “El número es positivo”.\n\nSi falso: Flecha que se dirige directamente al fin sin realizar ninguna acción.\n\nFin: Óvalo.",
+          "diagram": "assets/module2photos/diag9.png"
+        },
+        {
+          "title": "Ejemplo: Algoritmo para aplicar un descuento según el monto de compra",
+          "problem": "Este algoritmo solicita el monto total de una compra y determina si se debe aplicar un descuento. Si el monto es mayor o igual a 1000, se aplica un 10% de descuento; de lo contrario, no se aplica ningún descuento. Utiliza operadores aritméticos y relacionales.",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer el monto de la compra (Entrada)\n\nEvaluar si el monto es mayor o igual a 1000\n\nSi la condición es verdadera:\n\nCalcular el 10% de descuento\n\nRestar el descuento al monto original\n\nMostrar “Se aplicó un descuento. Total a pagar: [monto final]”\n\nSi la condición es falsa:\n\nMostrar “No hay descuento. Total a pagar: [monto original]”\n\nFin",
+          "diagram_description": "Estructura del diagrama de flujo:\n\nInicio: Óvalo\n\nLeer monto: Paralelogramo\n\nCondición: Rombo con “¿monto >= 1000?”\n\nSi sí:\n\nRectángulo: Calcular descuento\n\nRectángulo: Restar descuento\n\nParalelogramo: Mostrar monto con descuento\n\nSi no:\n\nParalelogramo: Mostrar monto sin descuento\n\nFin: Óvalo",
+          "diagram": "assets/module2photos/diag10.png"
+        },
+        {
+          "title": "Ejemplo: Algoritmo para clasificar una calificación numérica",
+          "problem": "Este algoritmo permite clasificar una calificación ingresada por el usuario (dato primitivo tipo float) en tres categorías: Aprobado, Regular o Reprobado, utilizando una estructura condicional if-else anidada.",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer la calificación (Entrada)\n\nEvaluar si la calificación es mayor o igual a 8\n\nSi es verdadero, mostrar “Aprobado” (Salida)\n\nSi es falso, evaluar si la calificación es mayor o igual a 6\n\nSi es verdadero, mostrar “Regular” (Salida)\n\nSi es falso, mostrar “Reprobado” (Salida)\n\nFin",
+          "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Óvalo.\n\nLeer calificación: Paralelogramo (entrada).\n\nEvaluar si calificación ≥ 8: Rombo (decisión).\n\nSí: Paralelogramo → “Aprobado”.\n\nNo:\n\nEvaluar si calificación ≥ 6: Segundo rombo.\n\nSí: Paralelogramo → “Regular”.\n\nNo: Paralelogramo → “Reprobado”.\n\nFin: Óvalo.",
+          "diagram": "assets/module2photos/diag11.png"
+        },
+        {
+          "title": "Ejemplo: Algoritmo para mostrar el día de la semana según un número",
+          "problem": "Este algoritmo solicita al usuario un número entero del 1 al 7 y, utilizando una estructura switch, muestra el nombre correspondiente del día de la semana. Solo se emplean datos primitivos tipo entero (int).",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer un número del 1 al 7 (Entrada)\n\nEvaluar el número con la estructura switch:\n\nCaso 1: Mostrar “Lunes”\n\nCaso 2: Mostrar “Martes”\n\nCaso 3: Mostrar “Miércoles”\n\nCaso 4: Mostrar “Jueves”\n\nCaso 5: Mostrar “Viernes”\n\nCaso 6: Mostrar “Sábado”\n\nCaso 7: Mostrar “Domingo”\n\nDefault: Mostrar “Número inválido”\n\nFin",
+          "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Óvalo.\n\nLeer número: Paralelogramo (entrada).\n\nDecisión múltiple (switch):\n\n1 → Paralelogramo: “Lunes”\n\n2 → Paralelogramo: “Martes”\n\n3 → Paralelogramo: “Miércoles”\n\n4 → Paralelogramo: “Jueves”\n\n5 → Paralelogramo: “Viernes”\n\n6 → Paralelogramo: “Sábado”\n\n7 → Paralelogramo: “Domingo”\n\nOtro valor → Paralelogramo: “Número inválido”\n\nFin: Todas las salidas convergen hacia el óvalo final.",
+          "diagram": "assets/module2photos/diag12.png"
+        },
+        {
+          "title": "Ejemplo: Algoritmo para mostrar una cuenta regresiva a partir de un número del 1 al 3",
+          "problem": "Este algoritmo muestra una serie de mensajes según el número que el usuario ingrese (1, 2 o 3). Como no se incluyen sentencias break, se ejecutan todas las instrucciones de los casos siguientes después de la coincidencia. Esto permite, por ejemplo, crear una cuenta regresiva de varios pasos sin repetir lógica.",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nLeer un número del 1 al 3 (Entrada)\n\nEvaluar con switch sin break:\n\nCaso 1: Mostrar “Tres”\n\nCaso 2: Mostrar “Dos”\n\nCaso 3: Mostrar “Uno”\n\nDefault: Mostrar “Número fuera del rango”\n\nFin\n\nEjemplo de comportamiento:\n\nSi el usuario ingresa 1, se mostrarán:\n\n“Tres”\n\n“Dos”\n\n“Uno”\n\nSi el usuario ingresa 2, se mostrarán:\n\n“Dos”\n\n“Uno”\n\nSi el usuario ingresa 3, se mostrará:\n\n“Uno”",
+          "diagram_description": "El diagrama de flujo para este algoritmo se construiría de la siguiente manera:\n\nInicio: Óvalo\n\nLeer número: Paralelogramo (entrada)\n\nDecisión múltiple (switch sin break):\n\nCaso 1 → Mostrar “Tres”\n\n↓\n\nCaso 2 → Mostrar “Dos”\n\n↓\n\nCaso 3 → Mostrar “Uno”\n\n↓\n\nFin\n\nDefault: Mostrar “Número fuera del rango”",
+          "diagram": "assets/module2photos/diag13.png"
+        }
+      ]
+    },
+    {
+      "title": "Bucles (while, for, do-while)",
+      "notes": [
+        {
+          "content": "Permiten repetir un conjunto de instrucciones varias veces, se presenta cuando necesitamos realizar la misma acción en diferentes valores, o cuando no sabemos cuántas veces una condición será verdadera.\n\nSon complementadas por una condicional, por lo que es primordial comprender el funcionamiento de estas. Hay dos tipos principales de bucles: for y while, cada uno tiene una estructura y función diferente.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "content": "“Los bucles son estructuras con fragmentos de código que se ejecutan repetidas veces dependiendo de si una condición se cumple o no, continua hasta que la condición se vuelve falsa”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
+          ]
+        },
+        {
+          "title": "Bucle for",
+          "content": "Esta estructura es similar al bucle while, en este la operación se ejecuta para un número determinado de repeticiones, se utiliza para iterar en una secuencia de elementos.\n\nLa idea principal es repetir un bloque de código un número específico de veces o para cada elemento en una colección.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "title": "¿Qué es?",
+              "content": "Estructura de control que ejecuta repetidamente en un bloque de código un número de veces conocido”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
+          ]
+        },
+        {
+          "title": "¿Cuándo utilizarlo?",
+          "content": "Este tipo de estructura se puede implementar en distintos casos, pero los más comunes son:\n\nRecorrer una lista de elementos.\n\nSolicitar una serie de números al usuario, cuando se conoce de antemano cuántas veces se debe realizar la solicitud.\n\nRealizar sumatorias u otras operaciones repetitivas donde el número de pasos a ejecutar es conocido.\n\nIterar un número específico de veces utilizando un rango numérico.\n\nEs ideal cuando se conoce de antemano el número de veces que se debe ejecutar un bloque de código, reduciendo la complejidad del código y haciendo que el código sea más legible y menos propenso a errores de \"fuera de rango\".",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "title": "Bucle while",
+          "content": "Esta estructura es de las más simples, como su nombre lo dice, el bucle while ejecuta las instrucciones dentro de su bloque mientras o siempre que se cumpla una condición.\n\nSi en algún momento la condición se evalúa como falsa, el bucle se detiene y la ejecución continúa con el código después del bucle.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "title": "¿Qué es?",
+              "content": "Estructura de control que ejecuta repetidamente en un bloque de código, continua mientras la condición sea verdadera”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
+          ]
+        },
+        {
+          "title": "¿Cuándo utilizarlo?",
+          "content": "Los casos más ideales en donde se debe implementar son los siguientes:\n\nSi necesitas leer datos de un archivo hasta un final específico o se encuentre cierta información.\n\nEjecución hasta que una variable cambie.\n\nComprobar las veces que se cumple una condición sin un número fijo.\n\nCuando el número exacto de iteraciones que se deben realizar no se conoce de antemano.\n\nEs aplicado sobre todo cuando no hay un número exacto de repeticiones, en contraste con el funcionamiento del ciclo for.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "title": "Bucle do-while",
+          "content": "Esta estructura asegura que el código dentro del bucle se ejecute al menos una vez.\n\nA diferencia del bucle while, el do-while es ideal en situaciones donde necesitas que el bloque de código se ejecute sí o sí la primera vez, como en la validación de entrada del usuario o al presentar un menú de opciones. El bucle continuará repitiéndose mientras la condición especificada se mantenga verdadera.",
+          "color": "#1E40AF",
+          "opacity": 0.3,
+          "notes": [
+            {
+              "title": "¿Qué es?",
+              "content": "Estructura de control que ejecuta repetidamente en un bloque de código, continua hasta que la condición se vuelve falsa”.",
+              "type": "highlight",
+              "color": "#1E40AF",
+              "opacity": 0.3
+            }
+          ]
+        },
+        {
+          "title": "¿Cuándo utilizarlo?",
+          "content": "Particularmente útil en situaciones donde necesitas que el bloque de código dentro del bucle se ejecute al menos una vez, y luego la continuación de las iteraciones depende de una condición que se evalúa al final de cada ejecución.\n\nValidación de entrada del usuario.\n\nAl presentar un menú de opciones a un usuario.\n\nRepetición de una acción hasta que se cumpla una condición.\n\nLa clave para elegir un do-while es la necesidad de garantizar la primera ejecución del bloque de código. Si la condición debe verificarse antes de la primera ejecución, un bucle while simple sería más apropiado.",
+          "color": "#1E40AF",
+          "opacity": 0.3
+        },
+        {
+          "content": "Es importante saber identificar en qué momento es mejor aplicar cada bloque, es decir, si es necesario un for, while o do-while. En programación un bucle es utilizado generalmente para buscar y procesar datos, interactuar con el usuario. Por ejemplo, para pedir al usuario que ingrese una serie de números, etc.\n\nDeben contener una condición de salida clara y que sean controlados adecuadamente para evitar bucles infinitos. Por ello, se debe aumentar o cambiar la condición de parada en cada iteración.",
+          "type": "highlight",
+          "color": "#10B981",
+          "opacity": 0.3
+        }
+      ],
+      "examples": [
+        {
+          "title": "Ejemplo con bucle for: Mostrar los primeros 5 números pares",
+          "problem": "",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nPara i desde 1 hasta 5:\n\nCalcular par = i * 2\n\nMostrar par\n\nFin\n\nPseudocódigo:\n\nInicio\n\n  para i desde 1 hasta 5 hacer\n\n    par ← i * 2\n\n    mostrar par\n\nFin",
+          "diagram_description": "Diagrama de flujo",
+          "diagram": "assets/module2photos/for.png"
+        },
+        {
+          "title": "Ejemplo con bucle while: Contar del 1 al 5",
+          "problem": "",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nInicializar variable contador en 1\n\nMientras contador sea menor o igual a 5:\n\nMostrar el valor de contador\n\nIncrementar contador en 1\n\nFin\n\nPseudocódigo:\n\nInicio\n\n  contador ← 1\n\n  mientras contador <= 5 hacer\n\n    mostrar contador\n\n    contador ← contador + 1\n\nFin",
+          "diagram_description": "",
+          "diagram": "assets/module2photos/diag14.png"
+        },
+        {
+          "title": "Ejemplo con bucle do-while: Solicitar un número hasta que sea mayor que 10",
+          "problem": "",
+          "logic": "Pasos del algoritmo:\n\nInicio\n\nHacer:\n\nLeer número\n\nMientras el número sea menor o igual a 10\n\nMostrar “Número aceptado”\n\nFin\n\nPseudocódigo:\n\nInicio\n\n  repetir\n\n    leer número\n\n  hasta que número > 10\n\n  mostrar \"Número aceptado\"\n\nFin",
+          "diagram_description": "",
+          "diagram": "assets/module2photos/diag15.png"
+        }
+      ]
+    }
+  ]
 }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:siapp/screens/home_screen.dart';
 import 'package:siapp/screens/register_screen.dart';
 import 'package:flutter/animation.dart';
+import '../theme/app_colors.dart'; // Assuming this is the file containing AppColors
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -103,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -115,9 +116,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundDark,
       appBar: AppBar(
-        title: const Text('Iniciar Sesión'),
+        title: const Text('Iniciar Sesión', style: TextStyle(color: AppColors.textPrimary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -140,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                        color: AppColors.progressBrightBlue,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -149,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       'Tu puerta de entrada al mundo de la programación',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: AppColors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -186,11 +187,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     ),
                     const SizedBox(height: 30),
                     _isLoading
-                        ? const CircularProgressIndicator()
+                        ? const CircularProgressIndicator(color: AppColors.progressActive)
                         : ElevatedButton(
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: AppColors.primaryButton,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 50,
                                 vertical: 15,
@@ -199,13 +200,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               elevation: 5,
-                              shadowColor: Colors.blue.withOpacity(0.3),
+                              shadowColor: AppColors.shadowColor,
                             ),
                             child: const Text(
                               'Ingresar',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.white,
+                                color: AppColors.buttonText,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -223,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       child: const Text(
                         '¿No tienes cuenta? Regístrate aquí',
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: AppColors.primaryButton,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -246,16 +247,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           height: 150,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: AppColors.cardBackground,
             boxShadow: [
               BoxShadow(
-                color: Colors.blue.withOpacity(0.2),
+                color: AppColors.shadowColor,
                 blurRadius: 10,
                 spreadRadius: 3,
               ),
             ],
             border: Border.all(
-              color: Colors.blue.withOpacity(0.3),
+              color: AppColors.glassmorphicBorder,
               width: 2,
             ),
           ),
@@ -282,23 +283,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      style: const TextStyle(color: AppColors.textPrimary), // Set text color to white
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.blue),
+        prefixIcon: Icon(icon, color: AppColors.progressBrightBlue),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.blue),
+          borderSide: const BorderSide(color: AppColors.glassmorphicBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.blue.withOpacity(0.5)),
+          borderSide: BorderSide(color: AppColors.glassmorphicBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryButton, width: 2),
         ),
-        labelStyle: const TextStyle(color: Colors.blue),
-        floatingLabelStyle: const TextStyle(color: Colors.blue),
+        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        floatingLabelStyle: const TextStyle(color: AppColors.progressBrightBlue),
       ),
       validator: validator,
     );

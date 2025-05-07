@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import '../theme/app_colors.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -40,8 +41,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
 
     _gradientAnimation = ColorTween(
-      begin: Colors.blueAccent[400],
-      end: Colors.lightBlue[700],
+      begin: AppColors.backgroundGradientTop,
+      end: AppColors.backgroundGradientBottom,
     ).animate(_controller);
 
     _controller.forward();
@@ -77,16 +78,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         return Scaffold(
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _gradientAnimation.value!,
-                  _gradientAnimation.value!.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: const [0.3, 0.7],
-              ),
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundDynamic,
             ),
             child: Center(
               child: SingleChildScrollView(
@@ -103,14 +96,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           height: 220, // Tamaño aumentado
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.2),
+                            color: AppColors.glassmorphicBackground,
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: AppColors.glassmorphicBorder,
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: AppColors.shadowColor,
                                 blurRadius: 15,
                                 spreadRadius: 5,
                               ),
@@ -135,7 +128,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                       child: const Text(
                         'Bienvenido a SIAAP',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.2,
@@ -149,7 +142,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         'Tu plataforma de aprendizaje de programación',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: AppColors.textSecondary,
                           fontSize: 16,
                         ),
                       ),
@@ -160,8 +153,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     _buildAuthButton(
                       title: 'Iniciar Sesión',
                       icon: Icons.login,
-                      backgroundColor: Colors.white,
-                      textColor: Colors.blue.shade800,
+                      backgroundColor: AppColors.primaryButton,
+                      textColor: AppColors.buttonText,
                       onPressed: () => _navigateTo(context, const LoginScreen()),
                       animationDelay: 0.4,
                     ),
@@ -172,7 +165,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                       title: 'Registrarse',
                       icon: Icons.person_add,
                       backgroundColor: Colors.transparent,
-                      textColor: Colors.white,
+                      textColor: AppColors.textPrimary,
                       border: true,
                       onPressed: () => _navigateTo(context, const RegisterScreen()),
                       animationDelay: 0.6,
@@ -221,12 +214,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               color: backgroundColor,
               borderRadius: BorderRadius.circular(30),
               border: border
-                  ? Border.all(color: Colors.white, width: 2)
+                  ? Border.all(color: AppColors.glassmorphicBorder, width: 2)
                   : null,
               boxShadow: [
                 if (!border)
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: AppColors.shadowColor,
                     blurRadius: 10,
                     spreadRadius: 2,
                     offset: const Offset(0, 4),
@@ -238,7 +231,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               child: InkWell(
                 borderRadius: BorderRadius.circular(30),
                 onTap: onPressed,
-                splashColor: border ? Colors.white30 : Colors.blue.shade100,
+                splashColor: border ? AppColors.glassmorphicBorder : AppColors.progressActive,
                 highlightColor: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),

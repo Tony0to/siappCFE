@@ -17,7 +17,7 @@ dependencies:
   flutter_flow_chart: ^3.2.3
   path_provider: ^2.1.5
   cached_network_image: ^3.4.1
-  sqflite: ^2.3.3  # Usa una versión estable
+  sqflite: ^2.3.3  
   google_fonts: ^6.2.1
   url_launcher: ^6.3.1
   youtube_player_flutter: ^9.1.1
@@ -30,12 +30,12 @@ dependencies:
   flutter_animate: ^4.5.2
   fluttertoast: ^8.2.2
   flutter_highlighter: ^0.1.1
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: ^0.13.1
 
 
 flutter:
@@ -43,6 +43,7 @@ flutter:
   assets:
     - assets/
     - assets/data/module1.json  
+    - assets/module1photos/
     - assets/data/module2.json
     - assets/data/module3.json
     - assets/data/module4.json  
@@ -56,16 +57,11 @@ flutter:
     - assets/data/module4/tema3.json
     - assets/data/module4/tema4.json
     - assets/data/module4/actividades.json
-
+    - assets/animations/loading.json
+    - assets/module2photos/
 
 flutter_icons:
-  android: "adaptive"  # Ícono adaptativo para Android
+  android: true  # Ícono adaptativo para Android
   ios: true           # Ícono tradicional para iOS
-  image_path: "assets/icon/SIAAP.png"  # Mismo logo para ambos sistemas
+  image_path: "assets/icon/icon.png"  # Mismo logo para ambos sistemas
   
-  # Android (ícono adaptativo con colores)
-  adaptive_icon_background: "#FF6B6B"  # Color de fondo (usa tu color favorito)
-  adaptive_icon_foreground: "assets/icon/SIAAP.png"  # Tu logo transparente
-
-  # iOS (opcional: mismo ícono para modo claro/oscuro)
-  image_path_ios: "assets/icon/SIAAP.png"  # Si omites esto, usará image_path
