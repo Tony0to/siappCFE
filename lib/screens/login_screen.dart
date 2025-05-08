@@ -1,5 +1,8 @@
+import 'dart:io'; // Added import for Platform
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:siapp/screens/home_screen.dart';
 import 'package:siapp/screens/register_screen.dart';
 import 'package:flutter/animation.dart';
@@ -11,7 +14,6 @@ class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
-
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -55,16 +57,72 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
+  Future<String?> _getDeviceId() async {
+    final deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.id; // Unique ID for Android
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.identifierForVendor; // Unique ID for iOS
+    }
+    return null;
+  }
+
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // Authenticate with Firebase
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      final user = userCredential.user;
+      if (user == null) {
+        throw FirebaseAuthException(code: 'user-not-found', message: 'Usuario no encontrado');
+      }
+
+      // Get current device ID
+      final currentDeviceId = await _getDeviceId();
+      if (currentDeviceId == null) {
+        _showError('No se pudo obtener el ID del dispositivo');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Check device ID in Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        // If user document doesn't exist, create one with current device ID
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'deviceId': currentDeviceId,
+          'email': _emailController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        // Check if stored device ID matches current device ID
+        final storedDeviceId = userDoc.data()?['deviceId'] as String?;
+        if (storedDeviceId != null && storedDeviceId != currentDeviceId) {
+          await FirebaseAuth.instance.signOut(); // Sign out if device ID doesn't match
+          _showError('Este usuario ya está conectado en otro dispositivo');
+          setState(() => _isLoading = false);
+          return;
+        } else if (storedDeviceId == null) {
+          // If deviceId is null (e.g., after logout), update it with the current device ID
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+            'deviceId': currentDeviceId,
+          });
+        }
+        // If storedDeviceId matches currentDeviceId, no update is needed; proceed to login
+      }
 
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(

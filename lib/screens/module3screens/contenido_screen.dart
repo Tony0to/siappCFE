@@ -31,7 +31,10 @@ class _ContenidoScreenState extends State<ContenidoScreen>
   bool _isLoading = true;
   String? _errorMessage;
   final ScrollController _scrollController = ScrollController();
-  final Map<int, bool> _completedSections = {};
+  bool tema1Completed = false;
+  bool tema2Completed = false;
+  bool tema3Completed = false;
+  bool tema4Completed = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -131,9 +134,10 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         final completedSections = (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
         setState(() {
           _progress = savedProgress / 100;
-          completedSections.forEach((key, value) {
-            _completedSections[int.parse(key)] = value as bool;
-          });
+          tema1Completed = completedSections['0'] ?? false;
+          tema2Completed = completedSections['1'] ?? false;
+          tema3Completed = completedSections['2'] ?? false;
+          tema4Completed = completedSections['3'] ?? false;
         });
       } else {
         setState(() {
@@ -185,12 +189,20 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         'module_id': widget.moduleData['id'] ?? 'module3',
         'module_title': widget.moduleData['module_title'] ?? 'Módulo 3',
         'completed': false,
-        'completed_sections': {},
+        'completed_sections': {
+          '0': false,
+          '1': false,
+          '2': false,
+          '3': false,
+        },
       }, SetOptions(merge: true));
 
       setState(() {
         _progress = 0.0;
-        _completedSections.clear();
+        tema1Completed = false;
+        tema2Completed = false;
+        tema3Completed = false;
+        tema4Completed = false;
         _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: 0.0).animate(
           CurvedAnimation(
             parent: _animationController,
@@ -219,7 +231,30 @@ class _ContenidoScreenState extends State<ContenidoScreen>
   }
 
   Future<void> _updateModuleProgress(int sectionIndex) async {
-    if (_completedSections[sectionIndex] == true) return;
+    if (sectionIndex < 0 || sectionIndex > 3) return;
+
+    // Verifica si el tema ya está completado para evitar actualizaciones innecesarias
+    bool isAlreadyCompleted;
+    switch (sectionIndex) {
+      case 0:
+        isAlreadyCompleted = tema1Completed;
+        break;
+      case 1:
+        isAlreadyCompleted = tema2Completed;
+        break;
+      case 2:
+        isAlreadyCompleted = tema3Completed;
+        break;
+      case 3:
+        isAlreadyCompleted = tema4Completed;
+        break;
+      default:
+        return;
+    }
+
+    if (isAlreadyCompleted) {
+      return; // No actualiza el progreso si el tema ya está completado
+    }
 
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -227,10 +262,29 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         throw Exception('Usuario no autenticado');
       }
 
-      _completedSections[sectionIndex] = true;
-      final totalSections = widget.moduleData['content']?.length ?? 4;
-      final completedSections = _completedSections.values.where((completed) => completed).length;
-      final newProgress = (completedSections * 25.0) / 100.0; // 25% per section
+      // Actualiza el estado del tema correspondiente
+      setState(() {
+        switch (sectionIndex) {
+          case 0:
+            tema1Completed = true;
+            break;
+          case 1:
+            tema2Completed = true;
+            break;
+          case 2:
+            tema3Completed = true;
+            break;
+          case 3:
+            tema4Completed = true;
+            break;
+        }
+      });
+
+      // Calcula el progreso basado en los temas completados (25% por tema)
+      final completedCount = [tema1Completed, tema2Completed, tema3Completed, tema4Completed]
+          .where((completed) => completed)
+          .length;
+      final newProgress = (completedCount * 25.0) / 100.0; // 25% por cada tema completado
 
       await FirebaseFirestore.instance
           .collection('progress')
@@ -243,7 +297,12 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         'module_id': widget.moduleData['id'] ?? 'module3',
         'module_title': widget.moduleData['module_title'] ?? 'Módulo 3',
         'completed': newProgress >= 1.0,
-        'completed_sections': _completedSections.map((key, value) => MapEntry(key.toString(), value)),
+        'completed_sections': {
+          '0': tema1Completed,
+          '1': tema2Completed,
+          '2': tema3Completed,
+          '3': tema4Completed,
+        },
       }, SetOptions(merge: true));
 
       final progressController = AnimationController(
@@ -392,11 +451,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
                                   index: index,
                                   title: cleanedTitle,
                                   description: section['description'] ?? '',
-                                  onTap: () async {
-                                    final hasCompleted = await _hasCompletedModule();
-                                    if (hasCompleted) {
-                                      await _resetModuleProgress();
-                                    }
+                                  onTap: () {
                                     Widget targetScreen;
                                     switch (index) {
                                       case 0:

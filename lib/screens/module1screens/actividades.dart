@@ -23,11 +23,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   bool _isAttemptsLoading = true;
   bool _isAttemptsExhausted = false;
   String? _errorMessage;
-  Map<String, bool> _completedActivities = {
-    'hardware_software': false,
-    'order_steps': false,
-    'flowchart': false,
-  };
+  bool hardwareSoftwareCompleted = false;
+  bool orderStepsCompleted = false;
+  bool flowchartCompleted = false;
+  bool allActivitiesCompleted = false;
 
   @override
   void initState() {
@@ -76,11 +75,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         setState(() {
           _remainingAttempts = attempts;
           _isAttemptsExhausted = attempts <= 0;
-          _completedActivities = {
-            'hardware_software': completed['hardware_software'] ?? false,
-            'order_steps': completed['order_steps'] ?? false,
-            'flowchart': completed['flowchart'] ?? false,
-          };
+          hardwareSoftwareCompleted = completed['hardware_software'] ?? false;
+          orderStepsCompleted = completed['order_steps'] ?? false;
+          flowchartCompleted = completed['flowchart'] ?? false;
+          allActivitiesCompleted = hardwareSoftwareCompleted && orderStepsCompleted && flowchartCompleted;
           _isAttemptsLoading = false;
         });
       } else {
@@ -104,6 +102,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
         setState(() {
           _remainingAttempts = 3;
           _isAttemptsExhausted = false;
+          hardwareSoftwareCompleted = false;
+          orderStepsCompleted = false;
+          flowchartCompleted = false;
+          allActivitiesCompleted = false;
           _isAttemptsLoading = false;
         });
       }
@@ -147,9 +149,45 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }
 
   Future<void> _markActivityCompleted(String activityId) async {
+    // Verifica si la actividad ya está completada para evitar actualizaciones innecesarias
+    bool isAlreadyCompleted;
+    switch (activityId) {
+      case 'hardware_software':
+        isAlreadyCompleted = hardwareSoftwareCompleted;
+        break;
+      case 'order_steps':
+        isAlreadyCompleted = orderStepsCompleted;
+        break;
+      case 'flowchart':
+        isAlreadyCompleted = flowchartCompleted;
+        break;
+      default:
+        return;
+    }
+
+    if (isAlreadyCompleted) {
+      return; // No actualiza el progreso si la actividad ya está completada
+    }
+
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
+
+      // Actualiza el estado de la actividad correspondiente
+      setState(() {
+        switch (activityId) {
+          case 'hardware_software':
+            hardwareSoftwareCompleted = true;
+            break;
+          case 'order_steps':
+            orderStepsCompleted = true;
+            break;
+          case 'flowchart':
+            flowchartCompleted = true;
+            break;
+        }
+        allActivitiesCompleted = hardwareSoftwareCompleted && orderStepsCompleted && flowchartCompleted;
+      });
 
       await FirebaseFirestore.instance
           .collection('progress')
@@ -157,13 +195,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           .collection('modules')
           .doc(widget.actividadesData['id'] ?? 'module1')
           .set({
-        'completed_activities': {activityId: true},
+        'completed_activities': {
+          'hardware_software': hardwareSoftwareCompleted,
+          'order_steps': orderStepsCompleted,
+          'flowchart': flowchartCompleted,
+        },
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-
-      setState(() {
-        _completedActivities[activityId] = true;
-      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -176,23 +214,30 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
   void _navigateToActivity(Widget screen, String activityId) {
     if (_isAttemptsExhausted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Has agotado todos tus intentos. Contacta al soporte o intenta de nuevo más tarde.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
+      bool isCompleted;
+      switch (activityId) {
+        case 'hardware_software':
+          isCompleted = hardwareSoftwareCompleted;
+          break;
+        case 'order_steps':
+          isCompleted = orderStepsCompleted;
+          break;
+        case 'flowchart':
+          isCompleted = flowchartCompleted;
+          break;
+        default:
+          isCompleted = false;
+      }
 
-    if (_completedActivities[activityId]!) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Esta actividad ya está completada.'),
-          backgroundColor: AppColors.progressBrightBlue,
-        ),
-      );
-      return;
+      if (!isCompleted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Has agotado todos tus intentos. Contacta al soporte o intenta de nuevo más tarde.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
     }
 
     Navigator.push(
@@ -209,10 +254,27 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
       ),
     ).then((result) {
       if (result is bool) {
-        if (result) {
-          _markActivityCompleted(activityId);
-        } else {
-          _decrementAttempts();
+        bool isCompleted;
+        switch (activityId) {
+          case 'hardware_software':
+            isCompleted = hardwareSoftwareCompleted;
+            break;
+          case 'order_steps':
+            isCompleted = orderStepsCompleted;
+            break;
+          case 'flowchart':
+            isCompleted = flowchartCompleted;
+            break;
+          default:
+            isCompleted = false;
+        }
+
+        if (!isCompleted) {
+          if (result) {
+            _markActivityCompleted(activityId);
+          } else {
+            _decrementAttempts();
+          }
         }
       }
     });
@@ -256,7 +318,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
       );
     }
 
-    final completedCount = _completedActivities.values.where((completed) => completed).length;
+    final completedCount = (hardwareSoftwareCompleted ? 1 : 0) +
+        (orderStepsCompleted ? 1 : 0) +
+        (flowchartCompleted ? 1 : 0);
 
     return Scaffold(
       body: Container(
@@ -339,7 +403,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     const HardwareSoftwareActivityScreen(),
                     'hardware_software',
                   ),
-                  isCompleted: _completedActivities['hardware_software']!,
+                  isCompleted: hardwareSoftwareCompleted,
                 ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
                 const SizedBox(height: 16),
                 _buildActivityButton(
@@ -348,7 +412,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     const OrderStepsActivityScreen(),
                     'order_steps',
                   ),
-                  isCompleted: _completedActivities['order_steps']!,
+                  isCompleted: orderStepsCompleted,
                 ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
                 const SizedBox(height: 16),
                 _buildActivityButton(
@@ -357,7 +421,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
                     const FlowchartActivityScreen(),
                     'flowchart',
                   ),
-                  isCompleted: _completedActivities['flowchart']!,
+                  isCompleted: flowchartCompleted,
                 ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.2, end: 0),
               ],
             ),

@@ -33,15 +33,14 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
   };
   bool _isAttemptsLoading = true;
   String? _errorMessage;
-  Map<String, bool> _completedActivities = {
-    'search_algorithms': false,
-    'count_vowels_recursive': false,
-    'sum_digits': false,
-    'bubble_sort_grades': false,
-    'queue_simulation': false,
-    'study_hours_tracker': false,
-    'inventory_system': false,
-  };
+  bool searchAlgorithmsCompleted = false;
+  bool countVowelsRecursiveCompleted = false;
+  bool sumDigitsCompleted = false;
+  bool bubbleSortGradesCompleted = false;
+  bool queueSimulationCompleted = false;
+  bool studyHoursTrackerCompleted = false;
+  bool inventorySystemCompleted = false;
+  bool allActivitiesCompleted = false;
 
   @override
   void initState() {
@@ -64,6 +63,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
   Future<void> _loadProgressFromFirestore() async {
     setState(() {
       _isAttemptsLoading = true;
+      _errorMessage = null;
     });
 
     try {
@@ -87,6 +87,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
         final data = progressDoc.data();
         final attempts = data?['attempts_per_activity'] as Map<String, dynamic>? ?? {};
         final completed = data?['completed_activities'] as Map<String, dynamic>? ?? {};
+        final allCompleted = data?['all_activities_completed'] as bool? ?? false;
         setState(() {
           _remainingAttemptsPerActivity = {
             'search_algorithms': (attempts['search_algorithms'] as num?)?.toInt() ?? 5,
@@ -97,15 +98,14 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
             'study_hours_tracker': (attempts['study_hours_tracker'] as num?)?.toInt() ?? 3,
             'inventory_system': (attempts['inventory_system'] as num?)?.toInt() ?? 3,
           };
-          _completedActivities = {
-            'search_algorithms': completed['search_algorithms'] ?? false,
-            'count_vowels_recursive': completed['count_vowels_recursive'] ?? false,
-            'sum_digits': completed['sum_digits'] ?? false,
-            'bubble_sort_grades': completed['bubble_sort_grades'] ?? false,
-            'queue_simulation': completed['queue_simulation'] ?? false,
-            'study_hours_tracker': completed['study_hours_tracker'] ?? false,
-            'inventory_system': completed['inventory_system'] ?? false,
-          };
+          searchAlgorithmsCompleted = completed['search_algorithms'] ?? false;
+          countVowelsRecursiveCompleted = completed['count_vowels_recursive'] ?? false;
+          sumDigitsCompleted = completed['sum_digits'] ?? false;
+          bubbleSortGradesCompleted = completed['bubble_sort_grades'] ?? false;
+          queueSimulationCompleted = completed['queue_simulation'] ?? false;
+          studyHoursTrackerCompleted = completed['study_hours_tracker'] ?? false;
+          inventorySystemCompleted = completed['inventory_system'] ?? false;
+          allActivitiesCompleted = allCompleted;
           _isAttemptsLoading = false;
         });
       } else {
@@ -133,6 +133,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
             'study_hours_tracker': false,
             'inventory_system': false,
           },
+          'all_activities_completed': false,
           'last_updated': FieldValue.serverTimestamp(),
           'module_id': widget.moduleData['id'] ?? 'module3',
           'module_title': widget.moduleData['module_title'] ?? 'Módulo 3: Algoritmos',
@@ -148,6 +149,14 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
             'study_hours_tracker': 3,
             'inventory_system': 3,
           };
+          searchAlgorithmsCompleted = false;
+          countVowelsRecursiveCompleted = false;
+          sumDigitsCompleted = false;
+          bubbleSortGradesCompleted = false;
+          queueSimulationCompleted = false;
+          studyHoursTrackerCompleted = false;
+          inventorySystemCompleted = false;
+          allActivitiesCompleted = false;
           _isAttemptsLoading = false;
         });
       }
@@ -194,19 +203,58 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
+      // Actualiza el estado de la actividad correspondiente
+      setState(() {
+        switch (activityId) {
+          case 'search_algorithms':
+            searchAlgorithmsCompleted = true;
+            break;
+          case 'count_vowels_recursive':
+            countVowelsRecursiveCompleted = true;
+            break;
+          case 'sum_digits':
+            sumDigitsCompleted = true;
+            break;
+          case 'bubble_sort_grades':
+            bubbleSortGradesCompleted = true;
+            break;
+          case 'queue_simulation':
+            queueSimulationCompleted = true;
+            break;
+          case 'study_hours_tracker':
+            studyHoursTrackerCompleted = true;
+            break;
+          case 'inventory_system':
+            inventorySystemCompleted = true;
+            break;
+        }
+        allActivitiesCompleted = searchAlgorithmsCompleted &&
+            countVowelsRecursiveCompleted &&
+            sumDigitsCompleted &&
+            bubbleSortGradesCompleted &&
+            queueSimulationCompleted &&
+            studyHoursTrackerCompleted &&
+            inventorySystemCompleted;
+      });
+
       await FirebaseFirestore.instance
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
           .doc(widget.moduleData['id'] ?? 'module3')
           .set({
-        'completed_activities': {activityId: true},
+        'completed_activities': {
+          'search_algorithms': searchAlgorithmsCompleted,
+          'count_vowels_recursive': countVowelsRecursiveCompleted,
+          'sum_digits': sumDigitsCompleted,
+          'bubble_sort_grades': bubbleSortGradesCompleted,
+          'queue_simulation': queueSimulationCompleted,
+          'study_hours_tracker': studyHoursTrackerCompleted,
+          'inventory_system': inventorySystemCompleted,
+        },
+        'all_activities_completed': allActivitiesCompleted,
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-
-      setState(() {
-        _completedActivities[activityId] = true;
-      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -218,7 +266,35 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
   }
 
   void _navigateToActivity(Widget screen, String activityId) {
-    if (_remainingAttemptsPerActivity[activityId]! <= 0 && !_completedActivities[activityId]!) {
+    int attempts = _remainingAttemptsPerActivity[activityId]!;
+    bool isCompleted;
+    switch (activityId) {
+      case 'search_algorithms':
+        isCompleted = searchAlgorithmsCompleted;
+        break;
+      case 'count_vowels_recursive':
+        isCompleted = countVowelsRecursiveCompleted;
+        break;
+      case 'sum_digits':
+        isCompleted = sumDigitsCompleted;
+        break;
+      case 'bubble_sort_grades':
+        isCompleted = bubbleSortGradesCompleted;
+        break;
+      case 'queue_simulation':
+        isCompleted = queueSimulationCompleted;
+        break;
+      case 'study_hours_tracker':
+        isCompleted = studyHoursTrackerCompleted;
+        break;
+      case 'inventory_system':
+        isCompleted = inventorySystemCompleted;
+        break;
+      default:
+        isCompleted = false;
+    }
+
+    if (attempts <= 0 && !isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Has agotado los intentos para "$activityId". Contacta al soporte.'),
@@ -228,7 +304,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
       return;
     }
 
-    if (_completedActivities[activityId]!) {
+    if (isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Esta actividad ya está completada.'),
@@ -296,7 +372,13 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
       );
     }
 
-    final completedCount = _completedActivities.values.where((completed) => completed).length;
+    final completedCount = (searchAlgorithmsCompleted ? 1 : 0) +
+        (countVowelsRecursiveCompleted ? 1 : 0) +
+        (sumDigitsCompleted ? 1 : 0) +
+        (bubbleSortGradesCompleted ? 1 : 0) +
+        (queueSimulationCompleted ? 1 : 0) +
+        (studyHoursTrackerCompleted ? 1 : 0) +
+        (inventorySystemCompleted ? 1 : 0);
     final totalAttemptsRemaining = _remainingAttemptsPerActivity.values.reduce((a, b) => a + b);
 
     return Scaffold(
@@ -382,7 +464,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
                   text: 'Búsqueda Lineal o Binaria',
                   activityId: 'search_algorithms',
                   attempts: _remainingAttemptsPerActivity['search_algorithms']!,
-                  isCompleted: _completedActivities['search_algorithms']!,
+                  isCompleted: searchAlgorithmsCompleted,
                   onPressed: () => _navigateToActivity(
                     const SearchAlgorithmsActivityScreen(),
                     'search_algorithms',
@@ -393,7 +475,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
                   text: 'Contar Vocales Recursivamente',
                   activityId: 'count_vowels_recursive',
                   attempts: _remainingAttemptsPerActivity['count_vowels_recursive']!,
-                  isCompleted: _completedActivities['count_vowels_recursive']!,
+                  isCompleted: countVowelsRecursiveCompleted,
                   onPressed: () => _navigateToActivity(
                     const CountVowelsRecursiveActivityScreen(),
                     'count_vowels_recursive',
@@ -404,18 +486,18 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
                   text: 'Suma de Dígitos',
                   activityId: 'sum_digits',
                   attempts: _remainingAttemptsPerActivity['sum_digits']!,
-                  isCompleted: _completedActivities['sum_digits']!,
+                  isCompleted: sumDigitsCompleted,
                   onPressed: () => _navigateToActivity(
                     const SumDigitsActivityScreen(),
                     'sum_digits',
                   ),
                 ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.2, end: 0),
                 const SizedBox(height: 16),
-                  _buildActivityButton(
+                _buildActivityButton(
                   text: 'Ordenar Calificaciones (Burbuja)',
                   activityId: 'bubble_sort_grades',
                   attempts: _remainingAttemptsPerActivity['bubble_sort_grades']!,
-                  isCompleted: _completedActivities['bubble_sort_grades']!,
+                  isCompleted: bubbleSortGradesCompleted,
                   onPressed: () => _navigateToActivity(
                     const BubbleSortGradesActivityScreen(),
                     'bubble_sort_grades',
@@ -426,7 +508,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
                   text: 'Simular Cola de Atención',
                   activityId: 'queue_simulation',
                   attempts: _remainingAttemptsPerActivity['queue_simulation']!,
-                  isCompleted: _completedActivities['queue_simulation']!,
+                  isCompleted: queueSimulationCompleted,
                   onPressed: () => _navigateToActivity(
                     const QueueSimulationActivityScreen(),
                     'queue_simulation',
@@ -437,7 +519,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
                   text: 'Registrar Horas de Estudio',
                   activityId: 'study_hours_tracker',
                   attempts: _remainingAttemptsPerActivity['study_hours_tracker']!,
-                  isCompleted: _completedActivities['study_hours_tracker']!,
+                  isCompleted: studyHoursTrackerCompleted,
                   onPressed: () => _navigateToActivity(
                     const StudyHoursTrackerActivityScreen(),
                     'study_hours_tracker',
@@ -448,7 +530,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
                   text: 'Sistema de Inventario',
                   activityId: 'inventory_system',
                   attempts: _remainingAttemptsPerActivity['inventory_system']!,
-                  isCompleted: _completedActivities['inventory_system']!,
+                  isCompleted: inventorySystemCompleted,
                   onPressed: () => _navigateToActivity(
                     const InventorySystemActivityScreen(),
                     'inventory_system',
