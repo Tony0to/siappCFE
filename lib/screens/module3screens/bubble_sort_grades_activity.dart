@@ -16,13 +16,9 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
   bool _bubbleSortCompleted = false;
   bool _bubbleSortLocked = false;
 
-  // ScrollController para controlar el desplazamiento
   final ScrollController _scrollController = ScrollController();
-
-  // Timer para el desplazamiento automático
   Timer? _scrollTimer;
 
-  // Líneas de código desordenadas para ordenamiento burbuja
   List<String> _bubbleSortCodeLines = [
     'INICIO',
     'calificaciones ← [85, 70, 95, 60, 90]',
@@ -38,7 +34,6 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
     'FIN',
   ];
 
-  // Líneas ordenadas correctamente para ordenamiento burbuja
   final List<String> _correctBubbleSortOrder = [
     'INICIO',
     'calificaciones ← [85, 70, 95, 60, 90]',
@@ -54,82 +49,96 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
     'FIN',
   ];
 
-  // Líneas que el usuario ordenará (75% prellenado de forma no continua)
+  late List<String> _initialUserBubbleSortOrder;
   List<String> _userBubbleSortOrder = List.filled(12, '');
-
-  // Lista para rastrear líneas disponibles
   List<String> _availableBubbleSortLines = [];
 
   @override
   void initState() {
     super.initState();
-
-    // Prellenar el 75% del código de forma no continua
-    final random = Random();
-
-    // Seleccionar 9 índices aleatorios de 0 a 11 (12 líneas, 75% = 9 prellenadas)
-    List<int> bubbleSortIndices = List.generate(12, (index) => index);
-    bubbleSortIndices.shuffle(random);
-    List<int> prefilledBubbleSortIndices = bubbleSortIndices.sublist(0, 9);
-
-    for (int i = 0; i < prefilledBubbleSortIndices.length; i++) {
-      int position = prefilledBubbleSortIndices[i];
-      _userBubbleSortOrder[position] = _correctBubbleSortOrder[position];
-    }
-
-    List<int> remainingBubbleSortIndices = bubbleSortIndices.sublist(9);
-    _availableBubbleSortLines = remainingBubbleSortIndices.map((index) => _correctBubbleSortOrder[index]).toList()
-      ..shuffle(random);
+    _initializeActivity();
   }
 
-  // Función para manejar el desplazamiento automático mientras se arrastra
+  void _initializeActivity() {
+    final random = Random();
+    List<int> indices = List.generate(12, (index) => index)..shuffle(random);
+    List<int> prefilledIndices = indices.sublist(0, 9); // 75% prellenado
+
+    _userBubbleSortOrder = List.filled(12, '');
+    for (int index in prefilledIndices) {
+      _userBubbleSortOrder[index] = _correctBubbleSortOrder[index];
+    }
+
+    _availableBubbleSortLines = indices.sublist(9).map((index) => _correctBubbleSortOrder[index]).toList();
+    _initialUserBubbleSortOrder = List.from(_userBubbleSortOrder);
+
+    setState(() {});
+  }
+
+  int _getIndentationLevel(String line) {
+    if (line.contains('PARA j desde 0 hasta n-i-2 HACER') ||
+        line.contains('SI calificaciones[j] > calificaciones[j+1] ENTONCES') ||
+        line.contains('intercambiar calificaciones[j] y calificaciones[j+1]') ||
+        line.contains('FIN SI')) {
+      return 2;
+    } else if (line.contains('PARA i desde 0 hasta n-1 HACER') ||
+               line.contains('FIN PARA') && !line.contains('n-i-2')) {
+      return 1;
+    }
+    return 0;
+  }
+
+  void _resetActivity() {
+    setState(() {
+      _userBubbleSortOrder = List.filled(12, '');
+      // Iterar sobre los índices donde _initialUserBubbleSortOrder tiene valores no vacíos
+      for (int index = 0; index < _initialUserBubbleSortOrder.length; index++) {
+        if (_initialUserBubbleSortOrder[index].isNotEmpty) {
+          _userBubbleSortOrder[index] = _initialUserBubbleSortOrder[index];
+        }
+      }
+      _availableBubbleSortLines = _correctBubbleSortOrder.where((line) => !_initialUserBubbleSortOrder.contains(line)).toList();
+      _bubbleSortStatusMessage = null;
+      _bubbleSortCompleted = false;
+      _bubbleSortLocked = false;
+    });
+  }
+
   void _handleDragScroll(PointerEvent event) {
-    const double edgeThreshold = 50.0; // Distancia desde el borde para activar el scroll
-    const double scrollSpeed = 10.0; // Velocidad del desplazamiento
+    const double edgeThreshold = 50.0;
+    const double scrollSpeed = 10.0;
     final screenHeight = MediaQuery.of(context).size.height;
     final pointerY = event.position.dy;
 
     if (pointerY < edgeThreshold) {
-      if (_scrollTimer == null || !_scrollTimer!.isActive) {
-        _scrollTimer = Timer.periodic(Duration(milliseconds: 16), (timer) {
-          if (_scrollController.hasClients) {
-            final newOffset = _scrollController.offset - scrollSpeed;
-            _scrollController.jumpTo(newOffset.clamp(
-              _scrollController.position.minScrollExtent,
-              _scrollController.position.maxScrollExtent,
-            ));
-          }
-        });
-      }
+      _scrollTimer ??= Timer.periodic(Duration(milliseconds: 16), (timer) {
+        if (_scrollController.hasClients) {
+          final newOffset = _scrollController.offset - scrollSpeed;
+          _scrollController.jumpTo(newOffset.clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent));
+        }
+      });
     } else if (pointerY > screenHeight - edgeThreshold) {
-      if (_scrollTimer == null || !_scrollTimer!.isActive) {
-        _scrollTimer = Timer.periodic(Duration(milliseconds: 16), (timer) {
-          if (_scrollController.hasClients) {
-            final newOffset = _scrollController.offset + scrollSpeed;
-            _scrollController.jumpTo(newOffset.clamp(
-              _scrollController.position.minScrollExtent,
-              _scrollController.position.maxScrollExtent,
-            ));
-          }
-        });
-      }
+      _scrollTimer ??= Timer.periodic(Duration(milliseconds: 16), (timer) {
+        if (_scrollController.hasClients) {
+          final newOffset = _scrollController.offset + scrollSpeed;
+          _scrollController.jumpTo(newOffset.clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent));
+        }
+      });
     } else {
       _scrollTimer?.cancel();
     }
   }
 
-  // Detener el desplazamiento cuando termina el arrastre
   void _stopDragScroll() {
     _scrollTimer?.cancel();
   }
 
   void _verifyBubbleSortOrder() {
-    bool isCorrect = _userBubbleSortOrder.toString() == _correctBubbleSortOrder.toString();
-
+    bool isCorrect = _userBubbleSortOrder.join() == _correctBubbleSortOrder.join();
     setState(() {
       _bubbleSortCompleted = isCorrect;
       _bubbleSortStatusMessage = isCorrect ? '¡Correcto!' : 'Incorrecto';
-      _bubbleSortLocked = true;
+      _bubbleSortLocked = true; // Bloquea ambos botones al verificar
     });
   }
 
@@ -167,140 +176,110 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Ejercicio: Ordenamiento Burbuja',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text('Ejercicio: Ordenamiento Burbuja', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
                   const SizedBox(height: 24),
-                  Text(
-                    'Ordena las líneas de código para completar el algoritmo de ordenamiento burbuja:',
-                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.white70),
-                  ),
+                  Text('Ordena las líneas de código para completar el algoritmo de ordenamiento burbuja:', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white70)),
                   const SizedBox(height: 16),
-                  Text(
-                    'Algoritmo de Ordenamiento Burbuja:',
-                    style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                  Text('Algoritmo de Ordenamiento Burbuja:', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  Column(
-                    children: List.generate(_userBubbleSortOrder.length, (index) {
-                      return DragTarget<String>(
-                        onAccept: !_bubbleSortLocked
-                            ? (data) {
+                  Container(
+                    color: Colors.black,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: List.generate(_userBubbleSortOrder.length, (index) {
+                        final indentationLevel = _userBubbleSortOrder[index].isEmpty ? 0 : _getIndentationLevel(_userBubbleSortOrder[index]);
+                        final isFixed = _initialUserBubbleSortOrder[index].isNotEmpty;
+                        return Padding(
+                          padding: EdgeInsets.only(left: 16.0 * indentationLevel),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: DragTarget<String>(
+                              hitTestBehavior: HitTestBehavior.translucent,
+                              onWillAccept: (data) => !_bubbleSortLocked,
+                              onAccept: (data) {
                                 setState(() {
-                                  if (_userBubbleSortOrder[index].isNotEmpty) {
-                                    _availableBubbleSortLines.add(_userBubbleSortOrder[index]);
-                                  }
                                   _userBubbleSortOrder[index] = data;
                                   _availableBubbleSortLines.remove(data);
                                 });
-                              }
-                            : null,
-                        builder: (context, candidateData, rejectedData) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.white.withOpacity(0.2)),
+                              },
+                              builder: (context, candidateData, rejectedData) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: _userBubbleSortOrder[index].isEmpty ? Colors.white.withOpacity(0.2) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: _userBubbleSortOrder[index].isNotEmpty && !isFixed ? Border.all(color: Colors.white, width: 1) : null,
+                                  ),
+                                  child: _userBubbleSortOrder[index].isEmpty
+                                      ? Text(
+                                          'Arrastra una línea aquí',
+                                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
+                                          textAlign: TextAlign.left,
+                                        )
+                                      : Text(
+                                          _userBubbleSortOrder[index],
+                                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                                          textAlign: TextAlign.left,
+                                        ),
+                                );
+                              },
                             ),
-                            child: Text(
-                              _userBubbleSortOrder[index].isEmpty ? 'Arrastra una línea aquí' : _userBubbleSortOrder[index],
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: _userBubbleSortOrder[index].isEmpty ? Colors.white30 : Colors.white70,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        },
-                      );
-                    }),
+                          ),
+                        );
+                      }),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Líneas disponibles:',
-                    style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-                  ),
+                  Text('Líneas disponibles:', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70)),
                   const SizedBox(height: 8),
                   Column(
-                    children: _availableBubbleSortLines.asMap().entries.map((entry) {
-                      String line = entry.value;
+                    children: _availableBubbleSortLines.map((line) {
                       return Draggable<String>(
                         data: line,
                         feedback: Material(
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              line,
-                              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                            ),
+                            decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8)),
+                            child: Text(line, style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
                           ),
                         ),
                         childWhenDragging: Container(),
-                        child: _bubbleSortLocked
-                            ? Container()
-                            : Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  line,
-                                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                                ),
-                              ),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8)),
+                          child: Text(line, style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
+                        ),
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: 16),
                   if (_bubbleSortStatusMessage != null)
-                    Text(
-                      _bubbleSortStatusMessage!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: _bubbleSortCompleted ? Colors.green : Colors.red,
-                      ),
-                    ),
+                    Text(_bubbleSortStatusMessage!, style: GoogleFonts.poppins(fontSize: 16, color: _bubbleSortCompleted ? Colors.green : Colors.red)),
                   const SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _bubbleSortLocked ? null : _verifyBubbleSortOrder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF003459),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _bubbleSortLocked ? null : _verifyBubbleSortOrder,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003459), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)),
+                        child: Text('Verificar', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       ),
-                      child: Text(
-                        'Verificar',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      const SizedBox(width: 16),
+                      ElevatedButton(
+                        onPressed: _bubbleSortLocked ? null : _resetActivity,
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003459), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)),
+                        child: Text('Reiniciar', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   Center(
                     child: ElevatedButton(
                       onPressed: _completeActivity,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF003459),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      ),
-                      child: Text(
-                        'Completar Actividad',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003459), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)),
+                      child: Text('Completar Actividad', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],

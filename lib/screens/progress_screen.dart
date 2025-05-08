@@ -59,7 +59,7 @@ class _ProgressScreenState extends State<ProgressScreen>
       'title': 'Módulo 3: Algoritmos',
       'id': 'module3',
       'image':
-          'https://encrypted-tbn0.gstatic.com/images?q\limits:ANd9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn9GcQqHwUGEftbslnEMbKfZ8s7CyTkNUq7Ij1qHw&s',
       'summary': 'Diseño y análisis de algoritmos',
     },
   ];
@@ -149,9 +149,23 @@ class _ProgressScreenState extends State<ProgressScreen>
       Map<String, bool> tempQuizCompleted = {};
       Map<String, double> tempPercentages = {};
 
-      for (var module in moduleDetails.docs) {
-        final data = module.data();
-        debugPrint('Module ${module.id} data: $data');
+      // Initialize maps for all modules
+      for (var module in modules) {
+        final moduleId = module['id'];
+        tempScores[moduleId] = 0.0;
+        tempQuizCompleted[moduleId] = false;
+        tempPercentages[moduleId] = 0.0;
+      }
+
+      for (var moduleDoc in moduleDetails.docs) {
+        final moduleId = moduleDoc.id;
+        if (!modules.any((m) => m['id'] == moduleId)) {
+          debugPrint('Ignoring unknown module ID: $moduleId');
+          continue;
+        }
+
+        final data = moduleDoc.data();
+        debugPrint('Module $moduleId data: $data');
 
         final porcentaje =
             (data.containsKey('porcentaje') && data['porcentaje'] != null)
@@ -165,12 +179,18 @@ class _ProgressScreenState extends State<ProgressScreen>
             ? (data['calf'] as num).toDouble()
             : 0.0;
 
-        tempScores[module.id] = grade;
-        tempQuizCompleted[module.id] = quizCompleted;
-        tempPercentages[module.id] = porcentaje;
+        // Validate data
+        if (porcentaje < 0 || porcentaje > 100) {
+          debugPrint('Invalid porcentaje for $moduleId: $porcentaje');
+          continue;
+        }
+
+        tempScores[moduleId] = grade;
+        tempQuizCompleted[moduleId] = quizCompleted;
+        tempPercentages[moduleId] = porcentaje;
 
         debugPrint(
-            'Module ${module.id}: porcentaje=$porcentaje, quiz_completed=$quizCompleted, grade=$grade');
+            'Module $moduleId: porcentaje=$porcentaje, quiz_completed=$quizCompleted, grade=$grade');
 
         if (porcentaje == 100 && quizCompleted) {
           modulosCompletados++;
@@ -179,7 +199,7 @@ class _ProgressScreenState extends State<ProgressScreen>
 
       setState(() {
         completedModules = modulosCompletados;
-        progress = (completedModules / totalModules) * 100;
+        progress = completedModules / totalModules; // Fraction (0.0 to 1.0)
         moduleScores = tempScores;
         moduleQuizCompleted = tempQuizCompleted;
         modulePercentages = tempPercentages;
@@ -193,7 +213,7 @@ class _ProgressScreenState extends State<ProgressScreen>
 
       _progressAnimation = Tween<double>(
         begin: 0,
-        end: progress / 100,
+        end: progress,
       ).animate(
         CurvedAnimation(
           parent: _mainController,
@@ -201,6 +221,7 @@ class _ProgressScreenState extends State<ProgressScreen>
         ),
       );
 
+      _mainController.reset();
       _mainController.forward();
     } catch (e) {
       setState(() {

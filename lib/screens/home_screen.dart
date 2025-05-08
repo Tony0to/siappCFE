@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/animation.dart';
 import 'auth_screen.dart';
 import 'ModulesScreen.dart';
 import '../theme/App_Colors.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -18,7 +17,6 @@ class _HomeScreenState extends State<HomeScreen>
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
-  late final Animation<Color?> _gradientAnimation;
   double _progress = 0.0;
   bool _isInitializing = false;
   String? _initializationError;
@@ -46,11 +44,6 @@ class _HomeScreenState extends State<HomeScreen>
         curve: const Interval(0.3, 1.0, curve: Curves.elasticOut),
       ),
     );
-
-    _gradientAnimation = ColorTween(
-      begin: AppColors.backgroundGradientTop,
-      end: AppColors.backgroundGradientBottom,
-    ).animate(_controller);
 
     _controller.forward();
     _loadUserProgress();
@@ -85,8 +78,14 @@ class _HomeScreenState extends State<HomeScreen>
       }
 
       int completedModules = 0;
+      const validModuleIds = ['module1', 'module2', 'module3'];
 
       for (var module in moduleDetails.docs) {
+        if (!validModuleIds.contains(module.id)) {
+          debugPrint('Ignoring unknown module ID: ${module.id}');
+          continue;
+        }
+
         final data = module.data();
         debugPrint('Module ${module.id} data: $data');
 
@@ -98,6 +97,12 @@ class _HomeScreenState extends State<HomeScreen>
                 data['quiz_completed'] != null)
             ? data['quiz_completed'] as bool
             : false;
+
+        // Validate data
+        if (porcentaje < 0 || porcentaje > 100) {
+          debugPrint('Invalid porcentaje for ${module.id}: $porcentaje');
+          continue;
+        }
 
         if (porcentaje == 100 && quizCompleted) {
           completedModules++;
@@ -131,7 +136,6 @@ class _HomeScreenState extends State<HomeScreen>
         throw Exception("Usuario no autenticado");
       }
 
-      // Verificar o crear progreso
       final progressRef = FirebaseFirestore.instance
           .collection('progress')
           .doc(user.uid)
@@ -179,15 +183,86 @@ class _HomeScreenState extends State<HomeScreen>
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_initializationError ?? 'Error: ${e.toString()}'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
-        ),
-      );
+      _showError(_initializationError ?? 'Error: ${e.toString()}');
     }
+  }
+
+  Future<void> _logout() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showError('No hay usuario autenticado');
+        return;
+      }
+
+      bool deviceIdCleared = false;
+      const maxRetries = 3;
+      int retryCount = 0;
+
+      while (!deviceIdCleared && retryCount < maxRetries) {
+        try {
+          await FirebaseFirestore.instance.runTransaction((transaction) async {
+            final userRef =
+                FirebaseFirestore.instance.collection('users').doc(user.uid);
+            final userDoc = await transaction.get(userRef);
+
+            if (!userDoc.exists) {
+              transaction.set(userRef, {
+                'deviceId': null,
+                'createdAt': FieldValue.serverTimestamp(),
+              });
+            } else {
+              transaction.update(userRef, {'deviceId': null});
+            }
+          });
+          deviceIdCleared = true;
+          debugPrint('deviceId cleared for userId: ${user.uid}');
+        } catch (e) {
+          retryCount++;
+          debugPrint('Attempt $retryCount failed to clear deviceId: $e');
+          if (retryCount >= maxRetries) {
+            throw Exception(
+                'No se pudo limpiar el deviceId después de $maxRetries intentos: $e');
+          }
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
+
+      await FirebaseAuth.instance.signOut();
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const AuthScreen(),
+          transitionsBuilder: (_, a, __, c) =>
+              FadeTransition(opacity: a, child: c),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      debugPrint('Error during logout: $e');
+      if (!mounted) return;
+      _showError(
+          'Error al cerrar sesión: No se pudo limpiar el dispositivo. Por favor, intenta de nuevo.');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'Reintentar',
+          textColor: AppColors.buttonText,
+          onPressed: _logout,
+        ),
+      ),
+    );
   }
 
   Widget _buildLogoutButton() {
@@ -210,48 +285,7 @@ class _HomeScreenState extends State<HomeScreen>
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
-              onTap: () async {
-                try {
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user != null) {
-                    // Clear deviceId in Firestore
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .update({
-                      'deviceId': null,
-                    });
-                    debugPrint('deviceId cleared for userId: ${user.uid}');
-                  }
-
-                  // Sign out from Firebase
-                  await FirebaseAuth.instance.signOut();
-                  if (!mounted) return;
-
-                  // Navigate to AuthScreen
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => const AuthScreen(),
-                      transitionsBuilder: (_, a, __, c) =>
-                          FadeTransition(opacity: a, child: c),
-                    ),
-                    (Route<dynamic> route) => false,
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al cerrar sesión: ${e.toString()}'),
-                      backgroundColor: AppColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  );
-                }
-              },
+              onTap: _logout,
               splashColor: AppColors.glassmorphicBorder,
               child: const Padding(
                 padding: EdgeInsets.all(10),
