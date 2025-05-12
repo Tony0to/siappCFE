@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math'; // Para usar Random
-import 'dart:async'; // Para usar Timer
+import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:math';
+import 'dart:async';
+import 'package:siapp/theme/app_colors.dart';
 
-class BubbleSortGradesActivityScreen extends StatefulWidget {
-  const BubbleSortGradesActivityScreen({Key? key}) : super(key: key);
+class BubbleSortActivityScreen extends StatefulWidget {
+  const BubbleSortActivityScreen({super.key});
 
   @override
-  _BubbleSortGradesActivityScreenState createState() => _BubbleSortGradesActivityScreenState();
+  _BubbleSortActivityScreenState createState() => _BubbleSortActivityScreenState();
 }
 
-class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivityScreen> {
-  String? _bubbleSortStatusMessage;
-  bool _isCorrect = false;
-  bool _bubbleSortCompleted = false;
-  bool _bubbleSortLocked = false;
+class _BubbleSortActivityScreenState extends State<BubbleSortActivityScreen> {
+  String? _statusMessage;
+  bool _isCompleted = false;
+  bool _isLocked = false;
+  double _score = 0.0;
+  List<int> _wrongIndices = []; // Tracks indices of incorrectly placed lines
 
   final ScrollController _scrollController = ScrollController();
   Timer? _scrollTimer;
 
-  List<String> _bubbleSortCodeLines = [
+  final List<String> _codeLines = [
     'INICIO',
     'calificaciones ← [85, 70, 95, 60, 90]',
     'n ← longitud(calificaciones)',
@@ -28,13 +31,13 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
     'SI calificaciones[j] > calificaciones[j+1] ENTONCES',
     'intercambiar calificaciones[j] y calificaciones[j+1]',
     'FIN SI',
-    'FIN PARA',
-    'FIN PARA',
+    'FIN PARA // j',
+    'FIN PARA // i',
     'IMPRIMIR "Calificaciones ordenadas:", calificaciones',
     'FIN',
   ];
 
-  final List<String> _correctBubbleSortOrder = [
+  final List<String> _correctOrder = [
     'INICIO',
     'calificaciones ← [85, 70, 95, 60, 90]',
     'n ← longitud(calificaciones)',
@@ -43,15 +46,15 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
     'SI calificaciones[j] > calificaciones[j+1] ENTONCES',
     'intercambiar calificaciones[j] y calificaciones[j+1]',
     'FIN SI',
-    'FIN PARA',
-    'FIN PARA',
+    'FIN PARA // j',
+    'FIN PARA // i',
     'IMPRIMIR "Calificaciones ordenadas:", calificaciones',
     'FIN',
   ];
 
-  late List<String> _initialUserBubbleSortOrder;
-  List<String> _userBubbleSortOrder = List.filled(12, '');
-  List<String> _availableBubbleSortLines = [];
+  late List<String> _initialUserOrder;
+  List<String> _userOrder = List.filled(12, '');
+  List<String> _availableLines = [];
 
   @override
   void initState() {
@@ -61,17 +64,17 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
 
   void _initializeActivity() {
     final random = Random();
-    List<int> indices = List.generate(12, (index) => index)..shuffle(random);
-    List<int> prefilledIndices = indices.sublist(0, 9); // 75% prellenado
+    final indices = List<int>.generate(12, (i) => i)..shuffle(random);
 
-    _userBubbleSortOrder = List.filled(12, '');
-    for (int index in prefilledIndices) {
-      _userBubbleSortOrder[index] = _correctBubbleSortOrder[index];
+    final prefilledIndices = indices.sublist(0, 6); // 50% pre-filled
+    _userOrder = List.filled(12, '');
+
+    for (final i in prefilledIndices) {
+      _userOrder[i] = _correctOrder[i];
     }
 
-    _availableBubbleSortLines = indices.sublist(9).map((index) => _correctBubbleSortOrder[index]).toList();
-    _initialUserBubbleSortOrder = List.from(_userBubbleSortOrder);
-
+    _availableLines = indices.sublist(6).map((i) => _correctOrder[i]).toList();
+    _initialUserOrder = List.from(_userOrder);
     setState(() {});
   }
 
@@ -79,10 +82,10 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
     if (line.contains('PARA j desde 0 hasta n-i-2 HACER') ||
         line.contains('SI calificaciones[j] > calificaciones[j+1] ENTONCES') ||
         line.contains('intercambiar calificaciones[j] y calificaciones[j+1]') ||
-        line.contains('FIN SI')) {
+        line.contains('FIN SI') ||
+        line.contains('FIN PARA // j')) {
       return 2;
-    } else if (line.contains('PARA i desde 0 hasta n-1 HACER') ||
-               line.contains('FIN PARA') && !line.contains('n-i-2')) {
+    } else if (line.contains('PARA i desde 0 hasta n-1 HACER')) {
       return 1;
     }
     return 0;
@@ -90,17 +93,18 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
 
   void _resetActivity() {
     setState(() {
-      _userBubbleSortOrder = List.filled(12, '');
-      // Iterar sobre los índices donde _initialUserBubbleSortOrder tiene valores no vacíos
-      for (int index = 0; index < _initialUserBubbleSortOrder.length; index++) {
-        if (_initialUserBubbleSortOrder[index].isNotEmpty) {
-          _userBubbleSortOrder[index] = _initialUserBubbleSortOrder[index];
-        }
-      }
-      _availableBubbleSortLines = _correctBubbleSortOrder.where((line) => !_initialUserBubbleSortOrder.contains(line)).toList();
-      _bubbleSortStatusMessage = null;
-      _bubbleSortCompleted = false;
-      _bubbleSortLocked = false;
+      _userOrder = List.from(_initialUserOrder);
+      _availableLines = _correctOrder
+          .asMap()
+          .entries
+          .where((entry) => _userOrder[entry.key].isEmpty)
+          .map((entry) => entry.value)
+          .toList();
+      _statusMessage = null;
+      _isCompleted = false;
+      _isLocked = false;
+      _score = 0.0;
+      _wrongIndices.clear();
     });
   }
 
@@ -110,41 +114,187 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
     final screenHeight = MediaQuery.of(context).size.height;
     final pointerY = event.position.dy;
 
-    if (pointerY < edgeThreshold) {
-      _scrollTimer ??= Timer.periodic(Duration(milliseconds: 16), (timer) {
+    if (pointerY < edgeThreshold && _scrollController.hasClients) {
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
         if (_scrollController.hasClients) {
           final newOffset = _scrollController.offset - scrollSpeed;
-          _scrollController.jumpTo(newOffset.clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent));
+          _scrollController.animateTo(
+            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 50),
+            curve: Curves.linear,
+          );
         }
       });
-    } else if (pointerY > screenHeight - edgeThreshold) {
-      _scrollTimer ??= Timer.periodic(Duration(milliseconds: 16), (timer) {
+    } else if (pointerY > screenHeight - edgeThreshold && _scrollController.hasClients) {
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
         if (_scrollController.hasClients) {
           final newOffset = _scrollController.offset + scrollSpeed;
-          _scrollController.jumpTo(newOffset.clamp(_scrollController.position.minScrollExtent, _scrollController.position.maxScrollExtent));
+          _scrollController.animateTo(
+            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 50),
+            curve: Curves.linear,
+          );
         }
       });
     } else {
       _scrollTimer?.cancel();
+      _scrollTimer = null;
     }
   }
 
   void _stopDragScroll() {
     _scrollTimer?.cancel();
+    _scrollTimer = null;
   }
 
-  void _verifyBubbleSortOrder() {
-    bool isCorrect = _userBubbleSortOrder.join() == _correctBubbleSortOrder.join();
+  Future<void> _verifyOrder() async {
+    _wrongIndices.clear();
+    int correct = 0;
+
+    for (int i = 0; i < _userOrder.length; i++) {
+      if (_userOrder[i] == _correctOrder[i]) {
+        correct++;
+      } else {
+        _wrongIndices.add(i);
+      }
+    }
+
+    _score = (correct / _correctOrder.length) * 100;
+    final passed = _score >= 70;
+
     setState(() {
-      _bubbleSortCompleted = isCorrect;
-      _bubbleSortStatusMessage = isCorrect ? '¡Correcto!' : 'Incorrecto';
-      _bubbleSortLocked = true; // Bloquea ambos botones al verificar
+      _isCompleted = passed;
+      _isLocked = passed;
+      _statusMessage = 'Calificación: ${_score.toStringAsFixed(1)}% '
+          '${passed ? "✅" : "❌"} '
+          'Incorrectas: ${_wrongIndices.length}';
     });
+
+    await _showResultDialog(passed);
   }
 
   void _completeActivity() {
-    _isCorrect = _bubbleSortCompleted;
-    Navigator.pop(context, _isCorrect);
+    Navigator.pop(context, {
+      'score': _score,
+      'passed': _isCompleted,
+    });
+  }
+
+  void _showGradingInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassmorphicBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Criterios de Evaluación',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Tu calificación se basa en el porcentaje de líneas de código colocadas correctamente:',
+                style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textPrimary),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 12),
+              Text(
+                '• Cada línea correcta aporta 8.33% a la calificación total.',
+                style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              Text(
+                '• Se aprueba con 70% o más.',
+                style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cerrar',
+              style: GoogleFonts.poppins(color: AppColors.progressActive),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showResultDialog(bool passed) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          backgroundColor: AppColors.progressActive, // Changed to blue
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                passed ? Icons.check_circle : Icons.error,
+                color: passed ? Colors.green : Colors.red,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                passed ? '¡Buen trabajo!' : 'Revisión',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Calificación: ${_score.toStringAsFixed(1)}%',
+                  style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 12),
+                if (!passed) ...[
+                  Text(
+                    'Líneas en posición incorrecta:',
+                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  ..._wrongIndices.map(
+                    (i) => Text(
+                      '• ${_userOrder[i]}',
+                      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra diálogo
+                if (passed) _completeActivity(); // Envía nota al regresar
+              },
+              child: Text(
+                'Aceptar',
+                style: GoogleFonts.poppins(color: AppColors.textPrimary), // Changed for contrast
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -157,137 +307,275 @@ class _BubbleSortGradesActivityScreenState extends State<BubbleSortGradesActivit
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Listener(
-            onPointerMove: _handleDragScroll,
-            onPointerUp: (_) => _stopDragScroll(),
-            onPointerCancel: (_) => _stopDragScroll(),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Ejercicio: Ordenamiento Burbuja', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 24),
-                  Text('Ordena las líneas de código para completar el algoritmo de ordenamiento burbuja:', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white70)),
-                  const SizedBox(height: 16),
-                  Text('Algoritmo de Ordenamiento Burbuja:', style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Container(
-                    color: Colors.black,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: List.generate(_userBubbleSortOrder.length, (index) {
-                        final indentationLevel = _userBubbleSortOrder[index].isEmpty ? 0 : _getIndentationLevel(_userBubbleSortOrder[index]);
-                        final isFixed = _initialUserBubbleSortOrder[index].isNotEmpty;
-                        return Padding(
-                          padding: EdgeInsets.only(left: 16.0 * indentationLevel),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: DragTarget<String>(
-                              hitTestBehavior: HitTestBehavior.translucent,
-                              onWillAccept: (data) => !_bubbleSortLocked,
-                              onAccept: (data) {
-                                setState(() {
-                                  _userBubbleSortOrder[index] = data;
-                                  _availableBubbleSortLines.remove(data);
-                                });
-                              },
-                              builder: (context, candidateData, rejectedData) {
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 6),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: _userBubbleSortOrder[index].isEmpty ? Colors.white.withOpacity(0.2) : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: _userBubbleSortOrder[index].isNotEmpty && !isFixed ? Border.all(color: Colors.white, width: 1) : null,
-                                  ),
-                                  child: _userBubbleSortOrder[index].isEmpty
-                                      ? Text(
-                                          'Arrastra una línea aquí',
-                                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
-                                          textAlign: TextAlign.left,
-                                        )
-                                      : Text(
-                                          _userBubbleSortOrder[index],
-                                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-                                          textAlign: TextAlign.left,
-                                        ),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      }),
+      backgroundColor: AppColors.backgroundDark,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'back_button',
+            onPressed: () => Navigator.pop(context),
+            backgroundColor: AppColors.glassmorphicBackground,
+            child: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'grade_button',
+            onPressed: _showGradingInfo,
+            backgroundColor: AppColors.glassmorphicBackground,
+            child: Icon(Icons.grade, color: AppColors.textPrimary),
+          ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+      body: SafeArea(
+        child: Listener(
+          onPointerMove: _handleDragScroll,
+          onPointerUp: (_) => _stopDragScroll(),
+          onPointerCancel: (_) => _stopDragScroll(),
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GlassmorphicCard(
+                  child: Text(
+                    'Ejercicio: Ordenamiento Burbuja',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text('Líneas disponibles:', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70)),
-                  const SizedBox(height: 8),
-                  Column(
-                    children: _availableBubbleSortLines.map((line) {
-                      return Draggable<String>(
-                        data: line,
-                        feedback: Material(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8)),
-                            child: Text(line, style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
-                          ),
-                        ),
-                        childWhenDragging: Container(),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(8)),
-                          child: Text(line, style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
-                        ),
-                      );
-                    }).toList(),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Text(
+                    'Ordena las líneas de código para completar el algoritmo de ordenamiento burbuja. Arrastra las líneas disponibles a las posiciones correctas.',
+                    style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 16),
-                  if (_bubbleSortStatusMessage != null)
-                    Text(_bubbleSortStatusMessage!, style: GoogleFonts.poppins(fontSize: 16, color: _bubbleSortCompleted ? Colors.green : Colors.red)),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ElevatedButton(
-                        onPressed: _bubbleSortLocked ? null : _verifyBubbleSortOrder,
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003459), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)),
-                        child: Text('Verificar', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      Text(
+                        'Algoritmo de Ordenamiento Burbuja:',
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
-                      const SizedBox(width: 16),
-                      ElevatedButton(
-                        onPressed: _bubbleSortLocked ? null : _resetActivity,
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003459), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)),
-                        child: Text('Reiniciar', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      Container(
+                        color: Colors.black87,
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List.generate(_userOrder.length, (index) {
+                            final indentationLevel = _userOrder[index].isEmpty ? 0 : _getIndentationLevel(_userOrder[index]);
+                            final isFixed = _initialUserOrder[index].isNotEmpty;
+                            final isWrong = _wrongIndices.contains(index) && !_isCompleted;
+
+                            return Padding(
+                              padding: EdgeInsets.only(left: 16.0 * indentationLevel),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: DragTarget<String>(
+                                  hitTestBehavior: HitTestBehavior.translucent,
+                                  onWillAccept: (data) => !_isLocked && !isFixed,
+                                  onAccept: (data) {
+                                    setState(() {
+                                      final previous = _userOrder[index];
+                                      if (previous.isNotEmpty) _availableLines.add(previous);
+                                      _userOrder[index] = data;
+                                      _availableLines.remove(data);
+                                    });
+                                  },
+                                  builder: (context, candidateData, rejectedData) {
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: _userOrder[index].isEmpty ? Colors.white.withOpacity(0.2) : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: isWrong
+                                            ? Border.all(color: Colors.redAccent, width: 2)
+                                            : (_userOrder[index].isNotEmpty && !isFixed
+                                                ? Border.all(color: AppColors.glassmorphicBorder, width: 1)
+                                                : null),
+                                      ),
+                                      child: _userOrder[index].isEmpty
+                                          ? Text(
+                                              'Arrastra una línea aquí',
+                                              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                                              textAlign: TextAlign.left,
+                                            )
+                                          : Text(
+                                              _userOrder[index].replaceAll(' // j', '').replaceAll(' // i', ''),
+                                              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                                              textAlign: TextAlign.left,
+                                            ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _completeActivity,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF003459), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12)),
-                      child: Text('Completar Actividad', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                    ),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Líneas disponibles:',
+                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _availableLines.map((line) {
+                            return Draggable<String>(
+                              data: line,
+                              feedback: Material(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.progressActive,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    line.replaceAll(' // j', '').replaceAll(' // i', ''),
+                                    style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                                  ),
+                                ),
+                              ),
+                              childWhenDragging: Container(),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.progressActive,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  line.replaceAll(' // j', '').replaceAll(' // i', ''),
+                                  style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                if (_statusMessage != null)
+                  GlassmorphicCard(
+                    child: Text(
+                      _statusMessage!,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: _isCompleted ? AppColors.success : AppColors.error,
+                      ),
+                    ),
+                  ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildAnimatedButton(
+                      text: 'Verificar',
+                      onPressed: _isLocked ? null : _verifyOrder,
+                      gradient: LinearGradient(
+                        colors: _isLocked
+                            ? [Colors.grey.shade600, Colors.grey.shade400]
+                            : [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
+                      ),
+                    ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                    const SizedBox(width: 16),
+                    _buildAnimatedButton(
+                      text: 'Reiniciar',
+                      onPressed: _isLocked ? null : _resetActivity,
+                      gradient: LinearGradient(
+                        colors: _isLocked
+                            ? [Colors.grey.shade600, Colors.grey.shade400]
+                            : [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
+                      ),
+                    ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedButton({
+    required String text,
+    required VoidCallback? onPressed,
+    required LinearGradient gradient,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowColor,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ),
+    ).animate().scale(duration: 200.ms, curve: Curves.easeOut);
+  }
+}
+
+class GlassmorphicCard extends StatelessWidget {
+  final Widget child;
+
+  const GlassmorphicCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.glassmorphicBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.glassmorphicBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowColor,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

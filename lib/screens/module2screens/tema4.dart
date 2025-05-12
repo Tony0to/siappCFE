@@ -639,84 +639,88 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
             ],
           ),
           const SizedBox(height: 12),
-          ...(question['opciones'] ??
+          ...(question['opciones']?.toList() ??
                   (tipo == 'true_false' ? ['Verdadero', 'Falso'] : []))
-              .map<Widget>((option) {
-            final optionText = option.toString();
-            final isSelected = _selectedAnswers[questionIndex] == optionText;
-            final isCorrectOption =
-                optionText == question['respuesta_correcta']?.toString();
-            Color textColor = AppColors.textPrimary;
-            Color borderColor = AppColors.glassmorphicBorder;
-            Color bgColor = AppColors.glassmorphicBackground;
+              .asMap()
+              .entries
+              .map<Widget>((entry) {
+                final option = entry.value;
+                final optionText = option.toString();
+                final isSelected = _selectedAnswers[questionIndex] == optionText;
+                final isCorrectOption =
+                    optionText == question['respuesta_correcta']?.toString();
+                Color textColor = AppColors.textPrimary;
+                Color borderColor = AppColors.glassmorphicBorder;
+                Color bgColor = AppColors.glassmorphicBackground;
 
-            if (isAnswered) {
-              if (isSelected && !isCorrectOption) {
-                borderColor = AppColors.error;
-                bgColor = Colors.red.withValues(alpha: 0.2);
-              } else if (isSelected && isCorrectOption) {
-                borderColor = AppColors.success;
-                bgColor = Colors.green.withValues(alpha: 0.2);
-              } else if (isCorrectOption) {
-                borderColor = AppColors.success;
-                bgColor = Colors.green.withValues(alpha: 0.2);
-              }
-            }
+                if (isAnswered) {
+                  if (isSelected && !isCorrectOption) {
+                    borderColor = AppColors.error;
+                    bgColor = Colors.red.withValues(alpha: 0.2);
+                  } else if (isSelected && isCorrectOption) {
+                    borderColor = AppColors.success;
+                    bgColor = Colors.green.withValues(alpha: 0.2);
+                  } else if (isCorrectOption) {
+                    borderColor = AppColors.success;
+                    bgColor = Colors.green.withValues(alpha: 0.2);
+                  }
+                }
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: isAnswered
-                    ? null
-                    : () {
-                        setState(() {
-                          _selectedAnswers[questionIndex] = optionText;
-                        });
-                      },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: bgColor,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: borderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor),
-                        ),
-                        child: isSelected
-                            ? Icon(
-                                isCorrectOption ? Icons.check : Icons.close,
-                                size: 16,
-                                color: isCorrectOption
-                                    ? AppColors.success
-                                    : AppColors.error,
-                              )
-                            : null,
+                    onTap: isAnswered
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedAnswers[questionIndex] = optionText;
+                            });
+                          },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: borderColor),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          optionText,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            color: textColor,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: isSelected
+                                ? Icon(
+                                    isCorrectOption ? Icons.check : Icons.close,
+                                    size: 16,
+                                    color: isCorrectOption
+                                        ? AppColors.success
+                                        : AppColors.error,
+                                  )
+                                : null,
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              optionText,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              })
+              .toList(),
           if (_selectedAnswers[questionIndex] != null && !isAnswered)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -804,7 +808,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: buildQuizQuestion(
                           entry.value, quizIndex * 100 + entry.key),
-                    )),
+                    ))
+                .toList(),
           ],
         ),
       ),
@@ -1110,7 +1115,8 @@ class Tema4State extends State<Tema4> with TickerProviderStateMixin {
                     ...quizzes
                         .asMap()
                         .entries
-                        .map((entry) => buildQuiz(entry.value, 3 + entry.key)),
+                        .map((entry) => buildQuiz(entry.value, 3 + entry.key))
+                        .toList(),
                   ],
                 ],
               ),

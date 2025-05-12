@@ -74,7 +74,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
           'video': {
             'title': 'Conceptos y símbolos clave en diagramas de flujo',
             'description': 'Este video explica los conceptos y símbolos esenciales de los diagramas de flujo.',
-            'videoId': 'exampleVideoId2',
+            'videoId': 'b57GvPFjBM',
           },
         };
         _activities = (data['activities'] as List<dynamic>)
@@ -101,7 +101,7 @@ class _Tema4State extends State<Tema4> with TickerProviderStateMixin {
     setState(() {
       _showVideo = true;
       try {
-        final videoId = _contentData?['video']?['videoId']?.toString() ?? 'exampleVideoId2';
+        final videoId = _contentData?['video']?['videoId']?.toString() ?? 'b57GvPFjBM';
         _youtubeController = YoutubePlayerController(
           initialVideoId: videoId,
           flags: const YoutubePlayerFlags(

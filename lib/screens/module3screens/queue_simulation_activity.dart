@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math'; // Para usar Random
-import 'dart:async'; // Para usar Timer
+import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:math';
+import 'dart:async';
+import 'package:siapp/theme/app_colors.dart';
 
 class QueueSimulationActivityScreen extends StatefulWidget {
-  const QueueSimulationActivityScreen({Key? key}) : super(key: key);
+  const QueueSimulationActivityScreen({super.key});
 
   @override
   _QueueSimulationActivityScreenState createState() => _QueueSimulationActivityScreenState();
 }
 
 class _QueueSimulationActivityScreenState extends State<QueueSimulationActivityScreen> {
-  String? _queueStatusMessage;
-  bool _isCorrect = false;
-  bool _queueCompleted = false;
-  bool _queueLocked = false;
+  String? _statusMessage;
+  bool _isCompleted = false;
+  bool _isLocked = false;
+  double _score = 0.0;
+  List<int> _wrongIndices = []; // Tracks indices of incorrectly placed lines
 
-  // ScrollController para controlar el desplazamiento
   final ScrollController _scrollController = ScrollController();
-
-  // Timer para el desplazamiento automático
   Timer? _scrollTimer;
 
-  // Líneas de código desordenadas para simulación de cola
-  List<String> _queueCodeLines = [
+  final List<String> _codeLines = [
     'INICIO',
     'cola ← lista vacía',
     'FUNCIÓN agregar(persona)',
@@ -44,8 +43,7 @@ class _QueueSimulationActivityScreenState extends State<QueueSimulationActivityS
     'FIN',
   ];
 
-  // Líneas ordenadas correctamente para simulación de cola
-  final List<String> _correctQueueOrder = [
+  final List<String> _correctOrder = [
     'INICIO',
     'cola ← lista vacía',
     'FUNCIÓN agregar(persona)',
@@ -66,88 +64,251 @@ class _QueueSimulationActivityScreenState extends State<QueueSimulationActivityS
     'FIN',
   ];
 
-  // Líneas que el usuario ordenará (75% prellenado de forma no continua)
-  List<String> _userQueueOrder = List.filled(18, '');
-
-  // Lista para rastrear líneas disponibles
-  List<String> _availableQueueLines = [];
+  late List<String> _initialUserOrder;
+  List<String> _userOrder = List.filled(18, '');
+  List<String> _availableLines = [];
 
   @override
   void initState() {
     super.initState();
+    _initializeActivity();
+  }
 
-    // Prellenar el 75% del código de forma no continua
+  void _initializeActivity() {
     final random = Random();
+    final indices = List<int>.generate(18, (i) => i)..shuffle(random);
 
-    // Seleccionar 14 índices aleatorios de 0 a 17 (18 líneas, 75% ≈ 14 prellenadas)
-    List<int> queueIndices = List.generate(18, (index) => index);
-    queueIndices.shuffle(random);
-    List<int> prefilledQueueIndices = queueIndices.sublist(0, 14);
+    final prefilledIndices = indices.sublist(0, 12); // 50% pre-filled
+    _userOrder = List.filled(18, '');
 
-    for (int i = 0; i < prefilledQueueIndices.length; i++) {
-      int position = prefilledQueueIndices[i];
-      _userQueueOrder[position] = _correctQueueOrder[position];
+    for (final i in prefilledIndices) {
+      _userOrder[i] = _correctOrder[i];
     }
 
-    List<int> remainingQueueIndices = queueIndices.sublist(14);
-    _availableQueueLines = remainingQueueIndices.map((index) => _correctQueueOrder[index]).toList()
-      ..shuffle(random);
+    _availableLines = indices.sublist(9).map((i) => _correctOrder[i]).toList();
+    _initialUserOrder = List.from(_userOrder);
+    setState(() {});
   }
 
-  // Función para manejar el desplazamiento automático mientras se arrastra
-  void _handleDragScroll(PointerEvent event) {
-    const double edgeThreshold = 50.0; // Distancia desde el borde para activar el scroll
-    const double scrollSpeed = 10.0; // Velocidad del desplazamiento
-    final screenHeight = MediaQuery.of(context).size.height;
-    final pointerY = event.position.dy;
-
-    if (pointerY < edgeThreshold) {
-      if (_scrollTimer == null || !_scrollTimer!.isActive) {
-        _scrollTimer = Timer.periodic(Duration(milliseconds: 16), (timer) {
-          if (_scrollController.hasClients) {
-            final newOffset = _scrollController.offset - scrollSpeed;
-            _scrollController.jumpTo(newOffset.clamp(
-              _scrollController.position.minScrollExtent,
-              _scrollController.position.maxScrollExtent,
-            ));
-          }
-        });
-      }
-    } else if (pointerY > screenHeight - edgeThreshold) {
-      if (_scrollTimer == null || !_scrollTimer!.isActive) {
-        _scrollTimer = Timer.periodic(Duration(milliseconds: 16), (timer) {
-          if (_scrollController.hasClients) {
-            final newOffset = _scrollController.offset + scrollSpeed;
-            _scrollController.jumpTo(newOffset.clamp(
-              _scrollController.position.minScrollExtent,
-              _scrollController.position.maxScrollExtent,
-            ));
-          }
-        });
-      }
-    } else {
-      _scrollTimer?.cancel();
+  int _getIndentationLevel(String line) {
+    if (line.contains('agregar persona al final de cola')) {
+      return 1;
+    } else if (line.contains('SI cola no está vacía ENTONCES') ||
+        line.contains('eliminar primer elemento de cola') ||
+        line.contains('SINO') ||
+        line.contains('IMPRIMIR "La cola está vacía"') ||
+        line.contains('FIN SI')) {
+      return 1;
+    } else if (line.contains('IMPRIMIR "Estado de la cola:", cola')) {
+      return 1;
     }
+    return 0;
   }
 
-  // Detener el desplazamiento cuando termina el arrastre
-  void _stopDragScroll() {
-    _scrollTimer?.cancel();
-  }
-
-  void _verifyQueueOrder() {
-    bool isCorrect = _userQueueOrder.toString() == _correctQueueOrder.toString();
-
+  void _resetActivity() {
     setState(() {
-      _queueCompleted = isCorrect;
-      _queueStatusMessage = isCorrect ? '¡Correcto!' : 'Incorrecto';
-      _queueLocked = true;
+      _userOrder = List.from(_initialUserOrder);
+      _availableLines = _correctOrder
+          .asMap()
+          .entries
+          .where((entry) => _userOrder[entry.key].isEmpty)
+          .map((entry) => entry.value)
+          .toList();
+      _statusMessage = null;
+      _isCompleted = false;
+      _isLocked = false;
+      _score = 0.0;
+      _wrongIndices.clear();
     });
   }
 
+  void _handleDragScroll(PointerEvent event) {
+    const double edgeThreshold = 50.0;
+    const double scrollSpeed = 10.0;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final pointerY = event.position.dy;
+
+    if (pointerY < edgeThreshold && _scrollController.hasClients) {
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+        if (_scrollController.hasClients) {
+          final newOffset = _scrollController.offset - scrollSpeed;
+          _scrollController.animateTo(
+            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 50),
+            curve: Curves.linear,
+          );
+        }
+      });
+    } else if (pointerY > screenHeight - edgeThreshold && _scrollController.hasClients) {
+      _scrollTimer?.cancel();
+      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+        if (_scrollController.hasClients) {
+          final newOffset = _scrollController.offset + scrollSpeed;
+          _scrollController.animateTo(
+            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 50),
+            curve: Curves.linear,
+          );
+        }
+      });
+    } else {
+      _scrollTimer?.cancel();
+      _scrollTimer = null;
+    }
+  }
+
+  void _stopDragScroll() {
+    _scrollTimer?.cancel();
+    _scrollTimer = null;
+  }
+
+  Future<void> _verifyOrder() async {
+    _wrongIndices.clear();
+    int correct = 0;
+
+    for (int i = 0; i < _userOrder.length; i++) {
+      if (_userOrder[i] == _correctOrder[i]) {
+        correct++;
+      } else {
+        _wrongIndices.add(i);
+      }
+    }
+
+    _score = (correct / _correctOrder.length) * 100;
+    final passed = _score >= 70;
+
+    setState(() {
+      _isCompleted = passed;
+      _isLocked = passed;
+      _statusMessage = 'Calificación: ${_score.toStringAsFixed(1)}% '
+          '${passed ? "✅" : "❌"} '
+          'Incorrectas: ${_wrongIndices.length}';
+    });
+
+    await _showResultDialog(passed);
+  }
+
   void _completeActivity() {
-    _isCorrect = _queueCompleted;
-    Navigator.pop(context, _isCorrect);
+    Navigator.pop(context, {
+      'score': _score,
+      'passed': _isCompleted,
+    });
+  }
+
+  void _showGradingInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassmorphicBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Criterios de Evaluación',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Tu calificación se basa en el porcentaje de líneas de código colocadas correctamente:',
+                style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textPrimary),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 12),
+              Text(
+                '• Cada línea correcta aporta 5.56% a la calificación total.',
+                style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              Text(
+                '• Se aprueba con 70% o más.',
+                style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cerrar',
+              style: GoogleFonts.poppins(color: AppColors.progressActive),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showResultDialog(bool passed) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          backgroundColor: AppColors.progressActive,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                passed ? Icons.check_circle : Icons.error,
+                color: passed ? Colors.green : Colors.red,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                passed ? '¡Buen trabajo!' : 'Revisión',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Calificación: ${_score.toStringAsFixed(1)}%',
+                  style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 12),
+                if (!passed) ...[
+                  Text(
+                    'Líneas en posición incorrecta:',
+                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  ..._wrongIndices.map(
+                    (i) => Text(
+                      '• ${_userOrder[i]}',
+                      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra diálogo
+                if (passed) _completeActivity(); // Envía nota al regresar
+              },
+              child: Text(
+                'Aceptar',
+                style: GoogleFonts.poppins(color: AppColors.textPrimary),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -160,167 +321,275 @@ class _QueueSimulationActivityScreenState extends State<QueueSimulationActivityS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Listener(
-            onPointerMove: _handleDragScroll,
-            onPointerUp: (_) => _stopDragScroll(),
-            onPointerCancel: (_) => _stopDragScroll(),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+      backgroundColor: AppColors.backgroundDark,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'back_button',
+            onPressed: () => Navigator.pop(context),
+            backgroundColor: AppColors.glassmorphicBackground,
+            child: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'grade_button',
+            onPressed: _showGradingInfo,
+            backgroundColor: AppColors.glassmorphicBackground,
+            child: Icon(Icons.grade, color: AppColors.textPrimary),
+          ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+      body: SafeArea(
+        child: Listener(
+          onPointerMove: _handleDragScroll,
+          onPointerUp: (_) => _stopDragScroll(),
+          onPointerCancel: (_) => _stopDragScroll(),
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GlassmorphicCard(
+                  child: Text(
                     'Ejercicio: Simulación de Cola (FIFO)',
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Ordena las líneas de código para completar la simulación de una cola:',
-                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.white70),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Text(
+                    'Ordena las líneas de código para completar el algoritmo de simulación de una cola. Arrastra las líneas disponibles a las posiciones correctas.',
+                    style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Simulación de Cola:',
-                    style: GoogleFonts.poppins(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Column(
-                    children: List.generate(_userQueueOrder.length, (index) {
-                      return DragTarget<String>(
-                        onAccept: !_queueLocked
-                            ? (data) {
-                                setState(() {
-                                  if (_userQueueOrder[index].isNotEmpty) {
-                                    _availableQueueLines.add(_userQueueOrder[index]);
-                                  }
-                                  _userQueueOrder[index] = data;
-                                  _availableQueueLines.remove(data);
-                                });
-                              }
-                            : null,
-                        builder: (context, candidateData, rejectedData) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.white.withOpacity(0.2)),
-                            ),
-                            child: Text(
-                              _userQueueOrder[index].isEmpty ? 'Arrastra una línea aquí' : _userQueueOrder[index],
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: _userQueueOrder[index].isEmpty ? Colors.white30 : Colors.white70,
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Algoritmo de Simulación de Cola:',
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        color: Colors.black87,
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List.generate(_userOrder.length, (index) {
+                            final indentationLevel = _userOrder[index].isEmpty ? 0 : _getIndentationLevel(_userOrder[index]);
+                            final isFixed = _initialUserOrder[index].isNotEmpty;
+                            final isWrong = _wrongIndices.contains(index) && !_isCompleted;
+
+                            return Padding(
+                              padding: EdgeInsets.only(left: 16.0 * indentationLevel),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: DragTarget<String>(
+                                  hitTestBehavior: HitTestBehavior.translucent,
+                                  onWillAccept: (data) => !_isLocked && !isFixed,
+                                  onAccept: (data) {
+                                    setState(() {
+                                      final previous = _userOrder[index];
+                                      if (previous.isNotEmpty) _availableLines.add(previous);
+                                      _userOrder[index] = data;
+                                      _availableLines.remove(data);
+                                    });
+                                  },
+                                  builder: (context, candidateData, rejectedData) {
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: _userOrder[index].isEmpty ? Colors.white.withOpacity(0.2) : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: isWrong
+                                            ? Border.all(color: Colors.redAccent, width: 2)
+                                            : (_userOrder[index].isNotEmpty && !isFixed
+                                                ? Border.all(color: AppColors.glassmorphicBorder, width: 1)
+                                                : null),
+                                      ),
+                                      child: _userOrder[index].isEmpty
+                                          ? Text(
+                                              'Arrastra una línea aquí',
+                                              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                                              textAlign: TextAlign.left,
+                                            )
+                                          : Text(
+                                              _userOrder[index],
+                                              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                                              textAlign: TextAlign.left,
+                                            ),
+                                    );
+                                  },
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Líneas disponibles:',
-                    style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 8),
-                  Column(
-                    children: _availableQueueLines.asMap().entries.map((entry) {
-                      String line = entry.value;
-                      return Draggable<String>(
-                        data: line,
-                        feedback: Material(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              line,
-                              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-                            ),
-                          ),
+                            );
+                          }),
                         ),
-                        childWhenDragging: Container(),
-                        child: _queueLocked
-                            ? Container()
-                            : Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                GlassmorphicCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Líneas disponibles:',
+                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _availableLines.map((line) {
+                            return Draggable<String>(
+                              data: line,
+                              feedback: Material(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.progressActive,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    line,
+                                    style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
+                                  ),
+                                ),
+                              ),
+                              childWhenDragging: Container(),
+                              child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue,
+                                  color: AppColors.progressActive,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   line,
-                                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+                                  style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary),
                                 ),
                               ),
-                      );
-                    }).toList(),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  if (_queueStatusMessage != null)
-                    Text(
-                      _queueStatusMessage!,
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                if (_statusMessage != null)
+                  GlassmorphicCard(
+                    child: Text(
+                      _statusMessage!,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: _queueCompleted ? Colors.green : Colors.red,
+                        color: _isCompleted ? AppColors.success : AppColors.error,
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _queueLocked ? null : _verifyQueueOrder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF003459),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildAnimatedButton(
+                      text: 'Verificar',
+                      onPressed: _isLocked ? null : _verifyOrder,
+                      gradient: LinearGradient(
+                        colors: _isLocked
+                            ? [Colors.grey.shade600, Colors.grey.shade400]
+                            : [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
                       ),
-                      child: Text(
-                        'Verificar',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                    const SizedBox(width: 16),
+                    _buildAnimatedButton(
+                      text: 'Reiniciar',
+                      onPressed: _isLocked ? null : _resetActivity,
+                      gradient: LinearGradient(
+                        colors: _isLocked
+                            ? [Colors.grey.shade600, Colors.grey.shade400]
+                            : [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _completeActivity,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF003459),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      ),
-                      child: Text(
-                        'Completar Actividad',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                    ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedButton({
+    required String text,
+    required VoidCallback? onPressed,
+    required LinearGradient gradient,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowColor,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ),
+    ).animate().scale(duration: 200.ms, curve: Curves.easeOut);
+  }
+}
+
+class GlassmorphicCard extends StatelessWidget {
+  final Widget child;
+
+  const GlassmorphicCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.glassmorphicBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.glassmorphicBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowColor,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

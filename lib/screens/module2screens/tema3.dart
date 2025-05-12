@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:siapp/screens/module2screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
@@ -626,82 +625,86 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           const SizedBox(height: 12),
           ...(question['opciones']?.toList() ??
                   (tipo == 'true_false' ? ['Verdadero', 'Falso'] : []))
-              .map<Widget>((option) {
-            final optionText = option.toString();
-            final isSelected = _selectedAnswers[questionIndex] == optionText;
-            final isCorrectOption =
-                optionText == question['respuesta_correcta']?.toString();
-            Color textColor = AppColors.textPrimary;
-            Color borderColor = AppColors.glassmorphicBorder;
-            Color bgColor = AppColors.glassmorphicBackground;
+              .asMap()
+              .entries
+              .map<Widget>((entry) {
+                final option = entry.value;
+                final optionText = option.toString();
+                final isSelected = _selectedAnswers[questionIndex] == optionText;
+                final isCorrectOption =
+                    optionText == question['respuesta_correcta']?.toString();
+                Color textColor = AppColors.textPrimary;
+                Color borderColor = AppColors.glassmorphicBorder;
+                Color bgColor = AppColors.glassmorphicBackground;
 
-            if (isAnswered) {
-              if (isSelected && !isCorrectOption) {
-                borderColor = AppColors.error;
-                bgColor = Colors.red.withValues(alpha: 0.2);
-              } else if (isSelected && isCorrectOption) {
-                borderColor = AppColors.success;
-                bgColor = Colors.green.withValues(alpha: 0.2);
-              } else if (isCorrectOption) {
-                borderColor = AppColors.success;
-                bgColor = Colors.green.withValues(alpha: 0.2);
-              }
-            }
+                if (isAnswered) {
+                  if (isSelected && !isCorrectOption) {
+                    borderColor = AppColors.error;
+                    bgColor = Colors.red.withValues(alpha: 0.2);
+                  } else if (isSelected && isCorrectOption) {
+                    borderColor = AppColors.success;
+                    bgColor = Colors.green.withValues(alpha: 0.2);
+                  } else if (isCorrectOption) {
+                    borderColor = AppColors.success;
+                    bgColor = Colors.green.withValues(alpha: 0.2);
+                  }
+                }
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: isAnswered
-                    ? null
-                    : () {
-                        setState(() {
-                          _selectedAnswers[questionIndex] = optionText;
-                        });
-                      },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: bgColor,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: borderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor),
-                        ),
-                        child: isSelected
-                            ? Icon(
-                                isCorrectOption ? Icons.check : Icons.close,
-                                size: 16,
-                                color: isCorrectOption
-                                    ? AppColors.success
-                                    : AppColors.error,
-                              )
-                            : null,
+                    onTap: isAnswered
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedAnswers[questionIndex] = optionText;
+                            });
+                          },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: borderColor),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          optionText,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            color: textColor,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: isSelected
+                                ? Icon(
+                                    isCorrectOption ? Icons.check : Icons.close,
+                                    size: 16,
+                                    color: isCorrectOption
+                                        ? AppColors.success
+                                        : AppColors.error,
+                                  )
+                                : null,
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              optionText,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              })
+              .toList(),
           if (_selectedAnswers[questionIndex] != null && !isAnswered)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -1190,30 +1193,21 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
   }
 
   void navigateNext() {
+    debugPrint('navigateNext called: Current page $_currentPage');
     if (_currentPage < 5) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
+      debugPrint('navigateNext called: Completing section ${widget.sectionIndex}');
       widget.onComplete(widget.sectionIndex);
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ContenidoScreen(
-            moduleData: widget.moduleData,
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
-      );
+      Navigator.pop(context);
     }
   }
 
   Future<bool> navigateBack() async {
+    debugPrint('navigateBack called: Current page $_currentPage');
     if (_currentPage > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -1221,19 +1215,8 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       );
       return false;
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ContenidoScreen(
-            moduleData: widget.moduleData,
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
-      );
+      debugPrint('Popping back to ContenidoScreen');
+      Navigator.pop(context);
       return true;
     }
   }
@@ -1255,6 +1238,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
       canPop: _currentPage == 0,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
+          debugPrint('PopScope triggered in Tema3');
           await navigateBack();
         }
       },
@@ -1274,6 +1258,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () async {
+              debugPrint('IconButton Atrás presionado en Tema3');
               await navigateBack();
             },
           ),

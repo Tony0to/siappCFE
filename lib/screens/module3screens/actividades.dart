@@ -10,6 +10,7 @@ import 'bubble_sort_grades_activity.dart';
 import 'queue_simulation_activity.dart';
 import 'study_hours_tracker_activity.dart';
 import 'inventory_system_activity.dart';
+import 'package:siapp/theme/app_colors.dart';
 
 class Module3ActividadesScreen extends StatefulWidget {
   final Map<String, dynamic> moduleData;
@@ -22,15 +23,7 @@ class Module3ActividadesScreen extends StatefulWidget {
 
 class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
-  Map<String, int> _remainingAttemptsPerActivity = {
-    'search_algorithms': 5,
-    'count_vowels_recursive': 3,
-    'sum_digits': 3,
-    'bubble_sort_grades': 3,
-    'queue_simulation': 3,
-    'study_hours_tracker': 3,
-    'inventory_system': 3,
-  };
+  int _remainingAttemptsGlobal = 3;
   bool _isAttemptsLoading = true;
   String? _errorMessage;
   bool searchAlgorithmsCompleted = false;
@@ -41,16 +34,25 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
   bool studyHoursTrackerCompleted = false;
   bool inventorySystemCompleted = false;
   bool allActivitiesCompleted = false;
+  bool quizCompleted = false;
+  double calf = 0.0;
+  Map<String, double> _activityScores = {
+    'search_algorithms': 0.0,
+    'count_vowels_recursive': 0.0,
+    'sum_digits': 0.0,
+    'bubble_sort_grades': 0.0,
+    'queue_simulation': 0.0,
+    'study_hours_tracker': 0.0,
+    'inventory_system': 0.0,
+  };
 
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     )..forward();
-
     _loadProgressFromFirestore();
   }
 
@@ -85,19 +87,14 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
 
       if (progressDoc.exists) {
         final data = progressDoc.data();
-        final attempts = data?['attempts_per_activity'] as Map<String, dynamic>? ?? {};
+        final attempts = data?['global_attempts'] as num? ?? 3;
         final completed = data?['completed_activities'] as Map<String, dynamic>? ?? {};
+        final scores = data?['activity_scores'] as Map<String, dynamic>? ?? {};
         final allCompleted = data?['all_activities_completed'] as bool? ?? false;
+        final quizCompleted = data?['quiz_completed'] as bool? ?? false;
+        final calf = (data?['calf'] as num?)?.toDouble() ?? 0.0;
         setState(() {
-          _remainingAttemptsPerActivity = {
-            'search_algorithms': (attempts['search_algorithms'] as num?)?.toInt() ?? 5,
-            'count_vowels_recursive': (attempts['count_vowels_recursive'] as num?)?.toInt() ?? 3,
-            'sum_digits': (attempts['sum_digits'] as num?)?.toInt() ?? 3,
-            'bubble_sort_grades': (attempts['bubble_sort_grades'] as num?)?.toInt() ?? 3,
-            'queue_simulation': (attempts['queue_simulation'] as num?)?.toInt() ?? 3,
-            'study_hours_tracker': (attempts['study_hours_tracker'] as num?)?.toInt() ?? 3,
-            'inventory_system': (attempts['inventory_system'] as num?)?.toInt() ?? 3,
-          };
+          _remainingAttemptsGlobal = attempts.toInt();
           searchAlgorithmsCompleted = completed['search_algorithms'] ?? false;
           countVowelsRecursiveCompleted = completed['count_vowels_recursive'] ?? false;
           sumDigitsCompleted = completed['sum_digits'] ?? false;
@@ -105,7 +102,18 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
           queueSimulationCompleted = completed['queue_simulation'] ?? false;
           studyHoursTrackerCompleted = completed['study_hours_tracker'] ?? false;
           inventorySystemCompleted = completed['inventory_system'] ?? false;
+          _activityScores = {
+            'search_algorithms': (scores['search_algorithms'] as num?)?.toDouble() ?? 0.0,
+            'count_vowels_recursive': (scores['count_vowels_recursive'] as num?)?.toDouble() ?? 0.0,
+            'sum_digits': (scores['sum_digits'] as num?)?.toDouble() ?? 0.0,
+            'bubble_sort_grades': (scores['bubble_sort_grades'] as num?)?.toDouble() ?? 0.0,
+            'queue_simulation': (scores['queue_simulation'] as num?)?.toDouble() ?? 0.0,
+            'study_hours_tracker': (scores['study_hours_tracker'] as num?)?.toDouble() ?? 0.0,
+            'inventory_system': (scores['inventory_system'] as num?)?.toDouble() ?? 0.0,
+          };
           allActivitiesCompleted = allCompleted;
+          this.quizCompleted = quizCompleted;
+          this.calf = calf;
           _isAttemptsLoading = false;
         });
       } else {
@@ -115,15 +123,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
             .collection('modules')
             .doc(widget.moduleData['id'] ?? 'module3')
             .set({
-          'attempts_per_activity': {
-            'search_algorithms': 5,
-            'count_vowels_recursive': 3,
-            'sum_digits': 3,
-            'bubble_sort_grades': 3,
-            'queue_simulation': 3,
-            'study_hours_tracker': 3,
-            'inventory_system': 3,
-          },
+          'global_attempts': 3,
           'completed_activities': {
             'search_algorithms': false,
             'count_vowels_recursive': false,
@@ -133,22 +133,25 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
             'study_hours_tracker': false,
             'inventory_system': false,
           },
+          'activity_scores': {
+            'search_algorithms': 0.0,
+            'count_vowels_recursive': 0.0,
+            'sum_digits': 0.0,
+            'bubble_sort_grades': 0.0,
+            'queue_simulation': 0.0,
+            'study_hours_tracker': 0.0,
+            'inventory_system': 0.0,
+          },
           'all_activities_completed': false,
+          'quiz_completed': false,
+          'calf': 0.0,
           'last_updated': FieldValue.serverTimestamp(),
           'module_id': widget.moduleData['id'] ?? 'module3',
           'module_title': widget.moduleData['module_title'] ?? 'Módulo 3: Algoritmos',
         }, SetOptions(merge: true));
 
         setState(() {
-          _remainingAttemptsPerActivity = {
-            'search_algorithms': 5,
-            'count_vowels_recursive': 3,
-            'sum_digits': 3,
-            'bubble_sort_grades': 3,
-            'queue_simulation': 3,
-            'study_hours_tracker': 3,
-            'inventory_system': 3,
-          };
+          _remainingAttemptsGlobal = 3;
           searchAlgorithmsCompleted = false;
           countVowelsRecursiveCompleted = false;
           sumDigitsCompleted = false;
@@ -156,7 +159,18 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
           queueSimulationCompleted = false;
           studyHoursTrackerCompleted = false;
           inventorySystemCompleted = false;
+          _activityScores = {
+            'search_algorithms': 0.0,
+            'count_vowels_recursive': 0.0,
+            'sum_digits': 0.0,
+            'bubble_sort_grades': 0.0,
+            'queue_simulation': 0.0,
+            'study_hours_tracker': 0.0,
+            'inventory_system': 0.0,
+          };
           allActivitiesCompleted = false;
+          quizCompleted = false;
+          calf = 0.0;
           _isAttemptsLoading = false;
         });
       }
@@ -168,64 +182,68 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
     }
   }
 
-  Future<void> _decrementAttempts(String activityId) async {
+  Future<void> _consumeAttempt() async {
+    if (_remainingAttemptsGlobal <= 0) return;
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final newAttempts = _remainingAttemptsPerActivity[activityId]! - 1;
-
+      final newAttempts = _remainingAttemptsGlobal - 1;
       await FirebaseFirestore.instance
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
           .doc(widget.moduleData['id'] ?? 'module3')
           .set({
-        'attempts_per_activity': {activityId: newAttempts},
+        'global_attempts': newAttempts,
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      setState(() {
-        _remainingAttemptsPerActivity[activityId] = newAttempts;
-      });
+      setState(() => _remainingAttemptsGlobal = newAttempts);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar los intentos: $e'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
         ),
       );
     }
   }
 
-  Future<void> _markActivityCompleted(String activityId) async {
+  Future<void> _markActivityCompleted(String activityId, double score) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      // Actualiza el estado de la actividad correspondiente
       setState(() {
         switch (activityId) {
           case 'search_algorithms':
             searchAlgorithmsCompleted = true;
+            _activityScores['search_algorithms'] = score;
             break;
           case 'count_vowels_recursive':
             countVowelsRecursiveCompleted = true;
+            _activityScores['count_vowels_recursive'] = score;
             break;
           case 'sum_digits':
             sumDigitsCompleted = true;
+            _activityScores['sum_digits'] = score;
             break;
           case 'bubble_sort_grades':
             bubbleSortGradesCompleted = true;
+            _activityScores['bubble_sort_grades'] = score;
             break;
           case 'queue_simulation':
             queueSimulationCompleted = true;
+            _activityScores['queue_simulation'] = score;
             break;
           case 'study_hours_tracker':
             studyHoursTrackerCompleted = true;
+            _activityScores['study_hours_tracker'] = score;
             break;
           case 'inventory_system':
             inventorySystemCompleted = true;
+            _activityScores['inventory_system'] = score;
             break;
         }
         allActivitiesCompleted = searchAlgorithmsCompleted &&
@@ -235,6 +253,36 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
             queueSimulationCompleted &&
             studyHoursTrackerCompleted &&
             inventorySystemCompleted;
+
+        if (allActivitiesCompleted) {
+          final completedCount = (searchAlgorithmsCompleted ? 1 : 0) +
+              (countVowelsRecursiveCompleted ? 1 : 0) +
+              (sumDigitsCompleted ? 1 : 0) +
+              (bubbleSortGradesCompleted ? 1 : 0) +
+              (queueSimulationCompleted ? 1 : 0) +
+              (studyHoursTrackerCompleted ? 1 : 0) +
+              (inventorySystemCompleted ? 1 : 0);
+          final totalScore = _activityScores.values.reduce((a, b) => a + b);
+          final averageScore = (totalScore / completedCount).round();
+          final calfScore = totalScore / completedCount;
+
+          quizCompleted = true;
+          calf = calfScore;
+
+          FirebaseFirestore.instance
+              .collection('progress')
+              .doc(user.uid)
+              .collection('modules')
+              .doc(widget.moduleData['id'] ?? 'module3')
+              .set({
+            'final_score': averageScore,
+            'quiz_completed': quizCompleted,
+            'calf': calf,
+            'last_updated': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+
+          _showCompletionDialog(calfScore);
+        }
       });
 
       await FirebaseFirestore.instance
@@ -252,6 +300,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
           'study_hours_tracker': studyHoursTrackerCompleted,
           'inventory_system': inventorySystemCompleted,
         },
+        'activity_scores': _activityScores,
         'all_activities_completed': allActivitiesCompleted,
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
@@ -259,14 +308,13 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al registrar la actividad: $e'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
         ),
       );
     }
   }
 
   void _navigateToActivity(Widget screen, String activityId) {
-    int attempts = _remainingAttemptsPerActivity[activityId]!;
     bool isCompleted;
     switch (activityId) {
       case 'search_algorithms':
@@ -294,11 +342,11 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
         isCompleted = false;
     }
 
-    if (attempts <= 0 && !isCompleted) {
+    if (_remainingAttemptsGlobal <= 0 && !isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Has agotado los intentos para "$activityId". Contacta al soporte.'),
-          backgroundColor: const Color(0xFFEF4444),
+          content: Text('Has agotado tus 3 intentos.'),
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -306,9 +354,9 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
 
     if (isCompleted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Esta actividad ya está completada.'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppColors.success,
         ),
       );
       return;
@@ -317,12 +365,26 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => screen),
-    ).then((result) {
-      if (result is bool) {
-        if (result) {
-          _markActivityCompleted(activityId);
+    ).then((result) async {
+      if (result != null && result is Map) {
+        final double score = (result['score'] as num?)?.toDouble() ?? 0.0;
+        final bool passed = result['passed'] as bool? ?? false;
+        if (passed) {
+          await _markActivityCompleted(activityId, score);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('¡Actividad completada! Calificación: ${score.toStringAsFixed(1)}%'),
+              backgroundColor: AppColors.success,
+            ),
+          );
         } else {
-          _decrementAttempts(activityId);
+          await _consumeAttempt();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Actividad no aprobada. Intentos restantes: $_remainingAttemptsGlobal'),
+              backgroundColor: AppColors.error,
+            ),
+          );
         }
       }
     });
@@ -332,41 +394,33 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
   Widget build(BuildContext context) {
     if (_isAttemptsLoading) {
       return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(color: Color(0xFFFFFFFF)),
+        backgroundColor: AppColors.backgroundDark,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.progressActive),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage ?? 'Cargando progreso...',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(duration: 500.ms),
+              if (_errorMessage != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  _errorMessage ?? 'Cargando progreso...',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: const Color(0xFFFFFFFF),
-                    fontWeight: FontWeight.w500,
+                _buildAnimatedButton(
+                  text: 'Reintentar',
+                  onPressed: _loadProgressFromFirestore,
+                  gradient: LinearGradient(
+                    colors: [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
                   ),
-                  textAlign: TextAlign.center,
-                ).animate().fadeIn(duration: 500.ms),
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  _buildAnimatedButton(
-                    text: 'Reintentar',
-                    onPressed: _loadProgressFromFirestore,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
-                    ),
-                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                ],
+                ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
               ],
-            ),
+            ],
           ),
         ),
       );
@@ -379,165 +433,178 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
         (queueSimulationCompleted ? 1 : 0) +
         (studyHoursTrackerCompleted ? 1 : 0) +
         (inventorySystemCompleted ? 1 : 0);
-    final totalAttemptsRemaining = _remainingAttemptsPerActivity.values.reduce((a, b) => a + b);
+    final progressValue = completedCount / 7;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GlassmorphicCard(
-                  child: Text(
-                    'Actividades - ${widget.moduleData['module_title'] ?? 'Módulo 3'}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFFFFFFF),
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Intentos totales restantes',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: const Color(0xFFFFFFFF).withOpacity(0.9),
-                        ),
-                      ),
-                      Text(
-                        '$totalAttemptsRemaining',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: totalAttemptsRemaining > 0 ? const Color(0xFFFFFFFF) : const Color(0xFFEF4444),
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(duration: 500.ms),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Text(
-                    'Progreso: $completedCount/7 actividades completadas',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: const Color(0xFFFFFFFF).withOpacity(0.9),
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 500.ms),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Text(
-                    'Actividades Complementarias',
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF4FC3F7),
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
-                const SizedBox(height: 20),
-                Text(
-                  'Selecciona una actividad para comenzar:',
+      backgroundColor: AppColors.backgroundDark,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GlassmorphicCard(
+                child: Text(
+                  'Actividades - ${widget.moduleData['module_title'] ?? 'Módulo 3'}',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    height: 1.6,
-                    color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
-                ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-                const SizedBox(height: 30),
-                _buildActivityButton(
-                  text: 'Búsqueda Lineal o Binaria',
-                  activityId: 'search_algorithms',
-                  attempts: _remainingAttemptsPerActivity['search_algorithms']!,
-                  isCompleted: searchAlgorithmsCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const SearchAlgorithmsActivityScreen(),
-                    'search_algorithms',
-                  ),
-                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Contar Vocales Recursivamente',
-                  activityId: 'count_vowels_recursive',
-                  attempts: _remainingAttemptsPerActivity['count_vowels_recursive']!,
-                  isCompleted: countVowelsRecursiveCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const CountVowelsRecursiveActivityScreen(),
-                    'count_vowels_recursive',
-                  ),
-                ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Suma de Dígitos',
-                  activityId: 'sum_digits',
-                  attempts: _remainingAttemptsPerActivity['sum_digits']!,
-                  isCompleted: sumDigitsCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const SumDigitsActivityScreen(),
-                    'sum_digits',
-                  ),
-                ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Ordenar Calificaciones (Burbuja)',
-                  activityId: 'bubble_sort_grades',
-                  attempts: _remainingAttemptsPerActivity['bubble_sort_grades']!,
-                  isCompleted: bubbleSortGradesCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const BubbleSortGradesActivityScreen(),
-                    'bubble_sort_grades',
-                  ),
-                ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Simular Cola de Atención',
-                  activityId: 'queue_simulation',
-                  attempts: _remainingAttemptsPerActivity['queue_simulation']!,
-                  isCompleted: queueSimulationCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const QueueSimulationActivityScreen(),
-                    'queue_simulation',
-                  ),
-                ).animate().fadeIn(delay: 550.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Registrar Horas de Estudio',
-                  activityId: 'study_hours_tracker',
-                  attempts: _remainingAttemptsPerActivity['study_hours_tracker']!,
-                  isCompleted: studyHoursTrackerCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const StudyHoursTrackerActivityScreen(),
-                    'study_hours_tracker',
-                  ),
-                ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Sistema de Inventario',
-                  activityId: 'inventory_system',
-                  attempts: _remainingAttemptsPerActivity['inventory_system']!,
-                  isCompleted: inventorySystemCompleted,
-                  onPressed: () => _navigateToActivity(
-                    const InventorySystemActivityScreen(),
-                    'inventory_system',
-                  ),
-                ).animate().fadeIn(delay: 650.ms).slideY(begin: 0.2, end: 0),
-              ],
-            ),
+                ),
+              ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Progreso: $completedCount/7 actividades completadas',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Stack(
+                      children: [
+                        LinearProgressIndicator(
+                          value: progressValue,
+                          minHeight: 8,
+                          backgroundColor: Colors.grey.shade200,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.progressActive),
+                        ).animate().fadeIn(duration: 600.ms),
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.progressActive.withOpacity(0.5),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Intentos restantes: $_remainingAttemptsGlobal/3',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 20),
+              Text(
+                'Selecciona una actividad para comenzar:',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              const SizedBox(height: 20),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.2,
+                children: [
+                  _buildActivityButton(
+                    text: 'Búsqueda Lineal o Binaria',
+                    activityId: 'search_algorithms',
+                    isCompleted: searchAlgorithmsCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const SearchAlgorithmsActivityScreen(),
+                      'search_algorithms',
+                    ),
+                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Contar Vocales Recursivamente',
+                    activityId: 'count_vowels_recursive',
+                    isCompleted: countVowelsRecursiveCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const CountVowelsRecursiveActivityScreen(),
+                      'count_vowels_recursive',
+                    ),
+                  ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Suma de Dígitos',
+                    activityId: 'sum_digits',
+                    isCompleted: sumDigitsCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const SumDigitsActivityScreen(),
+                      'sum_digits',
+                    ),
+                  ).animate().scale(delay: 450.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Ordenar Calificaciones',
+                    activityId: 'bubble_sort_grades',
+                    isCompleted: bubbleSortGradesCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const BubbleSortActivityScreen(),
+                      'bubble_sort_grades',
+                    ),
+                  ).animate().scale(delay: 500.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Simular Cola de Atención',
+                    activityId: 'queue_simulation',
+                    isCompleted: queueSimulationCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const QueueSimulationActivityScreen(),
+                      'queue_simulation',
+                    ),
+                  ).animate().scale(delay: 550.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Registrar Horas de Estudio',
+                    activityId: 'study_hours_tracker',
+                    isCompleted: studyHoursTrackerCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const StudyHoursTrackerActivityScreen(),
+                      'study_hours_tracker',
+                    ),
+                  ).animate().scale(delay: 600.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Sistema de Inventario',
+                    activityId: 'inventory_system',
+                    isCompleted: inventorySystemCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const InventorySystemActivityScreen(),
+                      'inventory_system',
+                    ),
+                  ).animate().scale(delay: 650.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildAnimatedButton(
+                text: 'Finalizar Módulo',
+                onPressed: allActivitiesCompleted ? () {
+                  final completedCount = 7;
+                  final totalScore = _activityScores.values.reduce((a, b) => a + b);
+                  final calfScore = totalScore / completedCount;
+                  _showCompletionDialog(calfScore);
+                } : null,
+                gradient: LinearGradient(
+                  colors: allActivitiesCompleted
+                      ? [AppColors.success, AppColors.success.withOpacity(0.8)]
+                      : [Colors.grey.shade600, Colors.grey.shade400],
+                ),
+              ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+            ],
           ),
         ),
       ),
@@ -547,7 +614,6 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
   Widget _buildActivityButton({
     required String text,
     required String activityId,
-    required int attempts,
     required bool isCompleted,
     required VoidCallback onPressed,
   }) {
@@ -555,43 +621,42 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
       onTap: onPressed,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isCompleted
-                ? [Colors.green.shade600, Colors.green.shade400]
-                : attempts <= 0
-                    ? [Colors.grey.shade600, Colors.grey.shade400]
-                    : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
-          ),
+          color: AppColors.glassmorphicBackground,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.glassmorphicBorder),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
+              color: AppColors.shadowColor,
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
           children: [
-            Flexible(
+            Center(
               child: Text(
-                '$text ($attempts intentos)',
+                text,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFFFFFFF),
+                  color: AppColors.textPrimary,
+                  height: 1.5,
                 ),
-                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
             ),
             if (isCompleted)
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFFFFFFFF),
-                size: 24,
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 24,
+                ),
               ),
           ],
         ),
@@ -614,7 +679,7 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: AppColors.shadowColor,
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -625,9 +690,75 @@ class _Module3ActividadesScreenState extends State<Module3ActividadesScreen> wit
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFFFFFFFF),
+            color: AppColors.textPrimary,
           ),
         ),
+      ),
+    ).animate().scale(duration: 200.ms, curve: Curves.easeOut);
+  }
+
+  void _showCompletionDialog(double calf) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassmorphicBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.celebration, color: AppColors.progressActive, size: 24),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Módulo Completado',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¡Felicidades! Has completado todas las actividades del Módulo 3.',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 12),
+              Text(
+                'Progreso: 7/7 actividades completadas',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              const SizedBox(height: 12),
+              Text(
+                'Calificación final: ${calf.toStringAsFixed(1)}%',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cerrar',
+              style: GoogleFonts.poppins(color: AppColors.progressActive),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -641,16 +772,15 @@ class GlassmorphicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF).withOpacity(0.1),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
+            color: AppColors.shadowColor,
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],

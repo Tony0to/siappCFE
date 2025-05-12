@@ -361,7 +361,7 @@ class _ContenidoScreenState extends State<ContenidoScreen>
     final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
     final syllabusSections = (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
     final moduleImage = widget.moduleData['image'] as String? ??
-        'https://images.unsplash.com/photo-1508313880080-c4bef0730395?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
+        'https://media.istockphoto.com/id/1979289151/photo/data-analysis-science-and-big-data-with-ai-technology-analyst-or-scientist-uses-a-computer.jpg?s=1024x1024&w=is&k=20&c=wsF7degVqBG-duSLryAykNJsjSO8IVWoVP_VLRNCHNU=';
 
     return AnimatedBuilder(
       animation: _animationController,

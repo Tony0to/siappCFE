@@ -505,23 +505,13 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
   }
 
   void navigateNext() {
+    debugPrint('navigateNext called: Completing section ${widget.sectionIndex}');
     widget.onComplete(widget.sectionIndex);
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ContenidoScreen(
-          moduleData: widget.moduleData,
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    );
+    Navigator.pop(context);
   }
 
   Future<bool> navigateBack() async {
+    debugPrint('navigateBack called: Current page $_currentPage');
     if (_currentPage > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -529,19 +519,8 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       );
       return false;
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ContenidoScreen(
-            moduleData: widget.moduleData,
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
-      );
+      debugPrint('Popping back to ContenidoScreen');
+      Navigator.pop(context);
       return true;
     }
   }
@@ -978,6 +957,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
       canPop: _currentPage == 0,
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
+          debugPrint('PopScope triggered in Tema2');
           await navigateBack();
         }
       },
@@ -998,6 +978,7 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () async {
+              debugPrint('IconButton Atrás presionado en Tema2');
               await navigateBack();
             },
           ),

@@ -19,24 +19,28 @@ class ActividadesScreen extends StatefulWidget {
 
 class _ActividadesScreenState extends State<ActividadesScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
-  int _remainingAttempts = 3;
+  int _remainingAttemptsGlobal = 3;
   bool _isAttemptsLoading = true;
-  bool _isAttemptsExhausted = false;
   String? _errorMessage;
   bool hardwareSoftwareCompleted = false;
   bool orderStepsCompleted = false;
   bool flowchartCompleted = false;
   bool allActivitiesCompleted = false;
+  bool quizCompleted = false;
+  double calf = 0.0;
+  Map<String, double> _activityScores = {
+    'hardware_software': 0.0,
+    'order_steps': 0.0,
+    'flowchart': 0.0,
+  };
 
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 800),
     )..forward();
-
     _loadProgressFromFirestore();
   }
 
@@ -49,6 +53,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   Future<void> _loadProgressFromFirestore() async {
     setState(() {
       _isAttemptsLoading = true;
+      _errorMessage = null;
     });
 
     try {
@@ -70,15 +75,25 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
       if (progressDoc.exists) {
         final data = progressDoc.data();
-        final attempts = (data?['intentos'] as num?)?.toInt() ?? 3;
+        final attempts = data?['global_attempts'] as num? ?? 3;
         final completed = data?['completed_activities'] as Map<String, dynamic>? ?? {};
+        final scores = data?['activity_scores'] as Map<String, dynamic>? ?? {};
+        final allCompleted = data?['all_activities_completed'] as bool? ?? false;
+        final quizCompleted = data?['quiz_completed'] as bool? ?? false;
+        final calf = (data?['calf'] as num?)?.toDouble() ?? 0.0;
         setState(() {
-          _remainingAttempts = attempts;
-          _isAttemptsExhausted = attempts <= 0;
+          _remainingAttemptsGlobal = attempts.toInt();
           hardwareSoftwareCompleted = completed['hardware_software'] ?? false;
           orderStepsCompleted = completed['order_steps'] ?? false;
           flowchartCompleted = completed['flowchart'] ?? false;
-          allActivitiesCompleted = hardwareSoftwareCompleted && orderStepsCompleted && flowchartCompleted;
+          _activityScores = {
+            'hardware_software': (scores['hardware_software'] as num?)?.toDouble() ?? 0.0,
+            'order_steps': (scores['order_steps'] as num?)?.toDouble() ?? 0.0,
+            'flowchart': (scores['flowchart'] as num?)?.toDouble() ?? 0.0,
+          };
+          allActivitiesCompleted = allCompleted;
+          this.quizCompleted = quizCompleted;
+          this.calf = calf;
           _isAttemptsLoading = false;
         });
       } else {
@@ -88,24 +103,38 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
             .collection('modules')
             .doc(widget.actividadesData['id'] ?? 'module1')
             .set({
-          'intentos': 3,
+          'global_attempts': 3,
           'completed_activities': {
             'hardware_software': false,
             'order_steps': false,
             'flowchart': false,
           },
+          'activity_scores': {
+            'hardware_software': 0.0,
+            'order_steps': 0.0,
+            'flowchart': 0.0,
+          },
+          'all_activities_completed': false,
+          'quiz_completed': false,
+          'calf': 0.0,
           'last_updated': FieldValue.serverTimestamp(),
           'module_id': widget.actividadesData['id'] ?? 'module1',
-          'module_title': widget.actividadesData['module_title'] ?? 'Módulo',
+          'module_title': widget.actividadesData['module_title'] ?? 'Módulo 1: Introducción',
         }, SetOptions(merge: true));
 
         setState(() {
-          _remainingAttempts = 3;
-          _isAttemptsExhausted = false;
+          _remainingAttemptsGlobal = 3;
           hardwareSoftwareCompleted = false;
           orderStepsCompleted = false;
           flowchartCompleted = false;
+          _activityScores = {
+            'hardware_software': 0.0,
+            'order_steps': 0.0,
+            'flowchart': 0.0,
+          };
           allActivitiesCompleted = false;
+          quizCompleted = false;
+          calf = 0.0;
           _isAttemptsLoading = false;
         });
       }
@@ -117,27 +146,24 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     }
   }
 
-  Future<void> _decrementAttempts() async {
+  Future<void> _consumeAttempt() async {
+    if (_remainingAttemptsGlobal <= 0) return;
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final newAttempts = _remainingAttempts - 1;
-
+      final newAttempts = _remainingAttemptsGlobal - 1;
       await FirebaseFirestore.instance
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
           .doc(widget.actividadesData['id'] ?? 'module1')
           .set({
-        'intentos': newAttempts,
+        'global_attempts': newAttempts,
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      setState(() {
-        _remainingAttempts = newAttempts;
-        _isAttemptsExhausted = newAttempts <= 0;
-      });
+      setState(() => _remainingAttemptsGlobal = newAttempts);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -148,45 +174,55 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     }
   }
 
-  Future<void> _markActivityCompleted(String activityId) async {
-    // Verifica si la actividad ya está completada para evitar actualizaciones innecesarias
-    bool isAlreadyCompleted;
-    switch (activityId) {
-      case 'hardware_software':
-        isAlreadyCompleted = hardwareSoftwareCompleted;
-        break;
-      case 'order_steps':
-        isAlreadyCompleted = orderStepsCompleted;
-        break;
-      case 'flowchart':
-        isAlreadyCompleted = flowchartCompleted;
-        break;
-      default:
-        return;
-    }
-
-    if (isAlreadyCompleted) {
-      return; // No actualiza el progreso si la actividad ya está completada
-    }
-
+  Future<void> _markActivityCompleted(String activityId, double score) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      // Actualiza el estado de la actividad correspondiente
       setState(() {
         switch (activityId) {
           case 'hardware_software':
             hardwareSoftwareCompleted = true;
+            _activityScores['hardware_software'] = score;
             break;
           case 'order_steps':
             orderStepsCompleted = true;
+            _activityScores['order_steps'] = score;
             break;
           case 'flowchart':
             flowchartCompleted = true;
+            _activityScores['flowchart'] = score;
             break;
         }
-        allActivitiesCompleted = hardwareSoftwareCompleted && orderStepsCompleted && flowchartCompleted;
+        allActivitiesCompleted = hardwareSoftwareCompleted &&
+            orderStepsCompleted &&
+            flowchartCompleted;
+
+        if (allActivitiesCompleted) {
+          final completedCount = (hardwareSoftwareCompleted ? 1 : 0) +
+              (orderStepsCompleted ? 1 : 0) +
+              (flowchartCompleted ? 1 : 0);
+          final totalScore = _activityScores.values.reduce((a, b) => a + b);
+          final averageScore = (totalScore / completedCount).round();
+          final calfScore = totalScore / completedCount;
+
+          quizCompleted = true;
+          calf = calfScore;
+
+          FirebaseFirestore.instance
+              .collection('progress')
+              .doc(user.uid)
+              .collection('modules')
+              .doc(widget.actividadesData['id'] ?? 'module1')
+              .set({
+            'final_score': averageScore,
+            'quiz_completed': quizCompleted,
+            'calf': calf,
+            'last_updated': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+
+          _showCompletionDialog(calfScore);
+        }
       });
 
       await FirebaseFirestore.instance
@@ -200,6 +236,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           'order_steps': orderStepsCompleted,
           'flowchart': flowchartCompleted,
         },
+        'activity_scores': _activityScores,
+        'all_activities_completed': allActivitiesCompleted,
         'last_updated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
@@ -213,68 +251,64 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }
 
   void _navigateToActivity(Widget screen, String activityId) {
-    if (_isAttemptsExhausted) {
-      bool isCompleted;
-      switch (activityId) {
-        case 'hardware_software':
-          isCompleted = hardwareSoftwareCompleted;
-          break;
-        case 'order_steps':
-          isCompleted = orderStepsCompleted;
-          break;
-        case 'flowchart':
-          isCompleted = flowchartCompleted;
-          break;
-        default:
-          isCompleted = false;
-      }
+    bool isCompleted;
+    switch (activityId) {
+      case 'hardware_software':
+        isCompleted = hardwareSoftwareCompleted;
+        break;
+      case 'order_steps':
+        isCompleted = orderStepsCompleted;
+        break;
+      case 'flowchart':
+        isCompleted = flowchartCompleted;
+        break;
+      default:
+        isCompleted = false;
+    }
 
-      if (!isCompleted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Has agotado todos tus intentos. Contacta al soporte o intenta de nuevo más tarde.'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        return;
-      }
+    if (_remainingAttemptsGlobal <= 0 && !isCompleted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Has agotado tus 3 intentos.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (isCompleted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Esta actividad ya está completada.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      return;
     }
 
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => screen,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
+      MaterialPageRoute(builder: (context) => screen),
+    ).then((result) async {
+      if (result != null && result is Map) {
+        final double score = (result['score'] as num?)?.toDouble() ?? 0.0;
+        final bool passed = result['passed'] as bool? ?? false;
+        if (passed) {
+          await _markActivityCompleted(activityId, score);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('¡Actividad completada! Calificación: ${score.toStringAsFixed(1)}%'),
+              backgroundColor: AppColors.success,
+            ),
           );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    ).then((result) {
-      if (result is bool) {
-        bool isCompleted;
-        switch (activityId) {
-          case 'hardware_software':
-            isCompleted = hardwareSoftwareCompleted;
-            break;
-          case 'order_steps':
-            isCompleted = orderStepsCompleted;
-            break;
-          case 'flowchart':
-            isCompleted = flowchartCompleted;
-            break;
-          default:
-            isCompleted = false;
-        }
-
-        if (!isCompleted) {
-          if (result) {
-            _markActivityCompleted(activityId);
-          } else {
-            _decrementAttempts();
-          }
+        } else {
+          await _consumeAttempt();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Actividad no aprobada. Intentos restantes: $_remainingAttemptsGlobal'),
+              backgroundColor: AppColors.error,
+            ),
+          );
         }
       }
     });
@@ -284,35 +318,33 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   Widget build(BuildContext context) {
     if (_isAttemptsLoading) {
       return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: AppColors.backgroundDynamic,
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: AppColors.progressActive),
+        backgroundColor: AppColors.backgroundDark,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.progressActive),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage ?? 'Cargando progreso...',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(duration: 500.ms),
+              if (_errorMessage != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  _errorMessage ?? 'Cargando progreso...',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
+                _buildAnimatedButton(
+                  text: 'Reintentar',
+                  onPressed: _loadProgressFromFirestore,
+                  gradient: LinearGradient(
+                    colors: [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
                   ),
-                  textAlign: TextAlign.center,
-                ).animate().fadeIn(duration: 500.ms),
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  _buildAnimatedButton(
-                    text: 'Reintentar',
-                    onPressed: _loadProgressFromFirestore,
-                    gradient: AppColors.primaryGradient,
-                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                ],
+                ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
               ],
-            ),
+            ],
           ),
         ),
       );
@@ -321,110 +353,144 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
     final completedCount = (hardwareSoftwareCompleted ? 1 : 0) +
         (orderStepsCompleted ? 1 : 0) +
         (flowchartCompleted ? 1 : 0);
+    final progressValue = completedCount / 3;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundDynamic,
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GlassmorphicCard(
-                  child: Text(
-                    'Actividades - ${widget.actividadesData['module_title'] ?? 'Módulo'}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Intentos restantes',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        '$_remainingAttempts',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _remainingAttempts > 0 ? AppColors.textPrimary : AppColors.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(duration: 500.ms),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Text(
-                    'Progreso: $completedCount/3 actividades completadas',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 500.ms),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Text(
-                    'Actividades Complementarias',
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.progressBrightBlue,
-                    ),
-                  ),
-                ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
-                const SizedBox(height: 20),
-                Text(
-                  'Selecciona una actividad para comenzar:',
+      backgroundColor: AppColors.backgroundDark,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GlassmorphicCard(
+                child: Text(
+                  'Actividades - ${widget.actividadesData['module_title'] ?? 'Módulo 1'}',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    height: 1.6,
-                    color: AppColors.textSecondary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
-                ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-                const SizedBox(height: 30),
-                _buildActivityButton(
-                  text: 'Clasificar Hardware o Software',
-                  onPressed: () => _navigateToActivity(
-                    const HardwareSoftwareActivityScreen(),
-                    'hardware_software',
-                  ),
-                  isCompleted: hardwareSoftwareCompleted,
-                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Ordenar Pasos de Actividades',
-                  onPressed: () => _navigateToActivity(
-                    const OrderStepsActivityScreen(),
-                    'order_steps',
-                  ),
-                  isCompleted: orderStepsCompleted,
-                ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 16),
-                _buildActivityButton(
-                  text: 'Diseñar Diagrama de Flujo',
-                  onPressed: () => _navigateToActivity(
-                    const FlowchartActivityScreen(),
-                    'flowchart',
-                  ),
-                  isCompleted: flowchartCompleted,
-                ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.2, end: 0),
-              ],
-            ),
+                ),
+              ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Progreso: $completedCount/3 actividades completadas',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Stack(
+                      children: [
+                        LinearProgressIndicator(
+                          value: progressValue,
+                          minHeight: 8,
+                          backgroundColor: Colors.grey.shade200,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.progressActive),
+                        ).animate().fadeIn(duration: 600.ms),
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.progressActive.withOpacity(0.5),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Intentos restantes: $_remainingAttemptsGlobal/3',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 20),
+              Text(
+                'Selecciona una actividad para comenzar:',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              const SizedBox(height: 20),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.4,
+                children: [
+                  _buildActivityButton(
+                    text: 'Clasificar Hardware o Software',
+                    activityId: 'hardware_software',
+                    isCompleted: hardwareSoftwareCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const HardwareSoftwareActivityScreen(),
+                      'hardware_software',
+                    ),
+                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Ordenar Pasos de Actividades',
+                    activityId: 'order_steps',
+                    isCompleted: orderStepsCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const OrderStepsActivityScreen(),
+                      'order_steps',
+                    ),
+                  ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  _buildActivityButton(
+                    text: 'Diseñar Diagrama de Flujo',
+                    activityId: 'flowchart',
+                    isCompleted: flowchartCompleted,
+                    onPressed: () => _navigateToActivity(
+                      const FlowchartActivityScreen(),
+                      'flowchart',
+                    ),
+                  ).animate().scale(delay: 500.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildAnimatedButton(
+                text: 'Finalizar Módulo',
+                onPressed: allActivitiesCompleted
+                    ? () {
+                        final completedCount = 3;
+                        final totalScore = _activityScores.values.reduce((a, b) => a + b);
+                        final calfScore = totalScore / completedCount;
+                        _showCompletionDialog(calfScore);
+                      }
+                    : null,
+                gradient: LinearGradient(
+                  colors: allActivitiesCompleted
+                      ? [AppColors.success, AppColors.success.withOpacity(0.8)]
+                      : [Colors.grey.shade600, Colors.grey.shade400],
+                ),
+              ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+            ],
           ),
         ),
       ),
@@ -433,50 +499,50 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
 
   Widget _buildActivityButton({
     required String text,
-    required VoidCallback onPressed,
+    required String activityId,
     required bool isCompleted,
+    required VoidCallback onPressed,
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: isCompleted
-              ? LinearGradient(
-                  colors: [Colors.green.shade600, Colors.green.shade400],
-                )
-              : _isAttemptsExhausted
-                  ? LinearGradient(
-                      colors: [Colors.grey.shade600, Colors.grey.shade400],
-                    )
-                  : AppColors.primaryGradient,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.glassmorphicBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.glassmorphicBorder),
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowColor,
               blurRadius: 10,
-              spreadRadius: 2,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
           children: [
-            Text(
-              text,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.buttonText,
+            Center(
+              child: Text(
+                text,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
             if (isCompleted)
-              Icon(
-                Icons.check_circle,
-                color: AppColors.buttonText,
-                size: 24,
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 24,
+                ),
               ),
           ],
         ),
@@ -491,17 +557,16 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowColor,
-              blurRadius: 10,
-              spreadRadius: 2,
+              blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
@@ -511,9 +576,75 @@ class _ActividadesScreenState extends State<ActividadesScreen> with TickerProvid
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.buttonText,
+            color: AppColors.textPrimary,
           ),
         ),
+      ),
+    ).animate().scale(duration: 200.ms, curve: Curves.easeOut);
+  }
+
+  void _showCompletionDialog(double calf) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassmorphicBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.celebration, color: AppColors.progressActive, size: 24),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Módulo Completado',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¡Felicidades! Has completado todas las actividades del Módulo 1.',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 12),
+              Text(
+                'Progreso: 3/3 actividades completadas',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              const SizedBox(height: 12),
+              Text(
+                'Calificación final: ${calf.toStringAsFixed(1)}%',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cerrar',
+              style: GoogleFonts.poppins(color: AppColors.progressActive),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -527,17 +658,15 @@ class GlassmorphicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowColor,
             blurRadius: 10,
-            spreadRadius: 2,
             offset: const Offset(0, 4),
           ),
         ],

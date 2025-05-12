@@ -75,7 +75,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
           'video': {
             'title': 'Introducción a los diagramas de flujo',
             'description': 'Este video explica los fundamentos de los diagramas de flujo.',
-            'videoId': 'exampleVideoId',
+            'videoId': 'Kucgc6NpGwc',
           },
         };
         _activities = (data['activities'] as List<dynamic>)
@@ -102,7 +102,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     setState(() {
       _showVideo = true;
       try {
-        final videoId = _contentData?['video']?['videoId']?.toString() ?? 'exampleVideoId';
+        final videoId = _contentData?['video']?['videoId']?.toString() ?? 'Kucgc6NpGwc';
         _youtubeController = YoutubePlayerController(
           initialVideoId: videoId,
           flags: const YoutubePlayerFlags(

@@ -61,8 +61,10 @@ class ContenidoScreenState extends State<ContenidoScreen>
 
   @override
   void dispose() {
+    _animationController.stop(); // Detener la animación antes de desechar
     _animationController.dispose();
     for (var controller in _progressControllers) {
+      controller.stop();
       controller.dispose();
     }
     _progressControllers.clear();
@@ -118,13 +120,22 @@ class ContenidoScreenState extends State<ContenidoScreen>
       if (progressDoc.exists) {
         final data = progressDoc.data();
         final savedProgress = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
-        final completedSections =
-            (data?['completed_sections'] as Map<String, dynamic>?) ?? {};
+        final completedSectionsData = data?['completed_sections'];
+
         setState(() {
           _progress = savedProgress / 100;
-          completedSections.forEach((key, value) {
-            _completedSections[int.parse(key)] = value as bool;
-          });
+          if (completedSectionsData is Map) {
+            completedSectionsData.forEach((key, value) {
+              final sectionIndex = int.tryParse(key) ?? -1;
+              if (sectionIndex >= 0) {
+                _completedSections[sectionIndex] = value as bool? ?? false;
+              }
+            });
+          } else if (completedSectionsData is List) {
+            for (var i = 0; i < completedSectionsData.length; i++) {
+              _completedSections[i] = completedSectionsData[i] as bool? ?? false;
+            }
+          }
         });
       } else {
         setState(() {
@@ -161,8 +172,7 @@ class ContenidoScreenState extends State<ContenidoScreen>
         'module_id': widget.moduleData['id'] ?? 'module2',
         'module_title': widget.moduleData['module_title'] ?? 'Módulo',
         'completed': newProgress >= 1.0,
-        'completed_sections': _completedSections
-            .map((key, value) => MapEntry(key.toString(), value)),
+        'completed_sections': _completedSections.map((key, value) => MapEntry(key.toString(), value)),
       }, SetOptions(merge: true));
 
       final progressController = AnimationController(
@@ -207,196 +217,224 @@ class ContenidoScreenState extends State<ContenidoScreen>
     }
   }
 
+  // Método para manejar el comportamiento del botón "Atrás" del dispositivo
+  Future<bool> _onPopInvoked() async {
+    debugPrint('Botón Atrás del dispositivo presionado');
+    // Detener todas las animaciones para evitar parpadeos
+    _animationController.stop();
+    for (var controller in _progressControllers) {
+      controller.stop();
+    }
+    debugPrint('Animaciones detenidas, ejecutando Navigator.pop');
+    Navigator.pop(context);
+    return true; // Permitir el pop
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (_isLoading || _errorMessage != null) {
-      return Scaffold(
-        body: LoadingScreen(
-          message: _errorMessage ?? 'Cargando contenido...',
-        ),
-      );
-    }
+    return PopScope(
+      canPop: true, // Permitir pop por defecto
+      onPopInvoked: (didPop) async {
+        if (!didPop) {
+          await _onPopInvoked();
+        }
+      },
+      child: Builder(
+        builder: (context) {
+          if (_isLoading || _errorMessage != null) {
+            return Scaffold(
+              body: LoadingScreen(
+                message: _errorMessage ?? 'Cargando contenido...',
+              ),
+            );
+          }
 
-    final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
-    final syllabusSections =
-        (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
-    final moduleImage = widget.moduleData['image'] as String? ??
-        'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
+          final content = widget.moduleData['content'] as Map<String, dynamic>? ?? {};
+          final syllabusSections =
+              (widget.moduleData['syllabus']?['sections'] as List<dynamic>?) ?? [];
+          final moduleImage = widget.moduleData['image'] as String? ??
+              'https://img.freepik.com/free-vector/hand-drawn-web-developers_23-2148819604.jpg';
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            title: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
-                widget.moduleData['module_title'] ?? 'Contenido',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 22,
-                  color: AppColors.textPrimary,
-                  shadows: [
-                    Shadow(
-                      color: AppColors.shadowColor,
-                      blurRadius: 4,
-                      offset: const Offset(1, 1),
+          return AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Scaffold(
+                extendBodyBehindAppBar: true,
+                appBar: AppBar(
+                  title: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      widget.moduleData['module_title'] ?? 'Contenido',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 22,
+                        color: AppColors.textPrimary,
+                        shadows: [
+                          Shadow(
+                            color: AppColors.shadowColor,
+                            blurRadius: 4,
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  centerTitle: true,
+                  iconTheme: IconThemeData(color: AppColors.buttonText),
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    onPressed: () async {
+                      debugPrint('IconButton Atrás presionado');
+                      await _onPopInvoked();
+                    },
+                  ),
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.refresh_rounded),
+                        onPressed: _loadContentWithDelay,
+                        tooltip: 'Actualizar progreso',
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: true,
-            iconTheme: IconThemeData(color: AppColors.buttonText),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
-              onPressed: () => Navigator.pop(context),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _loadContentWithDelay,
-                  tooltip: 'Actualizar progreso',
-                ),
-              ),
-            ],
-          ),
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: AppColors.backgroundDynamic,
-            ),
-            child: content.isEmpty
-                ? _buildEmptyContent()
-                : CustomScrollView(
-                    controller: _scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 80),
-                            _buildModuleHeader(moduleImage),
-                            const SizedBox(height: 20),
-                            _buildProgressIndicator(),
-                            const SizedBox(height: 30),
-                          ],
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final sectionKey = content.keys.elementAt(index);
-                              final section = content[sectionKey];
-                              final syllabusTitle =
-                                  syllabusSections[index]['title'] as String;
-                              final cleanedTitle = syllabusTitle.replaceFirst(
-                                  RegExp(r'^[IVXLC]+\.\s'), '');
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16.0),
-                                child: SectionCard(
-                                  index: index,
-                                  title: cleanedTitle,
-                                  description: section['description'] ?? '',
-                                  onTap: () {
-                                    if (!mounted) return;
-                                    Widget targetScreen;
-                                    switch (index) {
-                                      case 0:
-                                        targetScreen = Tema1(
-                                          section: section,
-                                          sectionTitle: cleanedTitle,
-                                          sectionIndex: index,
-                                          totalSections: content.length,
-                                          content: content,
-                                          moduleData: widget.moduleData,
-                                          onComplete: (index) {
-                                            _updateModuleProgress(index);
-                                          },
-                                        );
-                                        break;
-                                      case 1:
-                                        targetScreen = Tema2(
-                                          section: section,
-                                          sectionTitle: cleanedTitle,
-                                          sectionIndex: index,
-                                          totalSections: content.length,
-                                          content: content,
-                                          moduleData: widget.moduleData,
-                                          onComplete: (index) {
-                                            _updateModuleProgress(index);
-                                          },
-                                        );
-                                        break;
-                                      case 2:
-                                        targetScreen = Tema3(
-                                          section: section,
-                                          sectionTitle: cleanedTitle,
-                                          sectionIndex: index,
-                                          totalSections: content.length,
-                                          content: content,
-                                          moduleData: widget.moduleData,
-                                          onComplete: (index) {
-                                            _updateModuleProgress(index);
-                                          },
-                                        );
-                                        break;
-                                      case 3:
-                                        targetScreen = Tema4(
-                                          section: section,
-                                          sectionTitle: cleanedTitle,
-                                          sectionIndex: index,
-                                          totalSections: content.length,
-                                          content: content,
-                                          moduleData: widget.moduleData,
-                                          onComplete: (index) {
-                                            _updateModuleProgress(index);
-                                          },
-                                        );
-                                        break;
-                                      default:
-                                        return;
-                                    }
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation,
-                                                secondaryAnimation) =>
-                                            targetScreen,
-                                        transitionsBuilder: (context, animation,
-                                            secondaryAnimation, child) {
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: child,
+                body: Container(
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.backgroundDynamic,
+                  ),
+                  child: content.isEmpty
+                      ? _buildEmptyContent()
+                      : CustomScrollView(
+                          controller: _scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 80),
+                                  _buildModuleHeader(moduleImage),
+                                  const SizedBox(height: 20),
+                                  _buildProgressIndicator(),
+                                  const SizedBox(height: 30),
+                                ],
+                              ),
+                            ),
+                            SliverPadding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    final sectionKey = content.keys.elementAt(index);
+                                    final section = content[sectionKey];
+                                    final syllabusTitle =
+                                        syllabusSections[index]['title'] as String;
+                                    final cleanedTitle = syllabusTitle.replaceFirst(
+                                        RegExp(r'^[IVXLC]+\.\s'), '');
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 16.0),
+                                      child: SectionCard(
+                                        index: index,
+                                        title: cleanedTitle,
+                                        description: section['description'] ?? '',
+                                        onTap: () {
+                                          if (!mounted) return;
+                                          Widget targetScreen;
+                                          switch (index) {
+                                            case 0:
+                                              targetScreen = Tema1(
+                                                section: section,
+                                                sectionTitle: cleanedTitle,
+                                                sectionIndex: index,
+                                                totalSections: content.length,
+                                                content: content,
+                                                moduleData: widget.moduleData,
+                                                onComplete: (index) {
+                                                  _updateModuleProgress(index);
+                                                },
+                                              );
+                                              break;
+                                            case 1:
+                                              targetScreen = Tema2(
+                                                section: section,
+                                                sectionTitle: cleanedTitle,
+                                                sectionIndex: index,
+                                                totalSections: content.length,
+                                                content: content,
+                                                moduleData: widget.moduleData,
+                                                onComplete: (index) {
+                                                  _updateModuleProgress(index);
+                                                },
+                                              );
+                                              break;
+                                            case 2:
+                                              targetScreen = Tema3(
+                                                section: section,
+                                                sectionTitle: cleanedTitle,
+                                                sectionIndex: index,
+                                                totalSections: content.length,
+                                                content: content,
+                                                moduleData: widget.moduleData,
+                                                onComplete: (index) {
+                                                  _updateModuleProgress(index);
+                                                },
+                                              );
+                                              break;
+                                            case 3:
+                                              targetScreen = Tema4(
+                                                section: section,
+                                                sectionTitle: cleanedTitle,
+                                                sectionIndex: index,
+                                                totalSections: content.length,
+                                                content: content,
+                                                moduleData: widget.moduleData,
+                                                onComplete: (index) {
+                                                  _updateModuleProgress(index);
+                                                },
+                                              );
+                                              break;
+                                            default:
+                                              return;
+                                          }
+                                          Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                              pageBuilder: (context, animation,
+                                                      secondaryAnimation) =>
+                                                  targetScreen,
+                                              transitionsBuilder: (context, animation,
+                                                  secondaryAnimation, child) {
+                                                return FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                );
+                                              },
+                                              transitionDuration:
+                                                  const Duration(milliseconds: 300),
+                                            ),
                                           );
                                         },
-                                        transitionDuration:
-                                            const Duration(milliseconds: 300),
                                       ),
                                     );
                                   },
+                                  childCount: content.length,
                                 ),
-                              );
-                            },
-                            childCount: content.length,
-                          ),
+                              ),
+                            ),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: 30),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 30),
-                      ),
-                    ],
-                  ),
-          ),
-        );
-      },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -578,7 +616,9 @@ class ContenidoScreenState extends State<ContenidoScreen>
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                await _onPopInvoked();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryButton,
                 foregroundColor: AppColors.buttonText,
@@ -641,6 +681,7 @@ class _SectionCardState extends State<SectionCard>
 
   @override
   void dispose() {
+    _controller.stop();
     _controller.dispose();
     super.dispose();
   }

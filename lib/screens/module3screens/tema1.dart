@@ -75,7 +75,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           'video': {
             'title': 'Video introductorio',
             'description': 'Este video resume los conceptos clave del tema.',
-            'videoId': 'u6fusP6JLgg', // Placeholder; replace with Module 3-specific video ID
+            'videoId': 'f10jKIslSUY', // Placeholder; replace with Module 3-specific video ID
           },
         };
         _activities = (data['activities'] as List<dynamic>)
@@ -101,7 +101,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     setState(() {
       _showVideo = true;
       try {
-        final videoId = _contentData?['video']?['videoId']?.toString() ?? 'u6fusP6JLgg';
+        final videoId = _contentData?['video']?['videoId']?.toString() ?? 'f10jKIslSUY';
         _youtubeController = YoutubePlayerController(
           initialVideoId: videoId,
           flags: const YoutubePlayerFlags(

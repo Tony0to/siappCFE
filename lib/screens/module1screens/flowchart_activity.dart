@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:math'; // Para Random y shuffle
+import 'package:siapp/theme/app_colors.dart';
+import 'dart:math';
 
 class FlowchartActivityScreen extends StatefulWidget {
   final Map<String, dynamic>? moduleData;
@@ -15,7 +14,6 @@ class FlowchartActivityScreen extends StatefulWidget {
 }
 
 class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with TickerProviderStateMixin {
-  // Lista de pasos que se pueden arrastrar
   List<String> _steps = [
     'ingresar x',
     'ingresar y',
@@ -25,31 +23,25 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
     'el resultado es menor',
   ];
 
-  // Mapa para rastrear las posiciones de los pasos arrastrados
   final Map<String, Offset> _stepPositions = {};
   final Map<String, bool> _isPlaced = {};
-  // Mapa para rastrear qué paso está ocupando qué DragTarget
   final Map<String, String?> _dragTargetOccupancy = {};
-
-  // Posiciones correctas para cada elemento del diagrama (usadas para verificación y drop zones)
   final Map<String, Offset> _correctPositions = {
-    'ingresar x': const Offset(110, 90),      // Primer rectángulo
-    'ingresar y': const Offset(110, 160),     // Segundo rectángulo
-    'z=x+y': const Offset(110, 230),          // Tercer rectángulo
-    'z>10': const Offset(110, 300),           // Diamante
-    'El resultado es mayor': const Offset(210, 360), // Paralelogramo derecho
-    'el resultado es menor': const Offset(10, 360),  // Paralelogramo izquierdo
+    'ingresar x': const Offset(110, 90),
+    'ingresar y': const Offset(110, 160),
+    'z=x+y': const Offset(110, 230),
+    'z>10': const Offset(110, 300),
+    'El resultado es mayor': const Offset(210, 360),
+    'el resultado es menor': const Offset(10, 360),
   };
 
-  bool _isVerified = false;
-  bool _isCorrect = false;
-  bool _isAttemptsLoading = true;
-  int _remainingAttempts = 3;
-  bool _isAttemptsExhausted = false;
-  String? _errorMessage;
-  late AnimationController _animationController;
+  String? _statusMessage;
+  bool _isCompleted = false;
+  bool _isLocked = false;
+  double _score = 0.0;
+  List<String> _wrongSteps = [];
 
-  // ScrollController para manejar el desplazamiento del SingleChildScrollView principal
+  late AnimationController _animationController;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -59,20 +51,15 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
       vsync: this,
       duration: const Duration(milliseconds: 800),
     )..forward();
-    
-    // Mezclar los pasos de forma aleatoria
+
     _steps.shuffle(Random());
-    // Inicializar posiciones y estado de colocación
     for (var step in _steps) {
       _stepPositions[step] = Offset.zero;
       _isPlaced[step] = false;
     }
-    // Inicializar el mapa de ocupación de DragTargets
     for (var step in _correctPositions.keys) {
       _dragTargetOccupancy[step] = null;
     }
-    // Cargar intentos desde Firestore
-    _loadAttemptsFromFirestore();
   }
 
   @override
@@ -80,111 +67,6 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadAttemptsFromFirestore() async {
-    setState(() {
-      _isAttemptsLoading = true;
-    });
-
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        setState(() {
-          _errorMessage = 'Usuario no autenticado.';
-          _isAttemptsLoading = false;
-        });
-        return;
-      }
-
-      final progressDoc = await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData?['id'] ?? 'module1')
-          .get();
-
-      if (progressDoc.exists) {
-        final data = progressDoc.data();
-        final attempts = (data?['intentos'] as num?)?.toInt() ?? 3;
-        final completed = data?['completed_activities'] as Map<String, dynamic>? ?? {};
-        setState(() {
-          _remainingAttempts = attempts;
-          _isAttemptsExhausted = attempts <= 0 || (completed['flowchart'] ?? false);
-          _isAttemptsLoading = false;
-        });
-      } else {
-        setState(() {
-          _remainingAttempts = 3;
-          _isAttemptsExhausted = false;
-          _isAttemptsLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error al cargar los intentos: $e';
-        _isAttemptsLoading = false;
-      });
-    }
-  }
-
-  Future<void> _decrementAttempts() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final newAttempts = _remainingAttempts - 1;
-
-      await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData?['id'] ?? 'module1')
-          .set({
-        'intentos': newAttempts,
-        'last_updated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      setState(() {
-        _remainingAttempts = newAttempts;
-        _isAttemptsExhausted = newAttempts <= 0;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al actualizar los intentos: $e'),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
-    }
-  }
-
-  Future<void> _markActivityCompleted() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData?['id'] ?? 'module1')
-          .set({
-        'completed_activities': {'flowchart': true},
-        'last_updated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      setState(() {
-        _isAttemptsExhausted = true;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al registrar la actividad: $e'),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
-    }
   }
 
   void _resetPositions() {
@@ -196,400 +78,454 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
       for (var step in _correctPositions.keys) {
         _dragTargetOccupancy[step] = null;
       }
-      _isVerified = false;
-      _isCorrect = false;
-      // Mezclar de nuevo al reiniciar
+      _statusMessage = null;
+      _isCompleted = false;
+      _isLocked = false;
+      _score = 0.0;
+      _wrongSteps.clear();
       _steps.shuffle(Random());
     });
   }
 
-  bool _isStepOverDragTarget(String step, Offset position) {
-    final correctPos = _correctPositions[step]!;
-    const double width = 100.0;
-    const double height = 40.0;
-    return position.dx >= correctPos.dx &&
-           position.dx <= correctPos.dx + width &&
-           position.dy >= correctPos.dy &&
-           position.dy <= correctPos.dy + height;
-  }
+  Future<void> _verifyDiagram() async {
+    _wrongSteps.clear();
+    int correct = 0;
 
-  void _verifyPositions() {
-    if (_isAttemptsExhausted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No tienes más intentos o la actividad ya está completada.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
-      return;
-    }
-
-    bool allCorrect = true;
-    const double tolerance = 20.0; // Tolerancia en píxeles
-
-    for (var step in _steps) {
-      if (!_isPlaced[step]!) {
-        allCorrect = false;
-        break;
-      }
+    for (final step in _steps) {
       final correctPos = _correctPositions[step]!;
       final currentPos = _stepPositions[step]!;
-      // Verificar si la posición actual está dentro de la tolerancia
-      if ((currentPos.dx - correctPos.dx).abs() > tolerance ||
-          (currentPos.dy - correctPos.dy).abs() > tolerance) {
-        allCorrect = false;
-        break;
+      final placed = _isPlaced[step]!;
+      const tol = 20.0;
+
+      final ok = placed &&
+          (currentPos.dx - correctPos.dx).abs() <= tol &&
+          (currentPos.dy - correctPos.dy).abs() <= tol;
+
+      if (ok) {
+        correct++;
+      } else {
+        _wrongSteps.add(step);
       }
     }
 
+    _score = (correct / _steps.length) * 100;
+    final passed = _score >= 70;
+
     setState(() {
-      _isVerified = true;
-      _isCorrect = allCorrect;
+      _isCompleted = passed;
+      _isLocked = passed;
+      _statusMessage =
+          'Calificación: ${_score.toStringAsFixed(1)}% ${passed ? "✅" : "❌"} Incorrectos: ${_wrongSteps.length}';
     });
 
-    if (allCorrect) {
-      _markActivityCompleted();
-      Navigator.pop(context, true); // Retorna true para indicar que la actividad fue completada
-    } else {
-      _decrementAttempts();
-    }
+    await _showResultDialog(passed);
+  }
+
+  void _completeActivity() {
+    Navigator.pop(context, {'score': _score, 'passed': _isCompleted});
+  }
+
+  Future<void> _showResultDialog(bool passed) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassmorphicBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              passed ? Icons.check_circle : Icons.error,
+              color: passed ? AppColors.success : AppColors.error,
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              passed ? '¡Actividad Completada!' : 'Actividad No Aprobada',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Calificación: ${_score.toStringAsFixed(1)}%',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (_wrongSteps.isNotEmpty && !passed) ...[
+                Text(
+                  'Pasos incorrectos:',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                ..._wrongSteps.map((step) => Padding(
+                      padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+                      child: Text(
+                        '• $step',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    )),
+              ],
+              if (passed)
+                Text(
+                  '¡Felicidades! Has completado la actividad.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (passed) _completeActivity();
+            },
+            child: Text(
+              'Aceptar',
+              style: GoogleFonts.poppins(color: AppColors.progressActive),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGradingInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassmorphicBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.info, color: Colors.white, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              'Criterios de Evaluación',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Para aprobar esta actividad, debes colocar correctamente al menos el 70% de los pasos en el diagrama de flujo.',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '• Cada paso debe estar en su posición correcta dentro de una tolerancia de 20 píxeles.',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '• La calificación se calcula como el porcentaje de pasos colocados correctamente.',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '• Se aprueba con una calificación de 70% o más.',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cerrar',
+              style: GoogleFonts.poppins(color: AppColors.progressActive),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isAttemptsLoading) {
-      return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(color: Color(0xFFFFFFFF)),
-                const SizedBox(height: 16),
-                Text(
-                  _errorMessage ?? 'Cargando progreso...',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: const Color(0xFFFFFFFF),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ).animate().fadeIn(duration: 500.ms),
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  _buildAnimatedButton(
-                    text: 'Reintentar',
-                    onPressed: _loadAttemptsFromFirestore,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
-                    ),
-                  ).animate().scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF003459), Color(0xFF00A8E8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      backgroundColor: AppColors.backgroundDark,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () => Navigator.pop(context),
+            heroTag: null,
+            backgroundColor: AppColors.glassmorphicBackground,
+            child: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GlassmorphicCard(
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFFFF)),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Diseñar Diagrama de Flujo',
-                          style: GoogleFonts.poppins(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFFFFFFFF),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: _showGradingInfo,
+            heroTag: null,
+            backgroundColor: AppColors.glassmorphicBackground,
+            child: const Icon(Icons.info, color: Colors.white),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GlassmorphicCard(
+                child: Text(
+                  'Diseñar Diagrama de Flujo',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
-                ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
-                const SizedBox(height: 20),
-                GlassmorphicCard(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Intentos restantes',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: const Color(0xFFFFFFFF).withOpacity(0.9),
-                        ),
-                      ),
-                      Text(
-                        '$_remainingAttempts',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _remainingAttempts > 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(duration: 500.ms),
-                const SizedBox(height: 20),
+                ),
+              ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
+              const SizedBox(height: 20),
+              if (_statusMessage != null)
                 GlassmorphicCard(
                   child: Text(
-                    'Instrucciones: Arrastra los pasos y colócalos en el lugar correcto sobre el diagrama de flujo.',
+                    _statusMessage!,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: const Color(0xFFFFFFFF).withOpacity(0.9),
+                      color: _isCompleted ? AppColors.success : AppColors.textPrimary,
                     ),
                   ),
                 ).animate().fadeIn(duration: 500.ms),
-                const SizedBox(height: 20),
-                // Área del diagrama de flujo con pasos arrastrables
-                GlassmorphicCard(
-                  child: Stack(
-                    children: [
-                      // Imagen del diagrama de flujo (reemplaza con tu asset)
-                      Container(
-                        height: 500,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2), width: 2),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/flowchart.png'), // Reemplaza con la ruta de tu imagen
-                            fit: BoxFit.contain,
-                          ),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Text(
+                  'Instrucciones: Arrastra los pasos y colócalos en el lugar correcto sobre el diagrama de flujo.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ).animate().fadeIn(duration: 500.ms),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Stack(
+                  children: [
+                    Container(
+                      height: 500,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.glassmorphicBorder, width: 2),
+                        image: const DecorationImage(
+                          image: AssetImage('assets/flowchart.png'),
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      // Capa para los pasos arrastrables y zonas de soltar
-                      SizedBox(
-                        height: 500,
-                        width: double.infinity,
-                        child: Stack(
-                          children: [
-                            // Zonas de soltar (DragTargets) como guías visuales
-                            ..._correctPositions.entries.map((entry) {
-                              final step = entry.key;
-                              return Positioned(
-                                left: entry.value.dx,
-                                top: entry.value.dy,
-                                child: DragTarget<String>(
-                                  builder: (context, candidateData, rejectedData) {
-                                    return Container(
-                                      width: 100,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: _dragTargetOccupancy[step] == null
-                                            ? const Color(0xFFFFFFFF).withOpacity(0.3)
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    );
-                                  },
-                                  onAcceptWithDetails: (details) {
-                                    setState(() {
-                                      final droppedStep = details.data;
-                                      // Ajustar la posición para centrar en el DragTarget
-                                      final targetPos = _correctPositions[step]!;
-                                      final adjustedOffset = Offset(
-                                        targetPos.dx,
-                                        targetPos.dy,
-                                      );
+                    ),
+                    SizedBox(
+                      height: 500,
+                      width: double.infinity,
+                      child: Stack(
+                        children: [
+                          ..._correctPositions.entries.map((entry) {
+                            final step = entry.key;
+                            return Positioned(
+                              left: entry.value.dx,
+                              top: entry.value.dy,
+                              child: DragTarget<String>(
+                                builder: (context, candidateData, rejectedData) {
+                                  return Container(
+                                    width: 100,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: _dragTargetOccupancy[step] == null
+                                          ? AppColors.glassmorphicBackground.withOpacity(0.3)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  );
+                                },
+                                onAcceptWithDetails: (details) {
+                                  if (_isLocked) return;
+                                  setState(() {
+                                    final droppedStep = details.data;
+                                    final targetPos = _correctPositions[step]!;
+                                    final adjustedOffset = Offset(targetPos.dx, targetPos.dy);
 
-                                      // Si el DragTarget ya está ocupado, devolver el paso anterior a la lista
-                                      final currentOccupant = _dragTargetOccupancy[step];
-                                      if (currentOccupant != null) {
-                                        _stepPositions[currentOccupant] = Offset.zero;
-                                        _isPlaced[currentOccupant] = false;
+                                    final currentOccupant = _dragTargetOccupancy[step];
+                                    if (currentOccupant != null) {
+                                      _stepPositions[currentOccupant] = Offset.zero;
+                                      _isPlaced[currentOccupant] = false;
+                                    }
+
+                                    _stepPositions[droppedStep] = adjustedOffset;
+                                    _isPlaced[droppedStep] = true;
+                                    _dragTargetOccupancy[step] = droppedStep;
+
+                                    for (var target in _dragTargetOccupancy.keys) {
+                                      if (target != step && _dragTargetOccupancy[target] == droppedStep) {
+                                        _dragTargetOccupancy[target] = null;
                                       }
-
-                                      // Actualizar la posición y ocupación del paso soltado
-                                      _stepPositions[droppedStep] = adjustedOffset;
-                                      _isPlaced[droppedStep] = true;
-                                      _dragTargetOccupancy[step] = droppedStep;
-
-                                      // Limpiar otros DragTargets que pudieran tener este paso
-                                      for (var target in _dragTargetOccupancy.keys) {
-                                        if (target != step && _dragTargetOccupancy[target] == droppedStep) {
-                                          _dragTargetOccupancy[target] = null;
-                                        }
-                                      }
-                                    });
-                                  },
-                                ),
-                              );
-                            }),
-                            // Pasos arrastrables
-                            ..._steps.map((step) {
-                              return Positioned(
-                                left: _stepPositions[step]!.dx,
-                                top: _stepPositions[step]!.dy,
-                                child: Draggable<String>(
-                                  data: step,
-                                  feedback: Material(
-                                    elevation: 4.0,
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Container(
-                                      width: 100,
-                                      padding: const EdgeInsets.all(6.0),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFFFFFF).withOpacity(0.8),
-                                        borderRadius: BorderRadius.circular(8),
+                                    }
+                                  });
+                                },
+                              ),
+                            );
+                          }),
+                          ..._steps.map((step) {
+                            return Positioned(
+                              left: _stepPositions[step]!.dx,
+                              top: _stepPositions[step]!.dy,
+                              child: Draggable<String>(
+                                data: step,
+                                feedback: Material(
+                                  elevation: 4.0,
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    width: 100,
+                                    padding: const EdgeInsets.all(6.0),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.glassmorphicBackground,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: _wrongSteps.contains(step) && !_isCompleted
+                                          ? Border.all(color: AppColors.error, width: 2)
+                                          : null,
+                                    ),
+                                    child: Text(
+                                      step,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                      child: Text(
-                                        step,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: const Color(0xFF003459),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
-                                      ),
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
                                     ),
                                   ),
-                                  childWhenDragging: Container(),
-                                  child: _isPlaced[step]!
-                                      ? Container(
-                                          width: 100,
-                                          padding: const EdgeInsets.all(6.0),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFFFFFF).withOpacity(0.8),
-                                            borderRadius: BorderRadius.circular(8),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.2),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Text(
-                                            step,
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 12,
-                                              color: const Color(0xFF003459),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                          ),
-                                        )
-                                      : Container(),
                                 ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-                const SizedBox(height: 20),
-                // Lista de pasos disponibles para arrastrar
-                GlassmorphicCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pasos disponibles:',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF4FC3F7),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 200,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2), width: 2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: _steps.map((step) {
-                                return !_isPlaced[step]!
-                                    ? Draggable<String>(
-                                        data: step,
-                                        feedback: Material(
-                                          elevation: 4.0,
+                                childWhenDragging: Container(),
+                                child: _isPlaced[step]!
+                                    ? Container(
+                                        width: 100,
+                                        padding: const EdgeInsets.all(6.0),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.glassmorphicBackground,
                                           borderRadius: BorderRadius.circular(8),
-                                          child: Container(
-                                            width: 100,
-                                            padding: const EdgeInsets.all(6.0),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFFFFFFF).withOpacity(0.8),
-                                              borderRadius: BorderRadius.circular(8),
+                                          border: _wrongSteps.contains(step) && !_isCompleted
+                                              ? Border.all(color: AppColors.error, width: 2)
+                                              : null,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.2),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
                                             ),
-                                            child: Text(
-                                              step,
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                color: const Color(0xFF003459),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                            ),
-                                          ),
+                                          ],
                                         ),
-                                        childWhenDragging: Container(),
+                                        child: Text(
+                                          step,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        ),
+                                      )
+                                    : Container(),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+              const SizedBox(height: 20),
+              GlassmorphicCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pasos disponibles:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.progressActive,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.glassmorphicBorder, width: 2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: _steps.map((step) {
+                              return !_isPlaced[step]!
+                                  ? Draggable<String>(
+                                      data: step,
+                                      feedback: Material(
+                                        elevation: 4.0,
+                                        borderRadius: BorderRadius.circular(8),
                                         child: Container(
                                           width: 100,
                                           padding: const EdgeInsets.all(6.0),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFFFFFFF).withOpacity(0.3),
+                                            color: AppColors.glassmorphicBackground,
                                             borderRadius: BorderRadius.circular(8),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.2),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
                                           ),
                                           child: Text(
                                             step,
                                             style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: const Color(0xFF003459),
+                                              color: AppColors.textPrimary,
                                               fontWeight: FontWeight.w500,
                                             ),
                                             textAlign: TextAlign.center,
@@ -597,65 +533,72 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
                                             maxLines: 2,
                                           ),
                                         ),
-                                      )
-                                    : const SizedBox.shrink();
-                              }).toList(),
-                            ),
+                                      ),
+                                      childWhenDragging: Container(),
+                                      child: Container(
+                                        width: 100,
+                                        padding: const EdgeInsets.all(6.0),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.glassmorphicBackground.withOpacity(0.3),
+                                          borderRadius: BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.2),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          step,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink();
+                            }).toList(),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
-                const SizedBox(height: 20),
-                Center(
-                  child: Column(
-                    children: [
-                      _buildAnimatedButton(
-                        text: 'Revisar',
-                        onPressed: _isAttemptsExhausted ? null : _verifyPositions,
-                        gradient: LinearGradient(
-                          colors: _isAttemptsExhausted
-                              ? [Colors.grey.shade600, Colors.grey.shade400]
-                              : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
-                        ),
-                      ).animate().fadeIn(delay: 400.ms).scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                      const SizedBox(height: 16),
-                      if (_isVerified)
-                        Text(
-                          _isCorrect ? '¡Correcto!' : 'Incorrecto, revisa las posiciones',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: _isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                          ),
-                        ).animate().fadeIn(delay: 500.ms),
-                      const SizedBox(height: 16),
-                      _buildAnimatedButton(
-                        text: 'Reiniciar Actividad',
-                        onPressed: _isAttemptsExhausted ? null : _resetPositions,
-                        gradient: LinearGradient(
-                          colors: _isAttemptsExhausted
-                              ? [Colors.grey.shade600, Colors.grey.shade400]
-                              : [const Color(0xFF007EA7), const Color(0xFF00A8E8)],
-                        ),
-                      ).animate().fadeIn(delay: 600.ms).scale(delay: 600.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                      const SizedBox(height: 16),
-                      _buildAnimatedButton(
-                        text: 'Volver a Actividades',
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF007EA7), Color(0xFF00A8E8)],
-                        ),
-                      ).animate().fadeIn(delay: 700.ms).scale(delay: 700.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 40),
-              ],
-            ),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+              const SizedBox(height: 20),
+              Center(
+                child: Column(
+                  children: [
+                    _buildAnimatedButton(
+                      text: 'Verificar',
+                      onPressed: _isLocked ? null : _verifyDiagram,
+                      gradient: LinearGradient(
+                        colors: _isLocked
+                            ? [Colors.grey.shade600, Colors.grey.shade400]
+                            : [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
+                      ),
+                    ).animate().fadeIn(delay: 400.ms).scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                    const SizedBox(height: 16),
+                    _buildAnimatedButton(
+                      text: 'Reiniciar',
+                      onPressed: _isLocked ? null : _resetPositions,
+                      gradient: LinearGradient(
+                        colors: _isLocked
+                            ? [Colors.grey.shade600, Colors.grey.shade400]
+                            : [AppColors.progressActive, AppColors.progressActive.withOpacity(0.8)],
+                      ),
+                    ).animate().fadeIn(delay: 500.ms).scale(delay: 500.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
         ),
       ),
@@ -688,7 +631,7 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFFFFFFFF),
+            color: AppColors.textPrimary,
           ),
         ),
       ),
@@ -707,13 +650,13 @@ class GlassmorphicCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF).withOpacity(0.1),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFFFFF).withOpacity(0.2)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
+            color: AppColors.shadowColor,
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],

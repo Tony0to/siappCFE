@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -7,6 +9,7 @@ import 'package:siapp/screens/module1screens/actividades.dart';
 import 'package:siapp/screens/ModulesScreen.dart';
 import 'package:siapp/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uuid/uuid.dart';
 
 class Module1Content {
   static Map<String, dynamic>? _content;
@@ -83,6 +86,56 @@ class _Module1IntroScreenState extends State<Module1IntroScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _goToActividadesSi100() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw 'Usuario no autenticado';
+
+      // Lee el documento module1
+      final doc = await FirebaseFirestore.instance
+          .collection('progress')
+          .doc(user.uid)
+          .collection('modules')
+          .doc('module1')
+          .get();
+
+      final porcentaje = (doc.data()?['porcentaje'] as num?)?.toDouble() ?? 0.0;
+
+      if (porcentaje >= 100) {
+        // Accede a las actividades con navigationId
+        final String navigationId = const Uuid().v4(); // Unique ID for this navigation
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, a, b) => ActividadesScreen(
+              actividadesData: Module1Content.content,
+            ),
+            transitionsBuilder: (_, a, b, child) =>
+                FadeTransition(opacity: a, child: child),
+            transitionDuration: const Duration(milliseconds: 300),
+            settings: RouteSettings(
+              arguments: {'navigationId': navigationId, 'moduleId': 'module1'},
+            ),
+          ),
+        );
+      } else {
+        // Avisa al usuario que aún falta contenido teórico
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Debes completar el módulo de temas al 100 % para acceder '
+              'a las actividades prácticas.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al verificar progreso: $e')),
+      );
+    }
   }
 
   @override
@@ -497,22 +550,7 @@ class _Module1IntroScreenState extends State<Module1IntroScreen>
                                         ],
                                       ),
                                       child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            PageRouteBuilder(
-                                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                                  ActividadesScreen(actividadesData: moduleContent),
-                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                                return FadeTransition(
-                                                  opacity: animation,
-                                                  child: child,
-                                                );
-                                              },
-                                              transitionDuration: const Duration(milliseconds: 300),
-                                            ),
-                                          );
-                                        },
+                                        onPressed: _goToActividadesSi100,
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.cardBackground,
                                           foregroundColor: AppColors.textPrimary,

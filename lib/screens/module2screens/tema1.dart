@@ -165,6 +165,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _controller.stop();
     _controller.dispose();
     _youtubeController?.pause();
     _youtubeController?.dispose();
@@ -662,23 +663,13 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
   }
 
   void navigateNext() {
+    debugPrint('navigateNext called: Completing section ${widget.sectionIndex}');
     widget.onComplete(widget.sectionIndex);
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ContenidoScreen(
-          moduleData: widget.moduleData,
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    );
+    Navigator.pop(context);
   }
 
   Future<bool> navigateBack() async {
+    debugPrint('navigateBack called: Current page $_currentPage');
     if (_currentPage > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -686,19 +677,8 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
       );
       return false; // Prevent default pop
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ContenidoScreen(
-            moduleData: widget.moduleData,
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
-      );
+      debugPrint('Popping back to ContenidoScreen');
+      Navigator.pop(context);
       return true; // Allow pop to proceed
     }
   }
@@ -1006,7 +986,10 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  debugPrint('Popping from error screen in Tema1');
+                  Navigator.pop(context);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.textPrimary,
                   foregroundColor: AppColors.backgroundDark,
@@ -1037,9 +1020,10 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
     final totalPages = subsections.length;
 
     return PopScope(
-      canPop: _currentPage == 0,
+      canPop: true, // Permitir pop por defecto
       onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
+          debugPrint('PopScope triggered in Tema1');
           await navigateBack();
         }
       },
@@ -1062,6 +1046,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () async {
+              debugPrint('IconButton Atrás presionado en Tema1');
               await navigateBack();
             },
           ),

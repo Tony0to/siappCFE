@@ -153,42 +153,52 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         return;
       }
 
-      final progressDoc = await FirebaseFirestore.instance
+      final moduleDoc = await FirebaseFirestore.instance
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
-          .doc(widget.actividadesData['id'])
+          .doc('module2')
           .get();
 
-      if (progressDoc.exists) {
-        final data = progressDoc.data();
+      if (moduleDoc.exists) {
+        final data = moduleDoc.data();
         final attempts = (data?['intentos'] as num?)?.toInt() ?? 3;
+        final grade = (data?['calf'] as num?)?.toInt() ?? 0;
+        final quizCompleted = data?['quiz_completed'] as bool? ?? false;
+
         setState(() {
           _remainingAttempts = attempts;
           _isAttemptsExhausted = attempts <= 0;
+          debugPrint(
+              'Loaded module2 data: intentos=$attempts, calf=$grade, quiz_completed=$quizCompleted');
         });
       } else {
         await FirebaseFirestore.instance
             .collection('progress')
             .doc(user.uid)
             .collection('modules')
-            .doc(widget.actividadesData['id'])
+            .doc('module2')
             .set({
           'intentos': 3,
+          'calf': 0,
+          'quiz_completed': false,
           'last_updated': FieldValue.serverTimestamp(),
-          'module_id': widget.actividadesData['id'],
-          'module_title': widget.actividadesData['module_title'] ?? 'Módulo',
+          'module_id': 'module2',
+          'module_title':
+              widget.actividadesData['module_title'] ?? 'Módulo 2: Lógica de Programación',
         }, SetOptions(merge: true));
 
         setState(() {
           _remainingAttempts = 3;
           _isAttemptsExhausted = false;
+          debugPrint('Initialized module2 document with default values');
         });
       }
     } catch (e) {
       setState(() {
         _errorMessage = 'Error al cargar los intentos: $e';
       });
+      debugPrint('Error loading attempts: $e');
     }
   }
 
@@ -203,7 +213,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
-          .doc(widget.actividadesData['id'])
+          .doc('module2')
           .set({
         'intentos': newAttempts,
         'last_updated': FieldValue.serverTimestamp(),
@@ -212,6 +222,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       setState(() {
         _remainingAttempts = newAttempts;
         _isAttemptsExhausted = newAttempts <= 0;
+        debugPrint('Decremented attempts to $newAttempts');
       });
     } catch (e) {
       if (mounted) {
@@ -222,6 +233,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           ),
         );
       }
+      debugPrint('Error decrementing attempts: $e');
     }
   }
 
@@ -236,7 +248,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           .collection('progress')
           .doc(user.uid)
           .collection('modules')
-          .doc(widget.actividadesData['id'])
+          .doc('module2')
           .set({
         'calf': percentage,
         'quiz_completed': quizCompleted,
@@ -246,6 +258,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       if (percentage < 70) {
         await _decrementAttempts();
       }
+      debugPrint(
+          'Saved final grade: percentage=$percentage, quiz_completed=$quizCompleted');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -255,6 +269,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           ),
         );
       }
+      debugPrint('Error saving final grade: $e');
     }
   }
 
@@ -297,16 +312,16 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.codeBoxBackground,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.codeBoxBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowColor,
-            blurRadius: 8,
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -315,28 +330,28 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: AppColors.codeBoxLabel,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               language.toLowerCase() == 'pseudocode'
                   ? 'Pseudocódigo'
                   : 'Código',
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.shadowColor,
@@ -354,12 +369,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         TextSpan(
                           text: code,
                           style: GoogleFonts.sourceCodePro(
-                            fontSize: 14,
+                            fontSize: 13,
                             height: 1.4,
                           ),
                         ),
                         style: GoogleFonts.sourceCodePro(
-                          fontSize: 14,
+                          fontSize: 13,
                           height: 1.4,
                         ),
                       )
@@ -367,9 +382,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         code,
                         language: highlightLanguage,
                         theme: githubTheme,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(10),
                         textStyle: GoogleFonts.sourceCodePro(
-                          fontSize: 14,
+                          fontSize: 13,
                           height: 1.4,
                         ),
                       ),
@@ -400,7 +415,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
             Text(
               text,
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
@@ -426,7 +441,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           Text(
             text,
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),
@@ -440,7 +455,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         Text(
           question.trim(),
           style: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: AppColors.textPrimary,
           ),
@@ -481,44 +496,29 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            selectedExercise == null
-                ? _buildMainMenu()
-                : _buildExerciseDetail(),
-            if (selectedExercise != null) ...[
-              Positioned(
-                top: 16,
-                left: 16,
-                child: FloatingActionButton(
-                  heroTag: 'back_button',
-                  onPressed: () {
-                    setState(() {
-                      selectedExercise = null;
-                      selectedExerciseIndex = null;
-                    });
-                  },
-                  backgroundColor: AppColors.codeBoxLabel,
-                  child: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-                ).animate().scale(
-                    delay: 200.ms, duration: 400.ms, curve: Curves.easeOutBack),
+    return WillPopScope(
+      onWillPop: () async {
+        if (selectedExercise != null && !exerciseCompleted[selectedExerciseIndex!]) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Debes completar todas las preguntas antes de salir.',
+                style: GoogleFonts.poppins(color: AppColors.textPrimary),
               ),
-              Positioned(
-                top: 16,
-                right: 16,
-                child: FloatingActionButton(
-                  heroTag: 'grading_button',
-                  onPressed: _showGradingInfo,
-                  backgroundColor: AppColors.codeBoxLabel,
-                  child: Icon(Icons.score, color: AppColors.textPrimary),
-                ).animate().scale(
-                    delay: 200.ms, duration: 400.ms, curve: Curves.easeOutBack),
-              ),
-            ],
-          ],
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: SafeArea(
+          child: selectedExercise == null
+              ? _buildMainMenu()
+              : _buildExerciseDetail(),
         ),
       ),
     );
@@ -527,35 +527,44 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   Widget _buildMainMenu() {
     final allCompleted = exerciseCompleted.every((completed) => completed);
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _contentData?['sectionTitle']?.toString() ?? 'Actividades',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+          GlassmorphicCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Actividades Prácticas del Módulo 2',
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ).animate().fadeIn(duration: 500.ms),
+                const SizedBox(height: 12),
+                Text(
+                  'En estas actividades podrás poner a prueba tus conocimientos aprendidos hasta ahora, así como fortalecerlos y agregar más.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
+              ],
             ),
-          ).animate().fadeIn(duration: 500.ms),
-          const SizedBox(height: 10),
-          Text(
-            _contentData?['sectionDescription']?.toString() ??
-                'Selecciona un ejercicio para continuar.',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
-          ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
+          ),
+          const SizedBox(height: 16),
+          _buildAttemptsIndicator().animate().fadeIn(duration: 500.ms),
           const SizedBox(height: 20),
           Expanded(
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
+                crossAxisSpacing: 18,
+                mainAxisSpacing: 18,
+                childAspectRatio: 1.25,
               ),
               itemCount: exercises.length,
               itemBuilder: (context, index) {
@@ -579,21 +588,24 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          _buildAnimatedButton(
-            text: 'Completar',
-            onPressed:
-                allCompleted && !_isAttemptsExhausted && !_isFinalGradeSubmitted
-                    ? _showFinalCompletionDialog
-                    : null,
-            gradient: LinearGradient(
-              colors: allCompleted &&
-                      !_isAttemptsExhausted &&
-                      !_isFinalGradeSubmitted
-                  ? [AppColors.success, AppColors.success.withOpacity(0.8)]
-                  : [Colors.grey.shade600, Colors.grey.shade400],
-            ),
-          ).animate().scale(
-              delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+          Center(
+            child: _buildAnimatedButton(
+              text: 'Completar',
+              onPressed:
+                  allCompleted && !_isAttemptsExhausted && !_isFinalGradeSubmitted
+                      ? _showFinalCompletionDialog
+                      : null,
+              gradient: LinearGradient(
+                colors: allCompleted &&
+                        !_isAttemptsExhausted &&
+                        !_isFinalGradeSubmitted
+                    ? [AppColors.success, AppColors.success.withOpacity(0.8)]
+                    : [Colors.grey.shade600, Colors.grey.shade400],
+              ),
+            ).animate().scale(
+                delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -605,12 +617,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       required VoidCallback onPressed}) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: AppColors.glassmorphicBackground,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.glassmorphicBorder),
           boxShadow: [
             BoxShadow(
@@ -626,7 +638,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
               child: Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -640,7 +652,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                 child: Icon(
                   Icons.check_circle,
                   color: AppColors.success,
-                  size: 24,
+                  size: 22,
                 ),
               ),
           ],
@@ -655,59 +667,57 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
 
     return SingleChildScrollView(
       controller: _scrollController,
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildProgressHeader().animate().slideY(
               begin: -0.2, end: 0, duration: 600.ms, curve: Curves.easeOut),
-          const SizedBox(height: 20),
-          _buildAttemptsIndicator().animate().fadeIn(duration: 500.ms),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
           _buildExerciseTitle(currentExercise)
               .animate()
               .fadeIn(duration: 500.ms)
               .slideX(begin: -0.2, end: 0),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           Text(
             currentExercise['description']?.toString() ??
                 'Descripción no disponible',
             style: GoogleFonts.poppins(
-              fontSize: 15,
+              fontSize: 14,
               color: AppColors.textSecondary,
               height: 1.5,
             ),
           ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           if (isDiagramExercise) ...[
             _buildFlowChartSection(currentExercise)
                 .animate()
                 .fadeIn(delay: 400.ms)
                 .slideY(begin: 0.2, end: 0),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
             _buildPseudocodeSection(currentExercise)
                 .animate()
                 .fadeIn(delay: 500.ms)
                 .slideY(begin: 0.2, end: 0),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
           ],
           _buildRequirementsSection(currentExercise)
               .animate()
               .fadeIn(delay: 600.ms)
               .slideY(begin: 0.2, end: 0),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           if (!isDiagramExercise) ...[
             _buildExamplesSection(currentExercise)
                 .animate()
                 .fadeIn(delay: 700.ms)
                 .slideY(begin: 0.2, end: 0),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
           ],
           _buildQuizQuestions(currentExercise)
               .animate()
               .fadeIn(delay: 800.ms)
               .slideY(begin: 0.2, end: 0),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           _buildRelatedTopics(currentExercise)
               .animate()
               .fadeIn(delay: 900.ms)
@@ -724,41 +734,16 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
 
   Widget _buildProgressHeader() {
     return GlassmorphicCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Ejercicio ${selectedExerciseIndex! + 1} de ${exercises.length}',
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
-          ),
-          const SizedBox(height: 8),
-          Stack(
-            children: [
-              LinearProgressIndicator(
-                value: (selectedExerciseIndex! + 1) / exercises.length,
-                minHeight: 8,
-                backgroundColor: Colors.grey.shade200,
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(AppColors.progressActive),
-              ).animate().fadeIn(duration: 600.ms),
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.progressActive.withOpacity(0.5),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -773,14 +758,14 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           Text(
             'Intentos restantes',
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 15,
               color: AppColors.textPrimary,
             ),
           ),
           Text(
             '$_remainingAttempts',
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
               color: _remainingAttempts > 0
                   ? AppColors.textPrimary
@@ -797,7 +782,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       child: Text(
         exercise['title']?.toString() ?? 'Ejercicio sin título',
         style: GoogleFonts.poppins(
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
@@ -817,12 +802,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.account_tree, color: AppColors.chipTopic, size: 24),
+              Icon(Icons.account_tree, color: AppColors.chipTopic, size: 22),
               const SizedBox(width: 8),
               Text(
                 'Diagrama de Flujo',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -833,29 +818,29 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           Text(
             diagramDescription,
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textSecondary,
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(
             width: double.infinity,
             height: 600.0,
             decoration: BoxDecoration(
               color: AppColors.neutralCard,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.glassmorphicBorder),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.shadowColor,
-                  blurRadius: 8,
+                  blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               child: InteractiveViewer(
                 boundaryMargin: const EdgeInsets.all(20),
                 minScale: 0.5,
@@ -884,7 +869,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           Text(
             'Pellizca para hacer zoom • Desliza para mover',
             style: GoogleFonts.poppins(
-              fontSize: 12,
+              fontSize: 11,
               color: AppColors.textSecondary,
               fontStyle: FontStyle.italic,
             ),
@@ -905,12 +890,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.code, color: AppColors.chipTopic, size: 24),
+              Icon(Icons.code, color: AppColors.chipTopic, size: 22),
               const SizedBox(width: 8),
               Text(
                 'Pseudocódigo',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -937,12 +922,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.checklist, color: AppColors.chipTopic, size: 24),
+              Icon(Icons.checklist, color: AppColors.chipTopic, size: 22),
               const SizedBox(width: 8),
               Text(
                 'Requisitos',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -954,7 +939,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
             Text(
               'No se especificaron requisitos',
               style: GoogleFonts.poppins(
-                  fontSize: 14, color: AppColors.textSecondary),
+                  fontSize: 13, color: AppColors.textSecondary),
             )
           else
             ...requirements.asMap().entries.map<Widget>((entry) {
@@ -966,13 +951,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.fiber_manual_record,
-                        size: 12, color: AppColors.chipTopic),
+                        size: 10, color: AppColors.chipTopic),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         req,
                         style: GoogleFonts.poppins(
-                            fontSize: 14, color: AppColors.textSecondary),
+                            fontSize: 13, color: AppColors.textSecondary),
                       ),
                     ),
                   ],
@@ -991,12 +976,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.lightbulb, color: AppColors.chipTopic, size: 24),
+              Icon(Icons.lightbulb, color: AppColors.chipTopic, size: 22),
               const SizedBox(width: 8),
               Text(
                 'Ejemplo',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -1007,13 +992,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           Text(
             'Entrada: ${exercise['exampleInput']?.toString() ?? 'No especificado'}',
             style: GoogleFonts.poppins(
-                fontSize: 14, color: AppColors.textSecondary),
+                fontSize: 13, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'Salida: ${exercise['exampleOutput']?.toString() ?? 'No especificado'}',
             style: GoogleFonts.poppins(
-                fontSize: 14, color: AppColors.textSecondary),
+                fontSize: 13, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -1031,23 +1016,23 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
+                Icon(Icons.quiz, color: AppColors.chipTopic, size: 22),
                 const SizedBox(width: 8),
                 Text(
                   'Evaluación de conocimiento',
                   style: GoogleFonts.poppins(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Text(
               'No hay preguntas disponibles',
               style: GoogleFonts.poppins(
-                  fontSize: 14, color: AppColors.textSecondary),
+                  fontSize: 13, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -1061,22 +1046,22 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
+                Icon(Icons.quiz, color: AppColors.chipTopic, size: 22),
                 const SizedBox(width: 8),
                 Text(
                   'Evaluación de conocimiento',
                   style: GoogleFonts.poppins(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Text(
               'Has agotado todos tus intentos. No puedes responder más preguntas.',
-              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.error),
+              style: GoogleFonts.poppins(fontSize: 13, color: AppColors.error),
             ),
           ],
         ),
@@ -1089,19 +1074,19 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
+              Icon(Icons.quiz, color: AppColors.chipTopic, size: 22),
               const SizedBox(width: 8),
               Text(
                 'Evaluación de conocimiento',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           ...quiz.asMap().entries.map((entry) {
             final questionIndex = entry.key;
             final question = entry.value;
@@ -1117,7 +1102,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                 child: Text(
                   'Error: Pregunta inválida',
                   style:
-                      GoogleFonts.poppins(fontSize: 14, color: AppColors.error),
+                      GoogleFonts.poppins(fontSize: 13, color: AppColors.error),
                 ),
               );
             }
@@ -1155,7 +1140,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       onTap: (isAnswered || _isAttemptsExhausted)
                           ? null
                           : () {
@@ -1176,7 +1161,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                                             ? Icons.check_circle
                                             : Icons.error,
                                         color: AppColors.textPrimary,
-                                        size: 20,
+                                        size: 18,
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
@@ -1203,10 +1188,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                            horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: bgColor,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: borderColor),
                           boxShadow: [
                             if (isIncomplete && !isAnswered)
@@ -1222,8 +1207,8 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                           children: [
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              width: 24,
-                              height: 24,
+                              width: 22,
+                              height: 22,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: borderColor),
@@ -1234,17 +1219,17 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                               child: isSelected
                                   ? Icon(
                                       isCorrect ? Icons.check : Icons.close,
-                                      size: 16,
+                                      size: 14,
                                       color: AppColors.textPrimary,
                                     )
                                   : null,
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 optionText,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   color: textColor,
                                   fontWeight: isSelected
                                       ? FontWeight.w600
@@ -1261,7 +1246,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         curve: Curves.easeOutBack),
                   );
                 }),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
               ],
             );
           }),
@@ -1279,12 +1264,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.tag, color: AppColors.chipTopic, size: 24),
+              Icon(Icons.tag, color: AppColors.chipTopic, size: 22),
               const SizedBox(width: 8),
               Text(
                 'Temas relacionados',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
@@ -1296,7 +1281,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
             Text(
               'No se especificaron temas',
               style: GoogleFonts.poppins(
-                  fontSize: 14, color: AppColors.textSecondary),
+                  fontSize: 13, color: AppColors.textSecondary),
             )
           else
             Wrap(
@@ -1309,7 +1294,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   label: Text(
                     topic,
                     style: GoogleFonts.poppins(
-                        fontSize: 12, color: AppColors.textPrimary),
+                        fontSize: 11, color: AppColors.textPrimary),
                   ),
                   backgroundColor: AppColors.chipTopic,
                   elevation: 2,
@@ -1324,23 +1309,19 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   }
 
   Widget _buildNavigationControls() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildAnimatedButton(
-          text: 'Finalizar',
-          onPressed: exerciseCompleted[selectedExerciseIndex!]
-              ? _showCompletionDialog
-              : null,
-          gradient: LinearGradient(
-            colors: exerciseCompleted[selectedExerciseIndex!]
-                ? [AppColors.success, AppColors.success.withOpacity(0.8)]
-                : [Colors.grey.shade600, Colors.grey.shade400],
-          ),
-        )
-            .animate()
-            .scale(delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
-      ],
+    return Center(
+      child: _buildAnimatedButton(
+        text: 'Finalizar',
+        onPressed: exerciseCompleted[selectedExerciseIndex!]
+            ? _showCompletionDialog
+            : null,
+        gradient: LinearGradient(
+          colors: exerciseCompleted[selectedExerciseIndex!]
+              ? [AppColors.success, AppColors.success.withOpacity(0.8)]
+              : [Colors.grey.shade600, Colors.grey.shade400],
+        ),
+      ).animate().scale(
+          delay: 300.ms, duration: 400.ms, curve: Curves.easeOutBack),
     );
   }
 
@@ -1351,26 +1332,29 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        width: 180,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowColor,
-              blurRadius: 8,
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+        child: Center(
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
       ),
@@ -1401,11 +1385,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.glassmorphicBackground,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Row(
             children: [
               Icon(Icons.celebration,
-                  color: AppColors.progressActive, size: 24),
+                  color: AppColors.progressActive, size: 22),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
@@ -1427,7 +1411,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   child: Text(
                     'Respuestas correctas: $correctAnswers/$totalQuestions',
                     style: GoogleFonts.poppins(
-                        fontSize: 16, color: AppColors.textPrimary),
+                        fontSize: 15, color: AppColors.textPrimary),
                     softWrap: true,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1439,19 +1423,18 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                     children: [
                       LinearProgressIndicator(
                         value: percentage / 100,
-                        minHeight: 12,
+                        minHeight: 10,
                         backgroundColor: Colors.grey.shade200,
                         valueColor: AlwaysStoppedAnimation<Color>(
                             _getScoreColor(percentage)),
                       ).animate().fadeIn(duration: 600.ms),
                       Container(
-                        height: 12,
+                        height: 10,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(5),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  _getScoreColor(percentage).withOpacity(0.5),
+                              color: _getScoreColor(percentage).withOpacity(0.5),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -1466,7 +1449,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   child: Text(
                     'Puntuación: $percentage%',
                     style: GoogleFonts.poppins(
-                        fontSize: 16, color: AppColors.textPrimary),
+                        fontSize: 15, color: AppColors.textPrimary),
                     softWrap: true,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1476,7 +1459,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   child: Text(
                     'Nivel: ${_getGradeLevel(percentage)}',
                     style: GoogleFonts.poppins(
-                        fontSize: 16, color: AppColors.textPrimary),
+                        fontSize: 15, color: AppColors.textPrimary),
                     softWrap: true,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1544,11 +1527,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
             child: AlertDialog(
               backgroundColor: AppColors.glassmorphicBackground,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(14)),
               title: Row(
                 children: [
                   Icon(Icons.celebration,
-                      color: AppColors.progressActive, size: 24),
+                      color: AppColors.progressActive, size: 22),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
@@ -1570,7 +1553,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       child: Text(
                         'Respuestas correctas: $correctAnswers/$totalQuestions',
                         style: GoogleFonts.poppins(
-                            fontSize: 16, color: AppColors.textPrimary),
+                            fontSize: 15, color: AppColors.textPrimary),
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1582,15 +1565,15 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         children: [
                           LinearProgressIndicator(
                             value: percentage / 100,
-                            minHeight: 12,
+                            minHeight: 10,
                             backgroundColor: Colors.grey.shade200,
                             valueColor: AlwaysStoppedAnimation<Color>(
                                 _getScoreColor(percentage)),
                           ).animate().fadeIn(duration: 600.ms),
                           Container(
-                            height: 12,
+                            height: 10,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(5),
                               boxShadow: [
                                 BoxShadow(
                                   color: _getScoreColor(percentage)
@@ -1609,7 +1592,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       child: Text(
                         'Puntuación: $percentage%',
                         style: GoogleFonts.poppins(
-                            fontSize: 16, color: AppColors.textPrimary),
+                            fontSize: 15, color: AppColors.textPrimary),
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1619,7 +1602,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       child: Text(
                         'Nivel: ${_getGradeLevel(percentage)}',
                         style: GoogleFonts.poppins(
-                            fontSize: 16, color: AppColors.textPrimary),
+                            fontSize: 15, color: AppColors.textPrimary),
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1630,7 +1613,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         child: Text(
                           'Se ha descontado 1 intento porque tu puntuación es menor a 70%. Intentos restantes: $_remainingAttempts',
                           style: GoogleFonts.poppins(
-                              fontSize: 14, color: AppColors.error),
+                              fontSize: 13, color: AppColors.error),
                           softWrap: true,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1744,10 +1727,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         child: AlertDialog(
           backgroundColor: AppColors.glassmorphicBackground,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Row(
             children: [
-              Icon(Icons.info, color: AppColors.progressActive, size: 24),
+              Icon(Icons.info, color: AppColors.progressActive, size: 22),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
@@ -1768,7 +1751,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                 Text(
                   'Criterios',
                   style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary),
                 ).animate().fadeIn(duration: 500.ms),
@@ -1777,7 +1760,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   Text(
                     'No se especificaron criterios',
                     style: GoogleFonts.poppins(
-                        fontSize: 14, color: AppColors.textSecondary),
+                        fontSize: 13, color: AppColors.textSecondary),
                   ).animate().fadeIn(delay: 200.ms)
                 else
                   ...criteria.asMap().entries.map<Widget>((entry) {
@@ -1791,13 +1774,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.fiber_manual_record,
-                              size: 12, color: AppColors.progressActive),
+                              size: 10, color: AppColors.progressActive),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
                               aspectText,
                               style: GoogleFonts.poppins(
-                                  fontSize: 14, color: AppColors.textSecondary),
+                                  fontSize: 13, color: AppColors.textSecondary),
                               softWrap: true,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1808,11 +1791,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         .animate()
                         .fadeIn(delay: (100 * index).ms, duration: 400.ms);
                   }),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 Text(
                   'Escala de calificaciones',
                   style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary),
                 ).animate().fadeIn(delay: 300.ms),
@@ -1821,7 +1804,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   Text(
                     'No se especificó escala',
                     style: GoogleFonts.poppins(
-                        fontSize: 14, color: AppColors.textSecondary),
+                        fontSize: 13, color: AppColors.textSecondary),
                   ).animate().fadeIn(delay: 400.ms)
                 else
                   ...conversion.asMap().entries.map<Widget>((entry) {
@@ -1834,13 +1817,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.fiber_manual_record,
-                              size: 12, color: AppColors.progressActive),
+                              size: 10, color: AppColors.progressActive),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
                               gradeText,
                               style: GoogleFonts.poppins(
-                                  fontSize: 14, color: AppColors.textSecondary),
+                                  fontSize: 13, color: AppColors.textSecondary),
                               softWrap: true,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1877,10 +1860,10 @@ class GlassmorphicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.glassmorphicBackground,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(

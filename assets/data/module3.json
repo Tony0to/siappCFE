@@ -75,7 +75,7 @@
     "content": {
         "section_1": {
             "title": "I. Conceptos fundamentales de un algoritmo",
-            "sectionImage": "",
+            "sectionImage": "https://cdn.pixabay.com/photo/2021/03/11/12/58/laptop-6087062_1280.png",
             "welcomeText": "¡Es hora de sumergirnos en el fascinante mundo de los algoritmos! En esta sección, exploraremos los conceptos fundamentales que definen un algoritmo, desde su estructura hasta su eficiencia. Comprender estos principios te permitirá diseñar soluciones lógicas y efectivas para una amplia variedad de problemas. ¡Prepárate para dar tus primeros pasos hacia el diseño de algoritmos robustos!",
             "subsections": [
                 {
@@ -180,7 +180,7 @@
         },
         "section_2": {
             "title": "II. Algoritmos de búsqueda y ordenamiento",
-            "sectionImage": "",
+            "sectionImage": "https://cdn.pixabay.com/photo/2024/06/13/17/40/shirt-8828108_1280.png",
             "welcomeText": "En esta sección, exploraremos algoritmos esenciales para buscarข้อมูล y ordenar datos. Estas técnicas son fundamentales en la programación, ya que permiten localizar información rápidamente y organizar datos de manera eficiente. ¡Prepárate para aprender cómo optimizar tus soluciones!",
             "subsections": [
                 {
@@ -251,7 +251,7 @@
         },
         "section_3": {
             "title": "III. Algoritmos recursivos y estructurados",
-            "sectionImage": "",
+            "sectionImage": "https://cdn.pixabay.com/photo/2017/10/27/18/38/infographic-2895154_1280.png",
             "welcomeText": "La recursividad es una técnica poderosa para resolver problemas complejos dividiéndolos en subproblemas más simples. En esta sección, aprenderás cómo funcionan los algoritmos recursivos, cómo implementarlos y cuándo preferirlos frente a enfoques iterativos. ¡Prepárate para explorar esta elegante forma de programar!",
             "subsections": [
                 {
@@ -354,7 +354,7 @@
         },
         "section_4": {
             "title": "IV. Aplicación de algoritmos en problemas reales",
-            "sectionImage": "",
+            "sectionImage": "https://cdn.pixabay.com/photo/2021/10/25/14/44/confused-6741161_1280.png",
             "welcomeText": "¡Llegó el momento de llevar los algoritmos al mundo real! En esta sección, aplicarás lo aprendido para resolver problemas cotidianos y desarrollar proyectos prácticos. Descubrirás cómo los algoritmos y las estructuras de datos trabajan juntos para crear soluciones eficientes y escalables.",
             "subsections": [
                 {
