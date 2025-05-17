@@ -113,10 +113,17 @@
         },
         {
           "title": "¿Cómo funciona una computadora?",
+          "Image": "https://media.istockphoto.com/id/1164357236/es/foto/desarrollo-de-programadores-que-leen-c%C3%B3digos-inform%C3%A1ticos-desarrollo-de-dise%C3%B1o-de-sitios-web-y.jpg?s=1024x1024&w=is&k=20&c=e1B6Bj6O2sa-_Nu6_iIFRQ9RNA9nc8JqmCXPct9d0eY=",
           "content": "En esencia, una computadora es una máquina diseñada para procesar información. Aunque tiene muchas partes y procesos complejos, podemos entender su funcionamiento básico mediante estos conceptos:\n\n**Componentes básicos**: Una computadora está compuesta principalmente por tres partes esenciales: el hardware, el software y los datos.",
           "style": [
             {"text": "procesar información", "fontWeight": "w700"},
             {"text": "hardware, el software y los datos", "fontWeight": "w700"}
+          ],
+          "examples": [
+            {
+              "title": "Computadora",
+              "image": "https://media.istockphoto.com/id/866018096/photo/laptop-computer-with-a-credit-card-online-payment-concept.jpg?s=1024x1024&w=is&k=20&c=nAeTp3bHsPZ9h3cFbp0Ny_SGU4yAImSY4EQG6_Lh9_8="
+            }
           ]
         },
         {
@@ -125,21 +132,21 @@
           "notes": [
             {
               "title": "Hardware",
-              "content": "Ejemplos: Procesador (CPU), Memoria RAM, Disco duro o SSD, Teclado y ratón, Monitor, Impresora, Tarjeta de video.",
+              "content": "**Ejemplos**: \n• Procesador (CPU)\n• Memoria RAM\n• Disco duro o SSD\n• Teclado\n• ratón\n• Monitor\n• Impresora\n• Tarjeta de video.",
               "color": "#1E40AF",
               "opacity": 0.3,
               "icon": "computer"
             },
             {
               "title": "Software",
-              "content": "Ejemplos: Sistemas operativos (Windows, macOS, Linux), Navegadores web (Google Chrome, Mozilla Firefox), Procesadores de texto (Microsoft Word), Aplicaciones móviles (WhatsApp, Spotify), Antivirus (Windows Defender, Avast Antivirus).",
+              "content": "**Ejemplos**: \n• Sistemas operativos (Windows, macOS, Linux)\n• Navegadores web (Google Chrome, Mozilla Firefox)\n• Procesadores de texto (Microsoft Word), Aplicaciones móviles (WhatsApp, Spotify)\n• Antivirus (Windows Defender, Avast Antivirus).",
               "color": "#1E40AF",
               "opacity": 0.3,
               "icon": "apps"
             },
             {
               "title": "Datos",
-              "content": "Los datos son información que la computadora procesa, representada como secuencias de unos y ceros (código binario). Ejemplos: Números, texto, imágenes, sonidos, videos.",
+              "content": "Los datos son información que la computadora procesa, representada como secuencias de unos y ceros (código binario). \n**Ejemplos**: \n• Números\n• texto\n• imágenes\n• sonidos\n• videos.",
               "color": "#1E40AF",
               "opacity": 0.3,
               "icon": "data_usage"
@@ -163,7 +170,7 @@
           "notes": [
             {
               "title": "Ejemplos de dispositivos",
-              "content": "• Entrada: Teclado (ingresa texto), Mouse (controla el puntero), Micrófono (capta sonido), Cámara web (capta imágenes), Escáner (digitaliza documentos).\n• Salida: Monitor (muestra imágenes y texto), Bocinas o audífonos (reproducen sonido), Impresora (copia física).\n• Almacenamiento: Disco duro (HDD o SSD), Memoria USB, Tarjetas SD, CD/DVD, Memoria RAM (temporal).",
+              "content": "\n•  **Entrada**: \n• Teclado (ingresa texto)\n• Mouse (controla el puntero)\n• Micrófono (capta sonido)\n• Cámara web (capta imágenes)\n• Escáner (digitaliza documentos).\n• **Salida**: \n• Monitor (muestra imágenes y texto)\n• Bocinas o audífonos (reproducen sonido)\n• Impresora (copia física).\n• **Almacenamiento**: \n• Disco duro (HDD o SSD)\n• Memoria USB\n• Tarjetas SD\n• CD/DVD\n• Memoria RAM (temporal).",
               "color": "#1E40AF",
               "opacity": 0.3,
               "icon": "devices"
@@ -171,6 +178,12 @@
           ],
           "style": [
             {"text": "interactúan los elementos de hardware", "fontWeight": "w700"}
+          ],
+          "examples": [
+            {
+              "title": "Elementos de Hardware",
+              "image": "https://cdn.pixabay.com/photo/2017/08/07/19/32/computer-2607018_1280.jpg"
+            }
           ]
         },
         {
@@ -293,7 +306,14 @@
           "style": [
             {"text": "nivel de abstracción", "fontWeight": "w700"},
             {"text": "paradigmas", "fontWeight": "w700"}
+          ],
+          "examples": [
+            {
+              "title": "Lenguajes de programación",
+              "image": "https://devsoft.io/wp-content/uploads/2021/05/mejores-lenguajes-de-programacion-2018.jpg"
+            }
           ]
+          
         },
         {
           "title": "Según su nivel de abstracción",

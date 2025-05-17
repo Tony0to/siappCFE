@@ -178,7 +178,7 @@ class _OrderStepsActivityScreenState extends State<OrderStepsActivityScreen> wit
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.glassmorphicBackground,
+        backgroundColor: AppColors.backgroundDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -261,7 +261,7 @@ class _OrderStepsActivityScreenState extends State<OrderStepsActivityScreen> wit
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.glassmorphicBackground,
+        backgroundColor: AppColors.backgroundDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -346,7 +346,7 @@ class _OrderStepsActivityScreenState extends State<OrderStepsActivityScreen> wit
           FloatingActionButton(
             onPressed: _showGradingInfo,
             heroTag: null,
-            backgroundColor: AppColors.glassmorphicBackground,
+            backgroundColor: AppColors.backgroundDark,
             child: const Icon(Icons.info, color: Colors.white),
           ),
         ],

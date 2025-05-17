@@ -545,10 +545,14 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                 ).animate().fadeIn(duration: 500.ms),
                 const SizedBox(height: 12),
                 Text(
-                  'En estas actividades podrás poner a prueba tus conocimientos aprendidos hasta ahora, así como fortalecerlos y agregar más.',
+                  _isAttemptsExhausted
+                      ? 'Has agotado todos tus intentos. No puedes realizar más actividades.'
+                      : 'En estas actividades podrás poner a prueba tus conocimientos aprendidos hasta ahora, así como fortalecerlos y agregar más.',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: AppColors.textSecondary,
+                    color: _isAttemptsExhausted
+                        ? AppColors.error
+                        : AppColors.textSecondary,
                     height: 1.5,
                   ),
                 ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
@@ -573,13 +577,15 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   title:
                       exercise['title']?.toString() ?? 'Ejercicio ${index + 1}',
                   isCompleted: exerciseCompleted[index],
-                  onPressed: () {
-                    setState(() {
-                      selectedExercise = exercise;
-                      selectedExerciseIndex = index;
-                      _initializeExerciseData();
-                    });
-                  },
+                  onPressed: _isAttemptsExhausted
+                      ? null // Deshabilitar el botón si no hay intentos
+                      : () {
+                          setState(() {
+                            selectedExercise = exercise;
+                            selectedExerciseIndex = index;
+                            _initializeExerciseData();
+                          });
+                        },
                 ).animate().scale(
                     delay: (100 * index).ms,
                     duration: 400.ms,
@@ -611,19 +617,26 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
     );
   }
 
-  Widget _buildExerciseButton(
-      {required String title,
-      required bool isCompleted,
-      required VoidCallback onPressed}) {
+  Widget _buildExerciseButton({
+    required String title,
+    required bool isCompleted,
+    required VoidCallback? onPressed,
+  }) {
+    final isEnabled = onPressed != null; // Determina si el botón está habilitado
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppColors.glassmorphicBackground,
+          color: isEnabled
+              ? AppColors.glassmorphicBackground
+              : Colors.grey.shade700, // Cambiar color si está deshabilitado
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.glassmorphicBorder),
+          border: Border.all(
+              color: isEnabled
+                  ? AppColors.glassmorphicBorder
+                  : Colors.grey.shade600),
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowColor,
@@ -640,7 +653,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: isEnabled
+                      ? AppColors.textPrimary
+                      : Colors.grey.shade400, // Cambiar color del texto
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1856,7 +1871,7 @@ class GlassmorphicCard extends StatelessWidget {
   final Widget child;
 
   const GlassmorphicCard({super.key, required this.child});
-
+  
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:siapp/screens/module3screens/contenido_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:siapp/theme/app_colors.dart';
 
 class Tema3 extends StatefulWidget {
   final Map<String, dynamic> section;
@@ -51,7 +51,6 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..forward();
-
     _loadJsonContent();
   }
 
@@ -91,7 +90,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al cargar el contenido: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -138,6 +137,27 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  List<TextSpan> _buildBoldSpans(String source, TextStyle base) {
+    final exp = RegExp(r'\*\*(.*?)\*\*');
+    final spans = <TextSpan>[];
+    int last = 0;
+
+    for (final m in exp.allMatches(source)) {
+      if (m.start > last) {
+        spans.add(TextSpan(text: source.substring(last, m.start)));
+      }
+      spans.add(TextSpan(
+        text: m.group(1),
+        style: base.copyWith(fontWeight: FontWeight.w700),
+      ));
+      last = m.end;
+    }
+    if (last < source.length) {
+      spans.add(TextSpan(text: source.substring(last)));
+    }
+    return spans;
+  }
+
   Widget buildSectionImage() {
     final imageUrl = _contentData?['sectionImage'];
     return Container(
@@ -146,7 +166,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: AppColors.shadowColor.withOpacity(0.2),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -163,16 +183,16 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: AppColors.backgroundDark,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFF1E40AF),
+                  color: AppColors.backgroundDark,
                   child: Center(
                     child: Text(
                       'Error al cargar la imagen',
                       style: GoogleFonts.poppins(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -184,14 +204,14 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             )
           else
             Container(
-              color: const Color(0xFF1E40AF),
+              color: AppColors.backgroundDark,
               height: 220,
               width: double.infinity,
               child: Center(
                 child: Text(
                   'Imagen no disponible',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -203,19 +223,13 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             height: 220,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Color.fromRGBO(30, 64, 175, 0.8),
-                ],
-              ),
+              gradient: AppColors.headerSection,
             ),
           ),
           Positioned(
             bottom: 20,
             left: 20,
+            right: 20,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,24 +237,29 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                 Text(
                   _contentData?['sectionTitle']?.toString() ?? '',
                   style: GoogleFonts.poppins(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     shadows: [
                       Shadow(
                         blurRadius: 10,
-                        color: Colors.black.withOpacity(0.5),
+                        color: AppColors.shadowColor.withOpacity(0.5),
                         offset: const Offset(2, 2),
                       ),
                     ],
                   ),
+                  textAlign: TextAlign.left,
+                  softWrap: true,
                 ),
+                const SizedBox(height: 4),
                 Text(
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Color.fromRGBO(255, 255, 255, 0.9),
+                    color: AppColors.textPrimary.withOpacity(0.9),
                   ),
+                  textAlign: TextAlign.left,
+                  softWrap: true,
                 ),
               ],
             ),
@@ -252,7 +271,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
 
   List<Widget> formatContent(String? content, List<Map<String, dynamic>>? styles, {bool isIntro = false}) {
     if (content == null || content.isEmpty) return [const SizedBox.shrink()];
-    
+
     final paragraphs = content.split('\n');
     final styleMap = <String, Map<String, dynamic>>{};
     if (styles != null) {
@@ -267,25 +286,31 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
 
       final style = styleMap[trimmed] ?? {};
       final fontSize = (style['fontSize']?.toDouble() ?? (isIntro ? 16.0 : 15.0));
-      final fontWeight = style['fontWeight'] == 'w700'
+      final baseWeight = style['fontWeight'] == 'w700'
           ? FontWeight.w700
           : style['fontWeight'] == 'w500'
               ? FontWeight.w500
               : isIntro ? FontWeight.w500 : FontWeight.normal;
       final fontStyle = style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal;
 
+      final baseStyle = GoogleFonts.poppins(
+        fontSize: fontSize,
+        color: isIntro ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.9),
+        fontWeight: baseWeight,
+        fontStyle: fontStyle,
+        height: 1.5,
+      );
+
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Text(
-          trimmed,
-          style: GoogleFonts.poppins(
-            fontSize: fontSize,
-            color: isIntro ? Colors.white : Color.fromRGBO(255, 255, 255, 0.9),
-            fontWeight: fontWeight,
-            fontStyle: fontStyle,
-            height: 1.5,
+        child: RichText(
+          text: TextSpan(
+            style: baseStyle,
+            children: _buildBoldSpans(trimmed, baseStyle),
           ),
           textAlign: TextAlign.justify,
+          maxLines: null,
+          overflow: TextOverflow.visible,
         ),
       );
     }).toList();
@@ -295,8 +320,181 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Divider(
-        color: Color.fromRGBO(255, 255, 255, 0.2),
+        color: AppColors.glassmorphicBorder,
         thickness: 1,
+      ),
+    );
+  }
+
+  Widget buildDiagramImage(String? imagePath, {bool enableZoom = true, double height = 350}) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        height: height,
+        decoration: BoxDecoration(
+          color: AppColors.backgroundDark,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowColor,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            'Diagrama no disponible',
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: null,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+      );
+    }
+
+    final isNetworkImage = imagePath.startsWith('http://') || imagePath.startsWith('https://');
+
+    Widget imageWidget = ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: isNetworkImage
+          ? CachedNetworkImage(
+              imageUrl: imagePath,
+              height: height,
+              width: double.infinity,
+              fit: BoxFit.contain,
+              placeholder: (context, url) => Container(
+                color: AppColors.backgroundDark,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: AppColors.backgroundDark,
+                child: Center(
+                  child: Text(
+                    'Error al cargar la imagen',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                    overflow: TextOverflow.visible,
+                  ),
+                ),
+              ),
+            )
+          : Image.asset(
+              imagePath,
+              fit: BoxFit.contain,
+              height: height,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: AppColors.backgroundDark,
+                child: Center(
+                  child: Text(
+                    'Error al cargar el diagrama: $imagePath',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: null,
+                    overflow: TextOverflow.visible,
+                  ),
+                ),
+              ),
+            ),
+    );
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowColor,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: enableZoom
+          ? GestureDetector(
+              onTap: () => _showFullScreenImage(context, imagePath, isNetworkImage),
+              child: imageWidget,
+            )
+          : imageWidget,
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, String imagePath, bool isNetworkImage) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.backgroundDark.withOpacity(0.9),
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: isNetworkImage
+                    ? CachedNetworkImage(
+                        imageUrl: imagePath,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Center(
+                          child: Text(
+                            'Error al cargar la imagen',
+                            style: GoogleFonts.poppins(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: null,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Text(
+                            'Error al cargar el diagrama: $imagePath',
+                            style: GoogleFonts.poppins(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: null,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: AppColors.textPrimary, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -307,7 +505,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     final iconWidget = icon != null
         ? Icon(
             _getIcon(icon),
-            color: Color.fromRGBO(255, 255, 255, 0.7),
+            color: AppColors.textPrimary.withOpacity(0.7),
             size: 24,
           )
         : null;
@@ -323,17 +521,17 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
       stages: rows,
       title: title,
       iconWidget: iconWidget,
-      color: color ?? const Color(0xFF10B981),
+      color: color ?? AppColors.answerCorrect,
     );
   }
 
   Widget buildNoteCard(String? content, {Color? color, String? title, String? icon}) {
     if (content == null || content.isEmpty) return const SizedBox.shrink();
-    
+
     final iconWidget = icon != null
         ? Icon(
             _getIcon(icon),
-            color: Color.fromRGBO(255, 255, 255, 0.7),
+            color: AppColors.textPrimary.withOpacity(0.7),
             size: 24,
           )
         : null;
@@ -341,12 +539,12 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color ?? Color.fromRGBO(30, 64, 175, 0.3),
+        color: color ?? AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: AppColors.progressActive.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.shadowColor,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -372,15 +570,17 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
+                        maxLines: null,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                 ],
               ),
             if (title != null && title.isNotEmpty || iconWidget != null)
               const SizedBox(height: 8),
-            ...formatContent(content, null),
+            ...formatContent(content, null, isIntro: true),
           ],
         ),
       ),
@@ -393,12 +593,12 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.2),
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.3)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.shadowColor,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -417,7 +617,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
+                        color: AppColors.primaryButton,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -425,7 +625,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                         maxLines: null,
                         overflow: TextOverflow.visible,
@@ -440,7 +640,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                 example['problem']?.toString() ?? '',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
                 maxLines: null,
@@ -451,72 +651,11 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             ...formatContent(example['logic']?.toString(), null),
             if (example['image'] != null && example['image'].isNotEmpty) ...[
               const SizedBox(height: 10),
-              buildDiagramImage(example['image']?.toString()),
+              buildDiagramImage(example['image']?.toString(), enableZoom: true, height: 200),
             ],
             const SizedBox(height: 10),
             ...formatContent(example['explanation']?.toString(), null),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildDiagramImage(String? imagePath) {
-    if (imagePath == null || imagePath.isEmpty) {
-      return Container(
-        margin: const EdgeInsets.symmetric(vertical: 16),
-        height: 350,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E3A8A),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            'Diagrama no disponible',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: null,
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: Image.asset(
-        imagePath,
-        fit: BoxFit.contain,
-        height: 350,
-        width: double.infinity,
-        errorBuilder: (context, error, stackTrace) => Container(
-          height: 350,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E3A8A),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              'Error al cargar el diagrama: $imagePath',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: null,
-            ),
-          ),
         ),
       ),
     );
@@ -532,12 +671,12 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.3),
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: AppColors.progressActive.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.shadowColor,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -548,7 +687,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         children: [
           Row(
             children: [
-              const Icon(Icons.quiz, color: Color(0xFF93C5FD), size: 24),
+              const Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -556,8 +695,10 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
             ],
@@ -566,17 +707,19 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Color.fromRGBO(30, 58, 138, 0.3),
+              color: AppColors.glassmorphicBackground,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               question['logic']?.toString() ?? 'Responde la siguiente pregunta:',
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: const Color(0xFFBFDBFE),
+                color: AppColors.chipTopic,
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.justify,
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ),
           const SizedBox(height: 12),
@@ -584,9 +727,11 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             question['question']?.toString() ?? '',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w500,
             ),
+            maxLines: null,
+            overflow: TextOverflow.visible,
           ),
           const SizedBox(height: 12),
           if (selectedAnswer != null) ...[
@@ -597,10 +742,12 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: selectedAnswer == question['correct']
-                    ? Colors.green
-                    : Colors.red,
+                    ? AppColors.answerCorrect
+                    : AppColors.answerIncorrect,
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 12),
           ],
@@ -608,23 +755,23 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             final optionText = option?.toString() ?? '';
             final isSelected = selectedAnswer == optionText;
             final isCorrect = optionText == question['correct']?.toString();
-            Color textColor = Colors.white;
-            Color borderColor = Color.fromRGBO(59, 130, 246, 0.5);
-            Color bgColor = Color.fromRGBO(30, 64, 175, 0.2);
+            Color textColor = AppColors.textPrimary;
+            Color borderColor = AppColors.progressActive.withOpacity(0.5);
+            Color bgColor = AppColors.glassmorphicBackground;
 
             if (selectedAnswer != null) {
               if (isSelected && !isCorrect) {
-                textColor = Colors.white;
-                borderColor = const Color(0xFFEF4444);
-                bgColor = Color.fromRGBO(153, 27, 27, 0.2);
+                textColor = AppColors.textPrimary;
+                borderColor = AppColors.answerIncorrect;
+                bgColor = AppColors.answerIncorrectBg;
               } else if (isSelected && isCorrect) {
-                textColor = Colors.white;
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                textColor = AppColors.textPrimary;
+                borderColor = AppColors.answerCorrect;
+                bgColor = AppColors.answerCorrectBg;
               } else if (isCorrect) {
-                textColor = Colors.white;
-                borderColor = const Color(0xFF10B981);
-                bgColor = Color.fromRGBO(6, 95, 70, 0.2);
+                textColor = AppColors.textPrimary;
+                borderColor = AppColors.answerCorrect;
+                bgColor = AppColors.answerCorrectBg;
               }
             }
 
@@ -660,7 +807,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                             ? Icon(
                                 isCorrect ? Icons.check : Icons.close,
                                 size: 16,
-                                color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                color: isCorrect ? AppColors.answerCorrect : AppColors.answerIncorrect,
                               )
                             : null,
                       ),
@@ -673,6 +820,8 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
                             color: textColor,
                           ),
                           textAlign: TextAlign.justify,
+                          maxLines: null,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                     ],
@@ -697,14 +846,14 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: AppColors.shadowColor.withOpacity(0.2),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: const Center(
-            child: Icon(Icons.play_arrow, color: Colors.white, size: 50),
+            child: Icon(Icons.play_arrow, color: AppColors.textPrimary, size: 50),
           ),
         ),
       );
@@ -714,11 +863,11 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(30, 64, 175, 0.3),
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppColors.shadowColor,
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -727,12 +876,14 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 40),
+            const Icon(Icons.error_outline, color: AppColors.error, size: 40),
             const SizedBox(height: 8),
             Text(
               'No se pudo cargar el video. Por favor, intenta de nuevo más tarde.',
-              style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.7)),
+              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary.withOpacity(0.7)),
               textAlign: TextAlign.center,
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ],
         ),
@@ -761,7 +912,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
 
   Widget buildSectionHeader(String? title) {
     if (title == null || title.isEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
@@ -769,7 +920,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
           Container(
             height: 2,
             width: 40,
-            color: const Color(0xFF93C5FD),
+            color: AppColors.chipTopic,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -778,8 +929,10 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
               style: GoogleFonts.poppins(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
           ),
         ],
@@ -792,12 +945,12 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 58, 138, 0.2),
+        color: AppColors.glassmorphicBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.2)),
+        border: Border.all(color: AppColors.glassmorphicBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.shadowColor,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -817,8 +970,8 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     final colorString = note['color']?.toString();
     final color = colorString != null && colorString.isNotEmpty
         ? Color(int.parse(colorString.replaceAll('#', '0xFF')))
-        : const Color(0xFF1E40AF);
-    
+        : AppColors.backgroundDark;
+
     final opacity = (note['opacity']?.toDouble() ?? 0.3).clamp(0.0, 1.0);
 
     if (note['content']?.toString().contains('|') ?? false) {
@@ -878,6 +1031,8 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         return Icons.pattern;
       case 'psychology':
         return Icons.psychology;
+      case 'emoji_objects':
+        return Icons.lightbulb;
       default:
         return Icons.info;
     }
@@ -907,11 +1062,13 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         child: Text(
           'No hay datos disponibles para esta sección',
           style: GoogleFonts.poppins(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,
+          maxLines: null,
+          overflow: TextOverflow.visible,
         ),
       );
     }
@@ -948,20 +1105,20 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
               ),
               child: buildNoteCard(
                 _contentData?['welcomeText']?.toString(),
-                color: Color.fromRGBO(30, 64, 175, 0.3),
+                color: AppColors.cardBackground,
                 icon: 'psychology',
               ),
             ),
             const SizedBox(height: 16),
             buildNoteCard(
               _contentData?['introText1']?.toString(),
-              color: Color.fromRGBO(30, 64, 175, 0.3),
+              color: AppColors.cardBackground,
               icon: 'school',
             ),
             const SizedBox(height: 16),
             buildNoteCard(
               _contentData?['introText2']?.toString(),
-              color: const Color(0xFF065F46).withOpacity(0.3),
+              color: AppColors.answerCorrect.withOpacity(0.3),
               icon: 'emoji_objects',
             ),
           ],
@@ -1000,8 +1157,10 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
               _contentData?['video']?['description']?.toString() ?? '',
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Color.fromRGBO(255, 255, 255, 0.9),
+                color: AppColors.textPrimary.withOpacity(0.9),
               ),
+              maxLines: null,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 12),
             buildVideoPlayer(),
@@ -1027,7 +1186,7 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (_errorMessage != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF1E40AF),
+        backgroundColor: AppColors.backgroundDark,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1035,29 +1194,33 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
             children: [
               const Icon(
                 Icons.error_outline,
-                color: Colors.red,
+                color: AppColors.error,
                 size: 50,
               ),
               const SizedBox(height: 16),
               Text(
                 _errorMessage!,
                 style: GoogleFonts.poppins(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: null,
+                overflow: TextOverflow.visible,
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF1E40AF),
+                  backgroundColor: AppColors.moduleButton,
+                  foregroundColor: AppColors.backgroundDark,
                 ),
                 child: Text(
                   'Volver',
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
             ],
@@ -1067,9 +1230,9 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     }
 
     if (_contentData == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF1E40AF),
-        body: Center(
+      return Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -1081,17 +1244,13 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: navigateBack,
       child: Scaffold(
-        backgroundColor: const Color(0xFF1E40AF),
+        backgroundColor: AppColors.backgroundDark,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text(
-            widget.sectionTitle,
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-          ),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
             onPressed: () async {
               await navigateBack();
             },
@@ -1101,8 +1260,10 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(right: 16),
               child: Center(
                 child: Text(
-                  '${widget.sectionIndex + 1}/${widget.totalSections}',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.9)),
+                  'página ${_currentPage + 1} de $totalPages',
+                  style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary.withOpacity(0.9)),
+                  maxLines: null,
+                  overflow: TextOverflow.visible,
                 ),
               ),
             ),
@@ -1110,12 +1271,14 @@ class _Tema3State extends State<Tema3> with TickerProviderStateMixin {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _handleContinue,
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1E40AF),
+          backgroundColor: AppColors.moduleButton,
+          foregroundColor: AppColors.backgroundDark,
           icon: const Icon(Icons.arrow_forward),
           label: Text(
             _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            maxLines: null,
+            overflow: TextOverflow.visible,
           ),
         ),
         body: SafeArea(
@@ -1166,12 +1329,12 @@ class __DynamicTableState extends State<_DynamicTable> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 64, 175, 0.3),
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.5)),
+        border: Border.all(color: AppColors.progressActive.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.shadowColor,
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1196,8 +1359,10 @@ class __DynamicTableState extends State<_DynamicTable> {
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
+                        maxLines: null,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                 ],
@@ -1226,13 +1391,13 @@ class __DynamicTableState extends State<_DynamicTable> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
-                                ? Colors.white
-                                : Color.fromRGBO(59, 130, 246, 0.5),
+                                ? AppColors.textPrimary
+                                : AppColors.progressActive.withOpacity(0.5),
                             width: isSelected ? 2 : 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: AppColors.shadowColor,
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -1243,7 +1408,7 @@ class __DynamicTableState extends State<_DynamicTable> {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1260,15 +1425,15 @@ class __DynamicTableState extends State<_DynamicTable> {
                 key: ValueKey<int>(_selectedIndex),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(30, 58, 138, 0.2),
+                  color: AppColors.glassmorphicBackground,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Color.fromRGBO(59, 130, 246, 0.2)),
+                  border: Border.all(color: AppColors.glassmorphicBorder),
                 ),
                 child: Text(
                   widget.stages[_selectedIndex][1],
                   style: GoogleFonts.poppins(
                     fontSize: 15,
-                    color: Color.fromRGBO(255, 255, 255, 0.9),
+                    color: AppColors.textPrimary.withOpacity(0.9),
                     height: 1.5,
                   ),
                   textAlign: TextAlign.justify,

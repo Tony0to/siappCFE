@@ -736,12 +736,12 @@ class _SectionCardState extends State<SectionCard>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.progressBrightBlue
-                            .withAlpha(51), // 0.2 opacity
+                        color: AppColors.progressBrightBlue.withAlpha(51),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: AppColors.progressBrightBlue,
@@ -766,10 +766,9 @@ class _SectionCardState extends State<SectionCard>
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Icon(
                       Icons.chevron_right_rounded,
                       color: AppColors.textSecondary,

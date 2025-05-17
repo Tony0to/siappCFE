@@ -129,7 +129,7 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.glassmorphicBackground,
+        backgroundColor: AppColors.backgroundDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -212,7 +212,7 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.glassmorphicBackground,
+        backgroundColor: AppColors.backgroundDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -297,7 +297,7 @@ class _FlowchartActivityScreenState extends State<FlowchartActivityScreen> with 
           FloatingActionButton(
             onPressed: _showGradingInfo,
             heroTag: null,
-            backgroundColor: AppColors.glassmorphicBackground,
+            backgroundColor: AppColors.backgroundDark,
             child: const Icon(Icons.info, color: Colors.white),
           ),
         ],

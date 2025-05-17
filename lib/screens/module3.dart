@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:siapp/screens/module3screens/contenido_screen.dart';
 import 'module3screens/actividades.dart';
-import 'package:siapp/screens/module3screens/actividades.dart';
 import 'package:siapp/screens/ModulesScreen.dart';
 import 'package:siapp/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';

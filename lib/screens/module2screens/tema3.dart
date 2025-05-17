@@ -204,13 +204,14 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           Positioned(
             bottom: 20,
             left: 20,
+            right: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   widget.sectionTitle,
                   style: GoogleFonts.poppins(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     shadows: [
@@ -221,13 +222,19 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: true,
                 ),
+                const SizedBox(height: 4),
                 Text(
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -542,6 +549,38 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
     );
   }
 
+  Widget buildNetworkImage(String imageUrl) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      height: 350,
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        placeholder: (context, url) => Container(
+          color: AppColors.backgroundDark,
+          child: const Center(child: CircularProgressIndicator()),
+        ),
+        errorWidget: (context, url, error) => Container(
+          height: 350,
+          color: AppColors.neutralCard,
+          child: Center(
+            child: Text(
+              'Error al cargar la imagen: $imageUrl\n$error',
+              style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildBulletList(List<dynamic> items) {
     return Column(
       children: items
@@ -587,557 +626,155 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
     }).toList();
   }
 
-  Widget buildQuizQuestion(Map<String, dynamic> question, int questionIndex) {
-    final bool isAnswered = _answerResults[questionIndex] != null;
-    final bool isCorrect = _answerResults[questionIndex] == true;
-    final bool showExplanation = _showExplanations[questionIndex] ?? false;
+Widget buildQuizQuestion(Map<String, dynamic> question, int questionIndex) {
+  final bool isAnswered = _answerResults[questionIndex] != null;
+  final bool isCorrect = _answerResults[questionIndex] == true;
+  final bool showExplanation = _showExplanations[questionIndex] ?? false;
 
-    final tipo = question['tipo'] is List
-        ? question['tipo'].first.toString()
-        : question['tipo']?.toString() ?? 'multiple_choice';
+  final tipo = question['tipo'] is List
+      ? question['tipo'].first.toString()
+      : question['tipo']?.toString() ?? 'multiple_choice';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.glassmorphicBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.glassmorphicBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Pregunta ${questionIndex + 1}: ${question['pregunta'] ?? ''}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...(question['opciones']?.toList() ??
-                  (tipo == 'true_false' ? ['Verdadero', 'Falso'] : []))
-              .asMap()
-              .entries
-              .map<Widget>((entry) {
-                final option = entry.value;
-                final optionText = option.toString();
-                final isSelected = _selectedAnswers[questionIndex] == optionText;
-                final isCorrectOption =
-                    optionText == question['respuesta_correcta']?.toString();
-                Color textColor = AppColors.textPrimary;
-                Color borderColor = AppColors.glassmorphicBorder;
-                Color bgColor = AppColors.glassmorphicBackground;
-
-                if (isAnswered) {
-                  if (isSelected && !isCorrectOption) {
-                    borderColor = AppColors.error;
-                    bgColor = Colors.red.withValues(alpha: 0.2);
-                  } else if (isSelected && isCorrectOption) {
-                    borderColor = AppColors.success;
-                    bgColor = Colors.green.withValues(alpha: 0.2);
-                  } else if (isCorrectOption) {
-                    borderColor = AppColors.success;
-                    bgColor = Colors.green.withValues(alpha: 0.2);
-                  }
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: isAnswered
-                        ? null
-                        : () {
-                            setState(() {
-                              _selectedAnswers[questionIndex] = optionText;
-                            });
-                          },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: borderColor),
-                            ),
-                            child: isSelected
-                                ? Icon(
-                                    isCorrectOption ? Icons.check : Icons.close,
-                                    size: 16,
-                                    color: isCorrectOption
-                                        ? AppColors.success
-                                        : AppColors.error,
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              optionText,
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                color: textColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              })
-              .toList(),
-          if (_selectedAnswers[questionIndex] != null && !isAnswered)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _answerResults[questionIndex] =
-                        _selectedAnswers[questionIndex] ==
-                            question['respuesta_correcta']?.toString();
-                    _showExplanations[questionIndex] = true;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.codeBoxLabel,
-                  foregroundColor: AppColors.textPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'Enviar Respuesta',
-                  style: GoogleFonts.poppins(
-                      fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          if (isAnswered)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.glassmorphicBackground,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.glassmorphicBorder),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.quiz, color: AppColors.chipTopic, size: 24),
+            const SizedBox(width: 8),
+            Expanded(
               child: Text(
-                isCorrect ? '¡Correcto!' : 'Incorrecto',
+                'Pregunta ${questionIndex + 1}: ${question['pregunta'] ?? ''}',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: isCorrect ? AppColors.success : AppColors.error,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
-          if (showExplanation && question['explicacion'] != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: buildHighlightBox(
-                question['explicacion'].toString(),
-                color: AppColors.success,
-                title: 'Explicación',
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...(question['opciones']?.toList() ??
+                (tipo == 'true_false' ? ['Verdadero', 'Falso'] : []))
+            .asMap()
+            .entries
+            .map<Widget>((entry) {
+              final option = entry.value;
+              final optionText = option.toString();
+              final isSelected = _selectedAnswers[questionIndex] == optionText;
+              final isCorrectOption =
+                  optionText == question['respuesta_correcta']?.toString();
+              Color textColor = AppColors.textPrimary;
+              Color borderColor = AppColors.glassmorphicBorder;
+              Color bgColor = AppColors.glassmorphicBackground;
+
+              if (isAnswered) {
+                if (isSelected && !isCorrectOption) {
+                  borderColor = AppColors.error;
+                  bgColor = Colors.red.withValues(alpha: 0.2);
+                } else if (isSelected && isCorrectOption) {
+                  borderColor = AppColors.success;
+                  bgColor = Colors.green.withValues(alpha: 0.2);
+                } else if (isCorrectOption) {
+                  borderColor = AppColors.success;
+                  bgColor = Colors.green.withValues(alpha: 0.2);
+                }
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: isAnswered
+                      ? null
+                      : () {
+                          setState(() {
+                            _selectedAnswers[questionIndex] = optionText;
+                            _answerResults[questionIndex] =
+                                _selectedAnswers[questionIndex] ==
+                                    question['respuesta_correcta']?.toString();
+                            _showExplanations[questionIndex] = true;
+                          });
+                        },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: borderColor),
+                          ),
+                          child: isSelected
+                              ? Icon(
+                                  isCorrectOption ? Icons.check : Icons.close,
+                                  size: 16,
+                                  color: isCorrectOption
+                                      ? AppColors.success
+                                      : AppColors.error,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            optionText,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            })
+            .toList(),
+        if (isAnswered)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              isCorrect ? '¡Correcto!' : 'Incorrecto',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isCorrect ? AppColors.success : AppColors.error,
               ),
             ),
-        ],
-      ),
-    );
-  }
+          ),
+        if (showExplanation && question['explicacion'] != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: buildHighlightBox(
+              question['explicacion'].toString(),
+              color: AppColors.success,
+              title: 'Explicación',
+            ),
+          ),
+      ],
+    ),
+  );
+}
 
   Widget buildSubtemaPage(int index, int totalPages) {
-    final List<Map<String, dynamic>> pages = [
-      {
-        'title': 'Introducción',
-        'content': [
-          buildContentCard(
-            'III. Estructuras de datos y de control',
-            [
-              buildHighlightBox(
-                _contentData!['introduccion']['highlight1']['text']
-                        ?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              buildHighlightBox(
-                _contentData!['introduccion']['highlight2']['text']
-                        ?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-            ],
-          ),
-        ],
-      },
-      {
-        'title': 'Arreglos, matrices, listas, etc.',
-        'content': [
-          buildContentCard(
-            'Arreglos, matrices, listas, etc.',
-            [
-              buildHighlightBox(
-                _contentData!['subtema1']['highlight1']['text']?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              ...formatContent(
-                  _contentData!['subtema1']['contenido']?.toString() ?? ''),
-              const SizedBox(height: 16),
-              buildHighlightBox(
-                _contentData!['subtema1']['highlight2']['text']?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              buildContentCard(
-                'Arreglos',
-                [
-                  buildHighlightBox(
-                    _contentData!['subtema1']['arreglos']['definicion']
-                            ?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                    title: 'Definición',
-                  ),
-                  const SizedBox(height: 16),
-                  ...formatContent(_contentData!['subtema1']['arreglos']
-                              ['contenido']
-                          ?.toString() ??
-                      ''),
-                  const SizedBox(height: 16),
-                  buildContentCard(
-                    _contentData!['subtema1']['arreglos']['ejemplo']['titulo']
-                            ?.toString() ??
-                        '',
-                    [
-                      Text(
-                        _contentData!['subtema1']['arreglos']['ejemplo']
-                                    ['descripcion']
-                                ?.toString() ??
-                            '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      buildCodeBox(
-                        _contentData!['subtema1']['arreglos']['ejemplo']
-                                    ['pseudocodigo']
-                                ?.toString() ??
-                            '',
-                        'pseudocode',
-                      ),
-                      const SizedBox(height: 12),
-                      buildDiagramImage('assets/module2photos/diag16.png'),
-                      const SizedBox(height: 12),
-                      Text(
-                        _contentData!['subtema1']['arreglos']['ejemplo']
-                                    ['conclusion']
-                                ?.toString() ??
-                            '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      buildHighlightBox(
-                        _contentData!['subtema1']['arreglos']['usos']['text']
-                                ?.toString() ??
-                            '',
-                        color: AppColors.codeBoxLabel,
-                        title: 'Usos de los arreglos',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      },
-      {
-        'title': 'Matrices',
-        'content': [
-          buildContentCard(
-            'Matrices',
-            [
-              buildHighlightBox(
-                _contentData!['subtema2']['highlight1']['text']?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              buildContentCard(
-                _contentData!['subtema2']['ejemplo']['titulo']?.toString() ??
-                    '',
-                [
-                  Text(
-                    _contentData!['subtema2']['ejemplo']['descripcion']
-                            ?.toString() ??
-                        '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  buildCodeBox(
-                    _contentData!['subtema2']['ejemplo']['pseudocodigo']
-                            ?.toString() ??
-                        '',
-                    'pseudocode',
-                  ),
-                  const SizedBox(height: 12),
-                  buildDiagramImage('assets/module2photos/diag17.png'),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema2']['operaciones']['text']
-                            ?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                    title: 'Operaciones comunes',
-                  ),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema2']['definicion']['text']
-                            ?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      },
-      {
-        'title': 'Listas',
-        'content': [
-          buildContentCard(
-            'Listas',
-            [
-              buildHighlightBox(
-                _contentData!['subtema3']['highlight1']['text']?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              buildContentCard(
-                'Características',
-                [
-                  buildBulletList(_contentData!['subtema3']['caracteristicas']
-                          ['items'] ??
-                      []),
-                ],
-              ),
-              const SizedBox(height: 16),
-              buildContentCard(
-                _contentData!['subtema3']['ejemplo']['titulo']?.toString() ??
-                    '',
-                [
-                  Text(
-                    _contentData!['subtema3']['ejemplo']['descripcion']
-                            ?.toString() ??
-                        '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  buildCodeBox(
-                    _contentData!['subtema3']['ejemplo']['pseudocodigo']
-                            ?.toString() ??
-                        '',
-                    'pseudocode',
-                  ),
-                  const SizedBox(height: 12),
-                  buildDiagramImage('assets/module2photos/diag18.png'),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema3']['comparacion']['text']
-                            ?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                  ),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema3']['usos']['text']?.toString() ?? '',
-                    color: AppColors.codeBoxLabel,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      },
-      {
-        'title': 'Aplicación en estructuras de control',
-        'content': [
-          buildContentCard(
-            '¿Cómo aplicarlo en estructuras de control?',
-            [
-              buildHighlightBox(
-                _contentData!['subtema4']['highlight1']['text']?.toString() ??
-                    '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              buildHighlightBox(
-                _contentData!['subtema4']['importancia']['text']?.toString() ??
-                    '',
-                color: AppColors.success,
-                title: '¿Por qué es importante esta combinación?',
-              ),
-              const SizedBox(height: 16),
-              buildHighlightBox(
-                _contentData!['subtema4']['acceso']['text']?.toString() ?? '',
-                color: AppColors.codeBoxLabel,
-              ),
-              const SizedBox(height: 16),
-              buildContentCard(
-                _contentData!['subtema4']['ejemplo1']['titulo']?.toString() ??
-                    '',
-                [
-                  Text(
-                    _contentData!['subtema4']['ejemplo1']['descripcion']
-                            ?.toString() ??
-                        '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  buildCodeBox(
-                    _contentData!['subtema4']['ejemplo1']['pseudocodigo']
-                            ?.toString() ??
-                        '',
-                    'pseudocode',
-                  ),
-                  const SizedBox(height: 12),
-                  buildDiagramImage('assets/module2photos/diag19.png'),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema4']['listas']['text']?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                  ),
-                  const SizedBox(height: 16),
-                  buildContentCard(
-                    _contentData!['subtema4']['ejemplo2']['titulo']
-                            ?.toString() ??
-                        '',
-                    [
-                      Text(
-                        _contentData!['subtema4']['ejemplo2']['descripcion']
-                                ?.toString() ??
-                            '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      buildCodeBox(
-                        _contentData!['subtema4']['ejemplo2']['pseudocodigo']
-                                ?.toString() ??
-                            '',
-                        'pseudocode',
-                      ),
-                      const SizedBox(height: 12),
-                      buildDiagramImage('assets/module2photos/diag20.png'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema4']['matrices']['text']?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                  ),
-                  const SizedBox(height: 16),
-                  buildContentCard(
-                    _contentData!['subtema4']['ejemplo3']['titulo']
-                            ?.toString() ??
-                        '',
-                    [
-                      Text(
-                        _contentData!['subtema4']['ejemplo3']['descripcion']
-                                ?.toString() ??
-                            '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      buildCodeBox(
-                        _contentData!['subtema4']['ejemplo3']['pseudocodigo']
-                                ?.toString() ??
-                            '',
-                        'pseudocode',
-                      ),
-                      const SizedBox(height: 12),
-                      buildDiagramImage('assets/module2photos/diag21.png'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  buildHighlightBox(
-                    _contentData!['subtema4']['diccionarios']['text']
-                            ?.toString() ??
-                        '',
-                    color: AppColors.codeBoxLabel,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      },
-      {
-        'title': 'Cuestionario de Repaso',
-        'content': [
-          if (_contentData?['quiz'] != null)
-            buildContentCard(
-              _contentData!['quiz']['titulo']?.toString() ?? '',
-              [
-                Text(
-                  _contentData!['quiz']['descripcion']?.toString() ?? '',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    color: AppColors.textSecondary,
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...(_contentData!['quiz']['preguntas'] as List<dynamic>? ?? [])
-                    .asMap()
-                    .entries
-                    .map<Widget>(
-                        (entry) => buildQuizQuestion(entry.value, entry.key))
-                    .expand((widget) => [widget, const SizedBox(height: 16)]),
-              ],
-            ),
-        ],
-      },
-    ];
-
     return SingleChildScrollView(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
@@ -1150,11 +787,571 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
           children: [
             if (index == 0) ...[
               buildSectionImage(),
-              const SizedBox(height: 24),
-            ],
-            ...pages[index]['content'],
-            if (index == totalPages - 1) ...[
               const SizedBox(height: 16),
+              Text(
+                '¡Bienvenido!',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['introduccion']['highlight1']['text']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildNetworkImage(
+                  'https://media.tutellus.com/libraries/26/36/45/01/lib/1660842316157_1.jpg?size=854x493s&ext=jpg'),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['introduccion']['highlight2']['text']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _contentData!['subtema1']['titulo']?.toString() ?? '',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema1']['highlight1']['text']?.toString() ??
+                        '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildNetworkImage(
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRshl1eECaZj-PwRY8xiT7x1V2X9LpCqhdtWw&s'),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema1']['contenido']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _contentData!['subtema1']['highlight2']['text']?.toString() ?? '',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                'Arreglos',
+                [
+                  Text(
+                    _contentData!['subtema1']['arreglos']['definicion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  buildNetworkImage(
+                      'https://i0.wp.com/architecnologia.es/wp-content/uploads/2020/06/array-arreglo-programacion.jpg?resize=800%2C570'),
+                  const SizedBox(height: 16),
+                  Text(
+                    _contentData!['subtema1']['arreglos']['contenido']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema1']['arreglos']['ejemplo']['titulo']
+                    ?.toString() ?? '',
+                [
+                  Text(
+                    'Descripción del problema:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _contentData!['subtema1']['arreglos']['ejemplo']['descripcion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema1']['arreglos']['ejemplo']['pseudocodigo']
+                        ?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag16.png'),
+                  const SizedBox(height: 12),
+                  Text(
+                    _contentData!['subtema1']['arreglos']['ejemplo']['conclusion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    'Los arreglos son fundamentales en muchas aplicaciones de software y se utilizan para:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  buildBulletList([
+                    'Almacenar grandes volúmenes de datos de manera eficiente.',
+                    'Optimizar el rendimiento de algoritmos de búsqueda y ordenamiento.',
+                    'Manejar datos en estructuras más complejas como grafos y listas enlazadas.',
+                    'Facilitar el procesamiento de imágenes y señales en inteligencia artificial.',
+                    'Por lo que不高                    que es importante aprender a manejarlos.',
+                  ]),
+                ],
+              ),
+            ],
+            if (index == 1) ...[
+              Text(
+                _contentData!['subtema2']['titulo']?.toString() ?? '',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema2']['highlight1']['text']?.toString() ??
+                        '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema2']['ejemplo']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    'Descripción del problema:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _contentData!['subtema2']['ejemplo']['descripcion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema2']['ejemplo']['pseudocodigo']
+                        ?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag17.png'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    'Operaciones comunes con matrices:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  buildBulletList(
+                    _contentData!['subtema2']['operaciones']['text']
+                        ?.toString()
+                        .split('\n\n') ?? [],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema2']['definicion']['text']?.toString() ??
+                        '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildNetworkImage(
+                  'https://cards.algoreducation.com/_next/image?url=https%3A%2F%2Ffiles.algoreducation.com%2Fproduction-ts%2F__S3__a3e5a1de-f842-4454-bbaf-587a1e0bcbce&w=3840&q=75'),
+            ],
+            if (index == 2) ...[
+              Text(
+                _contentData!['subtema3']['titulo']?.toString() ?? '',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema3']['highlight1']['text']?.toString() ??
+                        '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                'Características',
+                [
+                  buildBulletList(
+                      _contentData!['subtema3']['caracteristicas']['items'] ?? []),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema3']['ejemplo']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    'Descripción del problema:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _contentData!['subtema3']['ejemplo']['descripcion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema3']['ejemplo']['pseudocodigo']
+                        ?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag18.png'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema3']['comparacion']['text']?.toString() ??
+                        '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (index == 3) ...[
+              Text(
+                _contentData!['subtema4']['titulo']?.toString() ?? '',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema4']['highlight1']['text']?.toString() ??
+                        '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildNetworkImage(
+                  'https://cursos.aviada.mx/wp-content/uploads/2023/08/Estructuras-de-Control.png'),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema4']['highlight1']['text']
+                        ?.toString()
+                        .split('\n\n')
+                        .last ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '¿Por qué es importante esta combinación?',
+                [
+                  buildBulletList(
+                    _contentData!['subtema4']['importancia']['text']
+                        ?.toString()
+                        .split('\n\n') ?? [],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema4']['acceso']['text']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema4']['ejemplo1']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['subtema4']['ejemplo1']['descripcion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema4']['ejemplo1']['pseudocodigo']
+                        ?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag19.png'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema4']['listas']['text']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema4']['ejemplo2']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['subtema4']['ejemplo2']['descripcion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema4']['ejemplo2']['pseudocodigo']
+                        ?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag20.png'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    _contentData!['subtema4']['matrices']['text']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                _contentData!['subtema4']['ejemplo3']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['subtema4']['ejemplo3']['descripcion']
+                        ?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  buildCodeBox(
+                    _contentData!['subtema4']['ejemplo3']['pseudocodigo']
+                        ?.toString() ?? '',
+                    'pseudocode',
+                  ),
+                  const SizedBox(height: 12),
+                  buildDiagramImage('assets/module2photos/diag21.png'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              buildContentCard(
+                '',
+                [
+                  Text(
+                    'Las estructuras de control y las estructuras de datos son pilares esenciales en la programación, ya que juntas permiten organizar, manipular y tomar decisiones sobre los datos dentro de un programa. Las estructuras de control, como los bucles y las condicionales, dirigen el flujo de ejecución del programa, permitiendo que el código responda a condiciones específicas y repita tareas de manera eficiente. Por su parte, las estructuras de datos proporcionan formas organizadas de almacenar y acceder a la información, como las listas, matrices y diccionarios.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (index == 4) ...[
+              buildContentCard(
+                _contentData!['quiz']['titulo']?.toString() ?? '',
+                [
+                  Text(
+                    _contentData!['quiz']['descripcion']?.toString() ?? '',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ...(_contentData!['quiz']['preguntas'] as List<dynamic>? ?? [])
+                      .asMap()
+                      .entries
+                      .map<Widget>(
+                          (entry) => buildQuizQuestion(entry.value, entry.key))
+                      .expand((widget) => [widget, const SizedBox(height: 16)]),
+                ],
+              ),
+            ],
+            if (index == 5) ...[
               Row(
                 children: [
                   Container(
@@ -1194,6 +1391,32 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
 
   void navigateNext() {
     debugPrint('navigateNext called: Current page $_currentPage');
+
+    if (_currentPage == 4) {
+      final quizData = _contentData?['quiz'] as Map<String, dynamic>?;
+      final questions = quizData?['preguntas'] as List<dynamic>? ?? [];
+      bool allQuizzesAnswered = true;
+
+      for (int i = 0; i < questions.length; i++) {
+        if (_answerResults[i] == null) {
+          allQuizzesAnswered = false;
+          break;
+        }
+      }
+
+      if (!allQuizzesAnswered) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Por favor, responde todas las preguntas del cuestionario antes de continuar.',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+    }
+
     if (_currentPage < 5) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -1246,13 +1469,7 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
         backgroundColor: AppColors.backgroundDark,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text(
-            widget.sectionTitle,
-            style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary),
-          ),
+          title: null,
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -1267,9 +1484,11 @@ class Tema3State extends State<Tema3> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(right: 16),
               child: Center(
                 child: Text(
-                  '${widget.sectionIndex + 1}/${widget.totalSections}',
+                  'Página ${_currentPage + 1}/$totalPages',
                   style: GoogleFonts.poppins(
-                      fontSize: 14, color: AppColors.textSecondary),
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ),

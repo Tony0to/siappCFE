@@ -240,6 +240,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
           Positioned(
             bottom: 20,
             left: 20,
+            right: 20, // Added to ensure text doesn't overflow horizontally
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +248,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                 Text(
                   _contentData?['sectionTitle']?.toString() ?? '',
                   style: GoogleFonts.poppins(
-                    fontSize: 24,
+                    fontSize: 20, // Reduced font size to fit better
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     shadows: [
@@ -258,17 +259,18 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
-                  maxLines: null,
-                  overflow: TextOverflow.visible,
+                  maxLines: 2, // Allow the title to wrap into two lines if needed
+                  overflow: TextOverflow.ellipsis, // Use ellipsis if it still overflows
                 ),
+                const SizedBox(height: 4), // Added spacing between title and subtitle
                 Text(
                   'Tema ${widget.sectionIndex + 1} de ${widget.totalSections}',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
-                  maxLines: null,
-                  overflow: TextOverflow.visible,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -947,6 +949,33 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
   }
 
   void _handleContinue() {
+    // Check if all quizzes on the current page have been answered
+    final currentSectionData =
+        _contentData?['subsections']?[_currentPage] as Map<String, dynamic>?;
+    final examples = currentSectionData?['examples'] as List<dynamic>? ?? [];
+    bool allQuizzesAnswered = true;
+
+    for (var example in examples) {
+      final exampleData = example as Map<String, dynamic>?;
+      if (exampleData?['quiz'] != null && !_quizAnswered) {
+        allQuizzesAnswered = false;
+        break;
+      }
+    }
+
+    if (!allQuizzesAnswered) {
+      // Show a message or snack bar indicating that all-quizzes must be answered
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Por favor, responde todas las preguntas del cuestionario antes de continuar.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Proceed to the next page or complete the module
     if (_currentPage < (_contentData?['subsections']?.length ?? 0) - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -1031,16 +1060,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
         backgroundColor: AppColors.backgroundDark,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text(
-            widget.sectionTitle,
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-            maxLines: null,
-            overflow: TextOverflow.visible,
-          ),
+          title: null, // Keep title null as per your code
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
@@ -1055,7 +1075,7 @@ class _Tema1State extends State<Tema1> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(right: 16),
               child: Center(
                 child: Text(
-                  '${widget.sectionIndex + 1}/${widget.totalSections}',
+                  'Página ${_currentPage + 1}/$totalPages', // Show current page and total pages
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: AppColors.textSecondary,

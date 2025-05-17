@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math';
-import 'dart:async';
 import 'package:siapp/theme/app_colors.dart';
 
 class CountVowelsRecursiveActivityScreen extends StatefulWidget {
@@ -20,22 +19,6 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
   List<int> _wrongIndices = []; // Tracks indices of incorrectly placed lines
 
   final ScrollController _scrollController = ScrollController();
-  Timer? _scrollTimer;
-
-  final List<String> _codeLines = [
-    'FUNCIÓN contarVocales(cadena)',
-    'SI cadena está vacía ENTONCES',
-    'RETORNAR 0',
-    'FIN SI',
-    'caracter ← primer carácter de cadena',
-    'resto ← cadena sin el primer carácter',
-    'caracter ← convertir a minúscula(caracter)',
-    "SI caracter es 'a' o 'e' o 'i' o 'o' o 'u' ENTONCES",
-    'RETORNAR 1 + contarVocales(resto)',
-    'SINO',
-    'RETORNAR contarVocales(resto)',
-    'FIN FUNCIÓN',
-  ];
 
   final List<String> _correctOrder = [
     'FUNCIÓN contarVocales(cadena)',
@@ -105,45 +88,32 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
     });
   }
 
-  void _handleDragScroll(PointerEvent event) {
-    const double edgeThreshold = 50.0;
-    const double scrollSpeed = 10.0;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final pointerY = event.position.dy;
+  static const double kEdgeActivation = 120.0; // alto de la zona activa
+  static const double kMaxSpeed = 9.33; // px por evento, reducido a 1/3 de 28.0
 
-    if (pointerY < edgeThreshold && _scrollController.hasClients) {
-      _scrollTimer?.cancel();
-      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-        if (_scrollController.hasClients) {
-          final newOffset = _scrollController.offset - scrollSpeed;
-          _scrollController.animateTo(
-            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.linear,
-          );
-        }
-      });
-    } else if (pointerY > screenHeight - edgeThreshold && _scrollController.hasClients) {
-      _scrollTimer?.cancel();
-      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-        if (_scrollController.hasClients) {
-          final newOffset = _scrollController.offset + scrollSpeed;
-          _scrollController.animateTo(
-            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.linear,
-          );
-        }
-      });
-    } else {
-      _scrollTimer?.cancel();
-      _scrollTimer = null;
+  void _handleDragScroll(PointerMoveEvent event) {
+    if (!_scrollController.hasClients) return;
+
+    final screenH = MediaQuery.of(context).size.height;
+    final y = event.position.dy;
+    double delta = 0;
+
+    // Zona superior
+    if (y < kEdgeActivation) {
+      final t = 1 - (y / kEdgeActivation); // 0 → kEdgeActivation  ⇒  0…1
+      delta = -kMaxSpeed * t;
     }
-  }
+    // Zona inferior
+    if (y > screenH - kEdgeActivation) {
+      final t = 1 - ((screenH - y) / kEdgeActivation);
+      delta = kMaxSpeed * t;
+    }
 
-  void _stopDragScroll() {
-    _scrollTimer?.cancel();
-    _scrollTimer = null;
+    if (delta != 0) {
+      final newOffset = (_scrollController.offset + delta)
+          .clamp(0.0, _scrollController.position.maxScrollExtent);
+      _scrollController.jumpTo(newOffset); // instantáneo y muy fluido
+    }
   }
 
   Future<void> _verifyOrder() async {
@@ -183,7 +153,7 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.glassmorphicBackground,
+        backgroundColor: AppColors.backgroundDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Criterios de Evaluación',
@@ -232,7 +202,7 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
       barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
-          backgroundColor: AppColors.progressActive,
+          backgroundColor: AppColors.backgroundDark,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
@@ -262,8 +232,7 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
                 ),
                 const SizedBox(height: 12),
                 if (!passed) ...[
-                  Text(
-                    'Líneas en posición incorrecta:',
+                  Text('Líneas en posición incorrecta:',
                     style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 6),
@@ -280,8 +249,8 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra diálogo
-                if (passed) _completeActivity(); // Envía nota al regresar
+                Navigator.of(context).pop();
+                if (passed) _completeActivity();
               },
               child: Text(
                 'Aceptar',
@@ -297,7 +266,6 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
   @override
   void dispose() {
     _scrollController.dispose();
-    _scrollTimer?.cancel();
     super.dispose();
   }
 
@@ -319,7 +287,7 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
           FloatingActionButton(
             heroTag: 'grade_button',
             onPressed: _showGradingInfo,
-            backgroundColor: AppColors.glassmorphicBackground,
+            backgroundColor: AppColors.backgroundDark,
             child: Icon(Icons.grade, color: AppColors.textPrimary),
           ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
         ],
@@ -328,8 +296,6 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
       body: SafeArea(
         child: Listener(
           onPointerMove: _handleDragScroll,
-          onPointerUp: (_) => _stopDragScroll(),
-          onPointerCancel: (_) => _stopDragScroll(),
           child: SingleChildScrollView(
             controller: _scrollController,
             padding: const EdgeInsets.all(16.0),
@@ -338,7 +304,7 @@ class _CountVowelsRecursiveActivityScreenState extends State<CountVowelsRecursiv
               children: [
                 GlassmorphicCard(
                   child: Text(
-                    'Ejercicio: Contar Vocales Recursivamente',
+                    'Ejercicio:(updated) Contar Vocales Recursivamente',
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

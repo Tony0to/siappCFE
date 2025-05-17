@@ -14,17 +14,14 @@
         {
           "title": "Ejemplo 1: Secuencia simple",
           "problem": "Problema: Calcular el área de un rectángulo.",
-          "logic": "Lógica: Leer base y altura, multiplicarlas, mostrar el resultado.",
           "diagram": "assets/module2photos/diag1.png",
           "explanation": "Este ejercicio es sencillo porque se basa en un concepto básico de la lógica de programación: la división y el uso del operador módulo (%) para determinar si un número es par o impar."
         },
         {
           "title": "Ejemplo 2: Condicional",
           "problem": "Problema: Determinar si un número ingresado por el usuario es par o impar.",
-          "logic": "Lógica de solución:\n• Leer un número desde la entrada del usuario.\n• Calcular el residuo de dividir ese número entre 2 (usando el operador módulo %).\n• Si el residuo es igual a 0, entonces el número es par.\n• En caso contrario, el número es impar.\n• Mostrar el resultado correspondiente.",
           "diagram": "assets/module2photos/diag2.png",
           "quiz": {
-            "logic": "\"Se lee un número. Si el número dividido entre 2 da un residuo de 0, se muestra 'Es par'. En caso contrario, se muestra 'Es impar'.\"",
             "text": "Pregunta: ¿Cuál de los siguientes números mostrará \"Es impar\"?",
             "options": ["A) 8", "B) 12", "C) 0", "D) 15"],
             "correct": "D) 15"
@@ -40,7 +37,6 @@
         {
           "title": "Ejemplo 3: Bucle (ciclo)",
           "problem": "Problema: Mostrar los números del 1 al 5.",
-          "logic": "Lógica de solución:\n• Inicializar una variable i con el valor 1.\n• Mientras i sea menor o igual a 5, hacer lo siguiente:\n  • Mostrar el valor de i.\n  • Incrementar i en 1.\n• Repetir el paso 2 hasta que i ya no cumpla la condición.",
           "diagram": "assets/module2photos/diag3.png",
           "notes": [
             {
@@ -58,7 +54,6 @@
         {
           "title": "Ejemplo 4: Condicional múltiple",
           "problem": "Problema: Determinar si un número es positivo, negativo o cero.",
-          "logic": "Lógica de solución:\n• Leer el número ingresado por el usuario.\n• Si el número es mayor que 0, entonces es positivo.\n• Si el número es menor que 0, entonces es negativo.\n• Si el número no es mayor ni menor que 0, entonces es cero.\n• Mostrar el resultado correspondiente: \"Positivo\", \"Negativo\" o \"Cero\".",
           "diagram": "assets/module2photos/diag4.png",
           "notes": [
             {

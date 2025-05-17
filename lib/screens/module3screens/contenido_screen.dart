@@ -149,87 +149,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
     }
   }
 
-  Future<bool> _hasCompletedModule() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return false;
-
-      final progressDoc = await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module3')
-          .get();
-
-      if (progressDoc.exists) {
-        final data = progressDoc.data();
-        final progressPercentage = (data?['porcentaje'] as num?)?.toDouble() ?? 0.0;
-        return progressPercentage >= 100.0;
-      }
-      return false;
-    } catch (e) {
-      debugPrint('Error checking module progress: $e');
-      return false;
-    }
-  }
-
-  Future<void> _resetModuleProgress() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      await FirebaseFirestore.instance
-          .collection('progress')
-          .doc(user.uid)
-          .collection('modules')
-          .doc(widget.moduleData['id'] ?? 'module3')
-          .set({
-        'porcentaje': 0.0,
-        'last_updated': FieldValue.serverTimestamp(),
-        'module_id': widget.moduleData['id'] ?? 'module3',
-        'module_title': widget.moduleData['module_title'] ?? 'Módulo 3',
-        'completed': false,
-        'completed_sections': {
-          '0': false,
-          '1': false,
-          '2': false,
-          '3': false,
-        },
-      }, SetOptions(merge: true));
-
-      setState(() {
-        _progress = 0.0;
-        tema1Completed = false;
-        tema2Completed = false;
-        tema3Completed = false;
-        tema4Completed = false;
-        _progressAnimation = Tween<double>(begin: _progressAnimation.value, end: 0.0).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeOutQuart,
-          ),
-        );
-        _animationController
-          ..reset()
-          ..forward();
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al reiniciar el progreso: $e'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _updateModuleProgress(int sectionIndex) async {
     if (sectionIndex < 0 || sectionIndex > 3) return;
 
@@ -369,24 +288,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
-                widget.moduleData['module_title'] ?? 'Contenido',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 22,
-                  color: AppColors.textPrimary,
-                  shadows: [
-                    Shadow(
-                      color: AppColors.shadowColor,
-                      blurRadius: 4,
-                      offset: const Offset(1, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,

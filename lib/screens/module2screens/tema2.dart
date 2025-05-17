@@ -895,133 +895,128 @@ class _Tema2State extends State<Tema2> with TickerProviderStateMixin {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_errorMessage != null) {
-      return Scaffold(
-        backgroundColor: AppColors.backgroundDark,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 50,
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  _errorMessage!,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                  softWrap: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.textPrimary,
-                  foregroundColor: AppColors.backgroundDark,
-                ),
-                child: Text(
-                  'Volver',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_contentData == null) {
-      return Scaffold(
-        backgroundColor: AppColors.backgroundDark,
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
-    final totalPages = subsections.length;
-
-    return PopScope(
-      canPop: _currentPage == 0,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (!didPop) {
-          debugPrint('PopScope triggered in Tema2');
-          await navigateBack();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundDark,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: Text(
-            widget.sectionTitle,
-            style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary),
-            softWrap: true,
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-            onPressed: () async {
-              debugPrint('IconButton Atrás presionado en Tema2');
-              await navigateBack();
-            },
-          ),
-          actions: [
+ @override
+Widget build(BuildContext context) {
+  if (_errorMessage != null) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: AppColors.error,
+              size: 50,
+            ),
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: Text(
-                  '${widget.sectionIndex + 1}/${widget.totalSections}',
-                  style: GoogleFonts.poppins(
-                      fontSize: 14, color: AppColors.textSecondary),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                _errorMessage!,
+                style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
+                textAlign: TextAlign.center,
+                softWrap: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.textPrimary,
+                foregroundColor: AppColors.backgroundDark,
+              ),
+              child: Text(
+                'Volver',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _handleContinue,
-          backgroundColor: AppColors.textPrimary,
-          foregroundColor: AppColors.backgroundDark,
-          icon: const Icon(Icons.arrow_forward),
-          label: Text(
-            _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-          ),
-        ),
-        body: SafeArea(
-          child: PageView.builder(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemCount: totalPages,
-            itemBuilder: (context, index) {
-              final sectionData = subsections[index] as Map<String, dynamic>?;
-              return buildSubsectionPage(sectionData, index, totalPages);
-            },
-          ),
-        ),
       ),
     );
   }
+
+  if (_contentData == null) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      body: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  final subsections = _contentData?['subsections'] as List<dynamic>? ?? [];
+  final totalPages = subsections.length;
+
+  return PopScope(
+    canPop: _currentPage == 0,
+    onPopInvokedWithResult: (didPop, result) async {
+      if (!didPop) {
+        debugPrint('PopScope triggered in Tema2');
+        await navigateBack();
+      }
+    },
+    child: Scaffold(
+      backgroundColor: AppColors.backgroundDark,
+      extendBodyBehindAppBar: true,
+appBar: AppBar(
+  title: null, // Keep title null as per your code
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+    onPressed: () async {
+      debugPrint('IconButton Atrás presionado en Tema2');
+      await navigateBack();
+    },
+  ),
+  actions: [
+    Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: Center(
+        child: Text(
+          'Página ${_currentPage + 1}/$totalPages', // Show current page and total pages
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _handleContinue,
+        backgroundColor: AppColors.textPrimary,
+        foregroundColor: AppColors.backgroundDark,
+        icon: const Icon(Icons.arrow_forward),
+        label: Text(
+          _currentPage < totalPages - 1 ? 'Continuar' : 'Completar módulo',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: SafeArea(
+        child: PageView.builder(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (index) {
+            setState(() {
+              _currentPage = index;
+            });
+          },
+          itemCount: totalPages,
+          itemBuilder: (context, index) {
+            final sectionData = subsections[index] as Map<String, dynamic>?;
+            return buildSubsectionPage(sectionData, index, totalPages);
+          },
+        ),
+      ),
+    ),
+  );
+}
 }

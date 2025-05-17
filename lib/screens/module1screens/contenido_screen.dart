@@ -370,24 +370,6 @@ class _ContenidoScreenState extends State<ContenidoScreen>
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
-                widget.moduleData['module_title'] ?? 'Contenido',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 22,
-                  color: AppColors.textPrimary,
-                  shadows: [
-                    Shadow(
-                      color: AppColors.shadowColor,
-                      blurRadius: 4,
-                      offset: const Offset(1, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,

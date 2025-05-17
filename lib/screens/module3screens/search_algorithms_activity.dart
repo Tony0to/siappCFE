@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math';
-import 'dart:async';
 import 'package:siapp/theme/app_colors.dart';
 
 class SearchAlgorithmsActivityScreen extends StatefulWidget {
@@ -27,49 +26,8 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
   List<int> _binaryWrongIndices = [];
 
   final ScrollController _scrollController = ScrollController();
-  Timer? _scrollTimer;
 
   final List<int> _sortedList = [10, 15, 18, 20, 23, 27, 30, 35, 40, 45];
-
-  final List<String> _linearCodeLines = [
-    'lista ← [10, 15, 18, 20, 23, 27, 30, 35, 40, 45]',
-    'IMPRIMIR "Ingresa el número a buscar:"',
-    'leer numero',
-    'encontrado ← FALSO',
-    'PARA i desde 0 hasta longitud(lista)-1 HACER',
-    'SI lista[i] = numero ENTONCES',
-    'IMPRIMIR "Número encontrado en la posición", i',
-    'encontrado ← VERDADERO',
-    'TERMINAR',
-    'FIN SI',
-    'FIN PARA',
-    'SI NO encontrado ENTONCES',
-    'IMPRIMIR "Número no encontrado (búsqueda lineal)"',
-    'FIN SI',
-  ];
-
-  final List<String> _binaryCodeLines = [
-    'lista ← [10, 15, 18, 20, 23, 27, 30, 35, 40, 45]',
-    'IMPRIMIR "Ingresa el número a buscar:"',
-    'leer numero',
-    'inicio ← 0',
-    'fin ← longitud(lista) - 1',
-    'encontrado ← FALSO',
-    'MIENTRAS inicio ≤ fin Y NO encontrado HACER',
-    'medio ← (inicio + fin) / 2',
-    'SI lista[medio] = numero ENTONCES',
-    'encontrado ← VERDADERO',
-    'IMPRIMIR "Número encontrado en la posición", medio',
-    'SINO SI lista[medio] < numero ENTONCES',
-    'inicio ← medio + 1',
-    'SINO',
-    'fin ← medio - 1',
-    'FIN SI',
-    'FIN MIENTRAS',
-    'SI NO encontrado ENTONCES',
-    'IMPRIMIR "Número no encontrado (búsqueda binaria)"',
-    'FIN SI',
-  ];
 
   final List<String> _correctLinearOrder = [
     'lista ← [10, 15, 18, 20, 23, 27, 30, 35, 40, 45]',
@@ -129,7 +87,7 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
 
     // Linear: 50% pre-filled (7 out of 14 lines)
     final linearIndices = List<int>.generate(14, (i) => i)..shuffle(random);
-    final prefilledLinearIndices = linearIndices.sublist(0,10 );
+    final prefilledLinearIndices = linearIndices.sublist(0, 10);
     _userLinearOrder = List.filled(14, '');
 
     for (final i in prefilledLinearIndices) {
@@ -212,45 +170,32 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
     });
   }
 
-  void _handleDragScroll(PointerEvent event) {
-    const double edgeThreshold = 50.0;
-    const double scrollSpeed = 10.0;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final pointerY = event.position.dy;
+  static const double kEdgeActivation = 120.0; // alto de la zona activa
+  static const double kMaxSpeed = 9.33; // px por evento, reducido a 1/3 de 28.0
 
-    if (pointerY < edgeThreshold && _scrollController.hasClients) {
-      _scrollTimer?.cancel();
-      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-        if (_scrollController.hasClients) {
-          final newOffset = _scrollController.offset - scrollSpeed;
-          _scrollController.animateTo(
-            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.linear,
-          );
-        }
-      });
-    } else if (pointerY > screenHeight - edgeThreshold && _scrollController.hasClients) {
-      _scrollTimer?.cancel();
-      _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
-        if (_scrollController.hasClients) {
-          final newOffset = _scrollController.offset + scrollSpeed;
-          _scrollController.animateTo(
-            newOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.linear,
-          );
-        }
-      });
-    } else {
-      _scrollTimer?.cancel();
-      _scrollTimer = null;
+  void _handleDragScroll(PointerMoveEvent event) {
+    if (!_scrollController.hasClients) return;
+
+    final screenH = MediaQuery.of(context).size.height;
+    final y = event.position.dy;
+    double delta = 0;
+
+    // Zona superior
+    if (y < kEdgeActivation) {
+      final t = 1 - (y / kEdgeActivation); // 0 → kEdgeActivation  ⇒  0…1
+      delta = -kMaxSpeed * t;
     }
-  }
+    // Zona inferior
+    if (y > screenH - kEdgeActivation) {
+      final t = 1 - ((screenH - y) / kEdgeActivation);
+      delta = kMaxSpeed * t;
+    }
 
-  void _stopDragScroll() {
-    _scrollTimer?.cancel();
-    _scrollTimer = null;
+    if (delta != 0) {
+      final newOffset = (_scrollController.offset + delta)
+          .clamp(0.0, _scrollController.position.maxScrollExtent);
+      _scrollController.jumpTo(newOffset); // instantáneo y muy fluido
+    }
   }
 
   Future<void> _verifyOrder() async {
@@ -318,7 +263,7 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.glassmorphicBackground,
+        backgroundColor: AppColors.backgroundDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Criterios de Evaluación',
@@ -379,7 +324,7 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
       barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
-          backgroundColor: AppColors.progressActive,
+          backgroundColor: AppColors.backgroundDark,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
@@ -446,7 +391,6 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
   @override
   void dispose() {
     _scrollController.dispose();
-    _scrollTimer?.cancel();
     super.dispose();
   }
 
@@ -468,7 +412,7 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
           FloatingActionButton(
             heroTag: 'grade_button',
             onPressed: _showGradingInfo,
-            backgroundColor: AppColors.glassmorphicBackground,
+            backgroundColor: AppColors.backgroundDark,
             child: Icon(Icons.grade, color: AppColors.textPrimary),
           ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
         ],
@@ -477,8 +421,6 @@ class _SearchAlgorithmsActivityScreenState extends State<SearchAlgorithmsActivit
       body: SafeArea(
         child: Listener(
           onPointerMove: _handleDragScroll,
-          onPointerUp: (_) => _stopDragScroll(),
-          onPointerCancel: (_) => _stopDragScroll(),
           child: SingleChildScrollView(
             controller: _scrollController,
             padding: const EdgeInsets.all(16.0),

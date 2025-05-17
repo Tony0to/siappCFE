@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // === FONDOS GENERALES ===
-  static const Color backgroundDark = Color(0xFF0A2540); // Fondo principal
+  static const Color backgroundDark = Color(0xFF1E40AF); // Fondo principal
   static const Color backgroundGradientTop = Color(0xFF0057B8);
   static const Color backgroundGradientBottom = Color(0xFF0057B8); // Añadido del segundo archivo
 
@@ -13,10 +13,11 @@ class AppColors {
   // === CARDS Y CONTENEDORES ===
   static const Color cardBackground = Color.fromARGB(179, 60, 128, 205); // 70% opacidad
   static const Color neutralCard = Color.fromARGB(230, 43, 60, 112);     // Fondo gris 90%
-  static const Color glassmorphicBackground = Color.fromRGBO(255, 255, 255, 0.1); // Contenedor translúcido para secciones
-  static const Color glassmorphicBorder = Color.fromRGBO(255, 255, 255, 0.2);     // Delimita secciones
+  static const Color glassmorphicBackground = Color.fromRGBO(27, 7, 98, 0.249); // Contenedor translúcido para secciones
+  static const Color glassmorphicBorder = Color.fromRGBO(255, 255, 255, 0.229);     // Delimita secciones
 
   // === BOTONES ===
+  static const Color moduleButton = Color.fromARGB(255, 255, 255, 255);
   static const Color primaryButton = Color(0xFF00A8E8);     // Azul eléctrico
   static const Color primaryButtonHover = Color(0xFF007EA7);
   static const Color secondaryButton = Color(0xFF8B0000);   // Rojo quemado
